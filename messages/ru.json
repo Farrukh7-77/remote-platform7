@@ -1,0 +1,19 @@
+{
+  "Header": {
+    "title": "RemoteJobs Global",
+    "search": "Поиск работы...",
+    "postJob": "Разместить вакансию"
+  },
+  "JobCard": {
+    "remote": "Удалённо",
+    "apply": "Откликнуться"
+  },
+  "Theme": {
+    "light": "Светлая",
+    "dark": "Тёмная"
+  },
+  "Language": {
+    "en": "English",
+    "ru": "Русский"
+  }
+}

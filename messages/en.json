@@ -1,0 +1,19 @@
+{
+  "Header": {
+    "title": "RemoteJobs Global",
+    "search": "Search jobs...",
+    "postJob": "Post a Job"
+  },
+  "JobCard": {
+    "remote": "Remote",
+    "apply": "Apply Now"
+  },
+  "Theme": {
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "Language": {
+    "en": "English",
+    "ru": "Русский"
+  }
+}
