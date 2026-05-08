@@ -1,6 +1,6 @@
-// app/page.tsx - WITH PAGINATION & REAL LOGO
+// app/page.tsx - WITH FEATURED BADGE
 "use client";
-
+import JobAlert from "@/components/JobAlert";
 import { useState } from "react";
 import { jobs, type Job } from "@/data/jobs";
 import Link from "next/link";
@@ -57,7 +57,8 @@ export default function HomePage() {
     setCurrentPage(1);
   };
 
-  const filteredJobs = jobs.filter((job) => {
+  const filteredJobs = jobs
+  .filter((job) => {
     const matchesSearch = searchTerm === "" ||
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.company.toLowerCase().includes(searchTerm.toLowerCase());
@@ -73,6 +74,13 @@ export default function HomePage() {
     else if (experienceLevel === "senior") matchesExperience = job.salaryMax >= 8000;
     
     return matchesSearch && matchesType && matchesSalary && matchesLocation && matchesExperience;
+  })
+  .sort((a, b) => {
+    // Featured jobs come first
+    if (a.featured && !b.featured) return -1;
+    if (!a.featured && b.featured) return 1;
+    // Then sort by date (newest first)
+    return new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime();
   });
 
   const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
@@ -223,6 +231,17 @@ export default function HomePage() {
               </div>
 
               <button onClick={applyFilters} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg mt-4">Apply Filters</button>
+              
+              {/* JOB ALERT COMPONENT */}
+              <JobAlert
+                filters={{
+                  searchTerm,
+                  selectedTypes: tempSelectedTypes,
+                  salaryRange: tempSalaryRange,
+                  selectedLocation: tempSelectedLocation,
+                  experienceLevel: tempExperienceLevel,
+                }}
+              />
             </div>
           </aside>
 
@@ -262,7 +281,7 @@ export default function HomePage() {
   );
 }
 
-// Job Card Component with REAL LOGO (Sizin kodunuz - tam işləyir)
+// Job Card Component with FEATURED BADGE
 function JobCard({ job }: { job: Job }) {
   const isNew = new Date(job.postedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   
@@ -293,24 +312,29 @@ function JobCard({ job }: { job: Job }) {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{job.title}</h3>
-                {isNew && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">New</span>}
+                {isNew && <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs rounded-full font-medium">New</span>}
+                {job.featured && (
+                  <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs rounded-full font-medium">
+                    ⭐ Featured
+                  </span>
+                )}
               </div>
-              <p className="text-gray-600 text-sm">{job.company}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">{job.company}</p>
             </div>
           </div>
           
           <div className="flex flex-wrap gap-2 mb-3">
-            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">{job.type}</span>
-            <span className="text-sm text-gray-600">📍 {job.location}</span>
-            <span className="text-sm font-medium text-green-600">💰 ${job.salaryMin.toLocaleString()} - ${job.salaryMax.toLocaleString()}/mo</span>
+            <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-full">{job.type}</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">📍 {job.location}</span>
+            <span className="text-sm font-medium text-green-600 dark:text-green-400">💰 ${job.salaryMin.toLocaleString()} - ${job.salaryMax.toLocaleString()}/mo</span>
           </div>
           
-          <p className="text-gray-600 text-sm line-clamp-2">{job.description}</p>
-          <p className="text-xs text-gray-400 mt-2">Posted: {new Date(job.postedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2">{job.description}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Posted: {new Date(job.postedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
         </div>
         
         <div className="flex-shrink-0 flex flex-col sm:flex-row gap-2">
-          <button onClick={toggleBookmark} className={`flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isBookmarked ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"}`}>
+          <button onClick={toggleBookmark} className={`flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isBookmarked ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"}`}>
             <span>{isBookmarked ? "🔖" : "📑"}</span>
             <span>{isBookmarked ? "Saved" : "Save"}</span>
           </button>

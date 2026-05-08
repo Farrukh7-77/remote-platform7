@@ -64,6 +64,49 @@ export default function PostJobPage() {
     };
     jobs.push(newJob);
     localStorage.setItem("posted_jobs", JSON.stringify(jobs));
+    // Check and trigger job alerts for new job
+const checkJobAlerts = (newJob: any) => {
+  const alerts = JSON.parse(localStorage.getItem("jobAlerts") || "[]");
+  const matchedAlerts: any[] = [];
+  
+  alerts.forEach((alert: any) => {
+    const filters = alert.filters;
+    
+    // Check if job matches alert filters
+    const matchesSearch = filters.searchTerm === "" ||
+      newJob.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      newJob.company.toLowerCase().includes(filters.searchTerm.toLowerCase());
+    
+    const matchesType = filters.selectedTypes.length === 0 || filters.selectedTypes.includes(newJob.type);
+    
+    const avgSalary = (newJob.salaryMin + newJob.salaryMax) / 2;
+    const matchesSalary = avgSalary >= filters.salaryRange[0] && avgSalary <= filters.salaryRange[1];
+    
+    const matchesLocation = filters.selectedLocation === "all" || newJob.location.includes(filters.selectedLocation);
+    
+    let matchesExperience = true;
+    if (filters.experienceLevel === "entry") matchesExperience = newJob.salaryMax < 4000;
+    else if (filters.experienceLevel === "mid") matchesExperience = newJob.salaryMax >= 4000 && newJob.salaryMax < 8000;
+    else if (filters.experienceLevel === "senior") matchesExperience = newJob.salaryMax >= 8000;
+    
+    if (matchesSearch && matchesType && matchesSalary && matchesLocation && matchesExperience) {
+      matchedAlerts.push(alert);
+    }
+  });
+  
+  // Simulate email sending (console log)
+  if (matchedAlerts.length > 0) {
+    console.log(`📧 JOB ALERT: New job "${newJob.title}" matches ${matchedAlerts.length} alert(s):`);
+    matchedAlerts.forEach((alert) => {
+      console.log(`   → Would send email to: ${alert.email}`);
+    });
+  } else {
+    console.log("📧 No matching job alerts found.");
+  }
+};
+
+// Call this function after saving the job
+checkJobAlerts(newJob);
     
     setTimeout(() => {
       setIsSubmitting(false);

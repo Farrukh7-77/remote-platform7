@@ -13,6 +13,8 @@ export type Job = {
   requirements: string[];
   postedAt: string;
   featured: boolean;
+  applyType: "internal" | "external"; // NEW
+  applyUrl?: string; // NEW - only for external
 };
 
 export const jobs: Job[] = [
@@ -30,6 +32,7 @@ export const jobs: Job[] = [
     requirements: ["5+ years React experience", "TypeScript", "Next.js", "Tailwind CSS"],
     postedAt: "2026-05-04",
     featured: true,
+    applyType: "internal", // Apply on our platform
   },
   {
     id: 2,
@@ -45,6 +48,8 @@ export const jobs: Job[] = [
     requirements: ["Node.js", "Python", "PostgreSQL", "AWS"],
     postedAt: "2026-05-03",
     featured: true,
+    applyType: "external",
+    applyUrl: "https://dataflow.com/careers/backend-engineer",
   },
   {
     id: 3,
@@ -60,6 +65,7 @@ export const jobs: Job[] = [
     requirements: ["Figma", "User research", "Prototyping", "Design systems"],
     postedAt: "2026-05-05",
     featured: false,
+    applyType: "internal",
   },
   {
     id: 4,
@@ -75,6 +81,8 @@ export const jobs: Job[] = [
     requirements: ["AWS", "Kubernetes", "Terraform", "CI/CD"],
     postedAt: "2026-05-02",
     featured: true,
+    applyType: "external",
+    applyUrl: "https://cloudscale.com/jobs/devops",
   },
   {
     id: 5,
@@ -90,6 +98,7 @@ export const jobs: Job[] = [
     requirements: ["3+ years CS experience", "English fluent", "CRM tools"],
     postedAt: "2026-05-01",
     featured: false,
+    applyType: "internal",
   },
   {
     id: 6,
@@ -105,5 +114,7 @@ export const jobs: Job[] = [
     requirements: ["Technical writing", "Markdown", "Git", "English"],
     postedAt: "2026-04-30",
     featured: false,
+    applyType: "external",
+    applyUrl: "https://docuwrite.com/careers/technical-writer",
   },
 ];
