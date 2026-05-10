@@ -7,10 +7,11 @@ import { useAuth } from "@/context/AuthContext";
 type AuthModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  defaultIsSignUp?: boolean;
 };
 
-export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const [isLogin, setIsLogin] = useState(true);
+export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: AuthModalProps) {
+  const [isLogin, setIsLogin] = useState(!defaultIsSignUp);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -54,7 +55,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
         >
           ✕
         </button>
@@ -120,7 +121,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
           >
             {loading ? "Loading..." : (isLogin ? "Sign In" : "Sign Up")}
           </button>
@@ -132,7 +133,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               setIsLogin(!isLogin);
               setError("");
             }}
-            className="text-sm text-blue-600 hover:text-blue-700"
+            className="text-sm text-blue-600 hover:text-blue-700 cursor-pointer"
           >
             {isLogin ? "Need an account? Sign Up" : "Already have an account? Sign In"}
           </button>

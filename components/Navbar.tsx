@@ -1,18 +1,19 @@
-// components/Navbar.tsx
+// components/Navbar.tsx - Sign Up only when user is not logged in
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
-import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
-import AuthModal from "./AuthModal";
+import UserMenu from "./UserMenu";
+import JobAlertModal from "./JobAlertModal";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { user, signOut } = useAuth();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isJobAlertModalOpen, setIsJobAlertModalOpen] = useState(false);
 
   const links = [
     { href: "/", label: "Home" },
@@ -21,13 +22,21 @@ export default function Navbar() {
     { href: "/contact", label: "Contact" },
   ];
 
+  const currentFilters = {
+    searchTerm: "",
+    selectedTypes: [],
+    salaryRange: [2000, 15000] as [number, number],
+    selectedLocation: "all",
+    experienceLevel: "all",
+  };
+
   return (
     <>
       <nav className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2 cursor-pointer">
               <span className="text-2xl font-bold text-gray-900 dark:text-white">
                 Remote<span className="text-blue-600">Jobs</span>
               </span>
@@ -39,7 +48,7 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors ${
+                  className={`cursor-pointer text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors ${
                     pathname === link.href ? "text-blue-600 dark:text-blue-400 font-medium" : ""
                   }`}
                 >
@@ -49,53 +58,46 @@ export default function Navbar() {
               
               <Link
                 href="/post-job"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
               >
                 Post a Job
               </Link>
               
+              <button
+                onClick={() => setIsJobAlertModalOpen(true)}
+                className="flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors cursor-pointer"
+              >
+                <span>🔔</span> Alerts
+              </button>
+              
               <ThemeToggle />
               
-              {user ? (
-                <div className="flex items-center gap-4">
-                  <Link
-                    href="/saved-jobs"
-                    className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
-                  >
-                    Saved Jobs
-                  </Link>
-                  <Link
-                    href="/applications"
-                    className="text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors"
-                  >
-                    My Applications
-                  </Link>
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    👤 {user.name}
-                  </span>
-                  <button
-                    onClick={signOut}
-                    className="text-sm text-red-600 hover:text-red-700"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setIsAuthModalOpen(true)}
-                  className="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
+              {/* Sign Up Button - only show when user is NOT logged in */}
+              {!user && (
+                <Link
+                  href="/register"
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                 >
-                  Sign In
-                </button>
+                  Sign Up
+                </Link>
               )}
+              
+              {/* UserMenu - only show when user IS logged in */}
+              {user && <UserMenu />}
             </div>
 
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center gap-3">
+              <button
+                onClick={() => setIsJobAlertModalOpen(true)}
+                className="text-gray-700 dark:text-gray-300 cursor-pointer"
+              >
+                <span className="text-xl">🔔</span>
+              </button>
               <ThemeToggle />
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-700 dark:text-gray-300"
+                className="text-gray-700 dark:text-gray-300 cursor-pointer"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -111,7 +113,7 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600"
+                  className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}
@@ -119,49 +121,35 @@ export default function Navbar() {
               ))}
               <Link
                 href="/post-job"
-                className="block py-2 text-blue-600 font-medium"
+                className="block py-2 text-blue-600 font-medium cursor-pointer"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Post a Job
               </Link>
-              {user ? (
-                <>
-                  <Link
-                    href="/saved-jobs"
-                    className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Saved Jobs
-                  </Link>
-                  <Link
-                    href="/applications"
-                    className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    My Applications
-                  </Link>
-                  <span className="block py-2 text-gray-700 dark:text-gray-300">👤 {user.name}</span>
-                  <button
-                    onClick={() => { signOut(); setIsMobileMenuOpen(false); }}
-                    className="block py-2 text-red-600"
-                  >
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => { setIsAuthModalOpen(true); setIsMobileMenuOpen(false); }}
-                  className="block py-2 text-gray-700 dark:text-gray-300"
+              {!user && (
+                <Link
+                  href="/register"
+                  className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Sign In
-                </button>
+                  Sign Up
+                </Link>
+              )}
+              {user && (
+                <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-800">
+                  <UserMenu />
+                </div>
               )}
             </div>
           )}
         </div>
       </nav>
 
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <JobAlertModal 
+        isOpen={isJobAlertModalOpen} 
+        onClose={() => setIsJobAlertModalOpen(false)}
+        filters={currentFilters}
+      />
     </>
   );
 }

@@ -1,4 +1,4 @@
-// data/jobs.ts
+// data/jobs.ts - 12 job listings for testing
 export type Job = {
   id: number;
   title: string;
@@ -13,8 +13,8 @@ export type Job = {
   requirements: string[];
   postedAt: string;
   featured: boolean;
-  applyType: "internal" | "external"; // NEW
-  applyUrl?: string; // NEW - only for external
+  applyType: "internal" | "external";
+  applyUrl?: string;
 };
 
 export const jobs: Job[] = [
@@ -32,7 +32,7 @@ export const jobs: Job[] = [
     requirements: ["5+ years React experience", "TypeScript", "Next.js", "Tailwind CSS"],
     postedAt: "2026-05-04",
     featured: true,
-    applyType: "internal", // Apply on our platform
+    applyType: "internal",
   },
   {
     id: 2,
@@ -116,5 +116,104 @@ export const jobs: Job[] = [
     featured: false,
     applyType: "external",
     applyUrl: "https://docuwrite.com/careers/technical-writer",
+  },
+  {
+    id: 7,
+    title: "Mobile Developer (iOS)",
+    company: "AppWorks",
+    companyLogo: "AW",
+    companyLogoBgColor: "bg-red-100 text-red-700",
+    location: "North America / Remote",
+    type: "Full-time",
+    salaryMin: 6500,
+    salaryMax: 9500,
+    description: "Develop amazing iOS applications using Swift and SwiftUI.",
+    requirements: ["Swift", "SwiftUI", "iOS SDK", "Git"],
+    postedAt: "2026-05-06",
+    featured: false,
+    applyType: "internal",
+  },
+  {
+    id: 8,
+    title: "Data Scientist",
+    company: "AI Labs",
+    companyLogo: "AL",
+    companyLogoBgColor: "bg-indigo-100 text-indigo-700",
+    location: "Global / Remote",
+    type: "Remote",
+    salaryMin: 9000,
+    salaryMax: 14000,
+    description: "Work on cutting-edge machine learning models and data pipelines.",
+    requirements: ["Python", "TensorFlow", "SQL", "Statistics"],
+    postedAt: "2026-05-06",
+    featured: true,
+    applyType: "external",
+    applyUrl: "https://ailabs.com/careers/data-scientist",
+  },
+  {
+    id: 9,
+    title: "Sales Development Representative",
+    company: "SalesBoost",
+    companyLogo: "SB",
+    companyLogoBgColor: "bg-yellow-100 text-yellow-700",
+    location: "Europe / Remote",
+    type: "Full-time",
+    salaryMin: 3000,
+    salaryMax: 4500,
+    description: "Generate leads and qualify prospects for our B2B SaaS product.",
+    requirements: ["Sales experience", "CRM tools", "English fluent", "Communication skills"],
+    postedAt: "2026-05-05",
+    featured: false,
+    applyType: "internal",
+  },
+  {
+    id: 10,
+    title: "HR Generalist",
+    company: "PeopleFirst",
+    companyLogo: "PF",
+    companyLogoBgColor: "bg-teal-100 text-teal-700",
+    location: "Americas / Remote",
+    type: "Part-time",
+    salaryMin: 2800,
+    salaryMax: 4000,
+    description: "Support our remote team with HR operations and employee relations.",
+    requirements: ["HR experience", "Employment law knowledge", "Organization skills"],
+    postedAt: "2026-05-04",
+    featured: false,
+    applyType: "external",
+    applyUrl: "https://peoplefirst.com/careers/hr-generalist",
+  },
+  {
+    id: 11,
+    title: "QA Engineer",
+    company: "Testify",
+    companyLogo: "TQ",
+    companyLogoBgColor: "bg-gray-100 text-gray-700",
+    location: "EMEA / Remote",
+    type: "Contract",
+    salaryMin: 4000,
+    salaryMax: 6000,
+    description: "Ensure quality through manual and automated testing.",
+    requirements: ["Selenium", "Jest", "Cypress", "Attention to detail"],
+    postedAt: "2026-05-03",
+    featured: false,
+    applyType: "internal",
+  },
+  {
+    id: 12,
+    title: "Marketing Manager",
+    company: "GrowthHub",
+    companyLogo: "GH",
+    companyLogoBgColor: "bg-emerald-100 text-emerald-700",
+    location: "Global / Remote",
+    type: "Full-time",
+    salaryMin: 5500,
+    salaryMax: 8000,
+    description: "Lead our digital marketing campaigns and brand strategy.",
+    requirements: ["SEO/SEM", "Content marketing", "Analytics", "Leadership"],
+    postedAt: "2026-05-02",
+    featured: true,
+    applyType: "external",
+    applyUrl: "https://growthhub.com/careers/marketing-manager",
   },
 ];
