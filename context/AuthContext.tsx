@@ -11,7 +11,7 @@ export type User = {
   name: string;
   role: UserRole;
   avatar?: string;
-  companyName?: string; // only for employers
+  companyName?: string;
   companyWebsite?: string;
   companyLogo?: string;
 };
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: "User already exists" };
     }
 
-    const newUser: User = {
+    const newUser = {
       id: Date.now().toString(),
       email,
       password,
@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const updatedUser = { ...user, ...data };
       setUser(updatedUser);
       localStorage.setItem("auth_user", JSON.stringify(updatedUser));
-      
+
       const users = JSON.parse(localStorage.getItem("auth_users") || "[]");
       const index = users.findIndex((u: any) => u.email === user.email);
       if (index !== -1) {
