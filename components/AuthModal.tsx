@@ -31,7 +31,9 @@ export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: 
     if (isLogin) {
       result = await signIn(email, password);
     } else {
-      result = await signUp(email, password, name);
+      // signUp(email, password, name, role, companyName?)
+      // For regular auth modal, default role is job_seeker
+      result = await signUp(email, password, name, "job_seeker", undefined);
     }
 
     setLoading(false);
@@ -48,10 +50,8 @@ export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       
-      {/* Modal */}
       <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
         <button
           onClick={onClose}
