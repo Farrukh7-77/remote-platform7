@@ -1,7 +1,7 @@
-// app/page.tsx - One outer card containing individual filter cards
+// app/page.tsx - Click on header (full width) toggles, checkboxes work
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { jobs } from "@/data/jobs";
 import JobCard from "@/components/JobCard";
 
@@ -109,18 +109,14 @@ export default function HomePage() {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row gap-6">
-          {/* FILTER SIDEBAR - one outer card containing everything */}
           <aside className={`${showFilters ? "block" : "hidden"} md:block md:w-72 md:ml-10`}>
             <div className="bg-white rounded-xl border border-gray-500 shadow-sm p-4">
-              {/* Header inside outer card */}
               <div className="relative flex justify-center items-center mb-4">
                 <h3 className="font-semibold text-gray-800 text-center">Filters</h3>
                 <button onClick={resetFilters} className="absolute right-0 text-xs text-red-600 hover:text-red-700 cursor-pointer">
                   Reset all
                 </button>
               </div>
-              
-              {/* Individual filter cards inside outer card */}
               <div className="space-y-3">
                 <FilterCard title="Job Type" icon={<BriefcaseIcon />} open={openSections.jobType} onToggle={() => toggleSection("jobType")} items={jobTypes} selected={selectedTypes} onChange={(v) => toggleArray(selectedTypes, setSelectedTypes, v)} />
                 <FilterCard title="Category" icon={<FolderIcon />} open={openSections.category} onToggle={() => toggleSection("category")} items={categories} selected={selectedCategories} onChange={(v) => toggleArray(selectedCategories, setSelectedCategories, v)} />
@@ -131,7 +127,6 @@ export default function HomePage() {
             </div>
           </aside>
 
-          {/* JOB LISTINGS */}
           <div className="flex-1 max-w-3xl mx-auto">
             <div className="space-y-4">
               {filteredJobs.map((job) => <JobCard key={job.id} job={job} />)}
@@ -166,39 +161,53 @@ function FilterCard({
   salaryRange?: [number, number];
   setSalaryRange?: (range: [number, number]) => void;
 }) {
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
-        if (open) onToggle();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [open, onToggle]);
-
   return (
-    <div ref={cardRef} className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm transition-all duration-200 hover:shadow-md cursor-pointer">
-      <button onClick={onToggle} className="w-full flex justify-between items-center text-gray-800 cursor-pointer">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:shadow-md">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex justify-between items-center text-gray-800 cursor-pointer px-3 py-3"
+      >
         <span className="flex items-center gap-2 text-sm font-medium">
           {icon && <span className="text-gray-500">{icon}</span>}
           {title}
         </span>
-        <span className="text-gray-500 text-xs">▼</span>
+        <span className="text-gray-500 text-xs">{open ? "▼" : "▶"}</span>
       </button>
+
       {open && (
-        <div className="mt-3 pl-2 space-y-1 border-t border-gray-100 pt-2">
+        <div className="px-3 pb-3 space-y-1 border-t border-gray-100 pt-2">
           {!isSalary && items && selected && onChange && items.map((item) => (
             <label key={item} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-              <input type="checkbox" checked={selected.includes(item)} onChange={() => onChange(item)} className="cursor-pointer" />
+              <input
+                type="checkbox"
+                checked={selected.includes(item)}
+                onChange={() => onChange(item)}
+                className="cursor-pointer"
+              />
               {item}
             </label>
           ))}
           {isSalary && salaryRange && setSalaryRange && (
             <div className="space-y-2">
-              <input type="range" min="2000" max="15000" step="500" value={salaryRange[0]} onChange={(e) => setSalaryRange([+e.target.value, salaryRange[1]])} className="w-full cursor-pointer" />
-              <input type="range" min="2000" max="15000" step="500" value={salaryRange[1]} onChange={(e) => setSalaryRange([salaryRange[0], +e.target.value])} className="w-full cursor-pointer" />
+              <input
+                type="range"
+                min="2000"
+                max="15000"
+                step="500"
+                value={salaryRange[0]}
+                onChange={(e) => setSalaryRange([+e.target.value, salaryRange[1]])}
+                className="w-full cursor-pointer"
+              />
+              <input
+                type="range"
+                min="2000"
+                max="15000"
+                step="500"
+                value={salaryRange[1]}
+                onChange={(e) => setSalaryRange([salaryRange[0], +e.target.value])}
+                className="w-full cursor-pointer"
+              />
               <div className="text-xs text-gray-500">${salaryRange[0]} – ${salaryRange[1]}</div>
             </div>
           )}
