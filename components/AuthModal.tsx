@@ -31,7 +31,7 @@ export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: 
     if (isLogin) {
       result = await signIn(email, password);
     } else {
-      // signUp(email, password, name, role, companyName?) - 5 arguments
+      // 5 arguments: email, password, name, role, companyName
       result = await signUp(email, password, name, "job_seeker", undefined);
     }
 
