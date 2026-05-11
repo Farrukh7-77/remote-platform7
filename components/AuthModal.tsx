@@ -31,8 +31,7 @@ export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: 
     if (isLogin) {
       result = await signIn(email, password);
     } else {
-      // signUp(email, password, name, role, companyName?)
-      // For regular auth modal, default role is job_seeker
+      // signUp(email, password, name, role, companyName?) - 5 arguments
       result = await signUp(email, password, name, "job_seeker", undefined);
     }
 
