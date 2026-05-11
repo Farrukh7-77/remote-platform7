@@ -1,4 +1,4 @@
-// app/register/page.tsx - with role parameter support
+// app/register/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AuthModal from "@/components/AuthModal";
 
 export default function RegisterPage() {
-  const { user, signOut } = useAuth();
+  const { user, signUp, signOut } = useAuth(); // signUp buradan gəlir
   const router = useRouter();
   const searchParams = useSearchParams();
   const roleParam = searchParams.get("role");
@@ -99,7 +99,7 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Role Selection - with employer pre-selected if ?role=employer */}
+            {/* Role Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">I am a</label>
               <div className="grid grid-cols-2 gap-3">
