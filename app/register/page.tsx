@@ -1,12 +1,12 @@
 // app/register/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useAuth, UserRole } from "@/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthModal from "@/components/AuthModal";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const { user, signUp, signOut } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -26,15 +26,12 @@ export default function RegisterPage() {
     setInitialUser(user);
   }, []);
 
-  // Only redirect if user was NOT logged in and now IS logged in (new registration)
   useEffect(() => {
     if (!initialUser && user) {
-      // Hər iki rol üçün profil səhifəsinə yönləndir
       router.push("/profile");
     }
   }, [user, initialUser, router]);
 
-  // If user is already logged in, show a message
   if (user && initialUser) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12">
@@ -96,7 +93,6 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Role Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">I am a</label>
               <div className="grid grid-cols-2 gap-3">
@@ -125,7 +121,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 {role === "employer" ? "Contact Person Name" : "Full Name"} *
@@ -139,7 +134,6 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Company Name (only for employers) */}
             {role === "employer" && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
@@ -153,7 +147,6 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
               <input
@@ -165,7 +158,6 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
               <input
@@ -204,5 +196,13 @@ export default function RegisterPage() {
         onClose={() => setIsSignInModalOpen(false)} 
       />
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-100 flex items-center justify-center"><div className="text-gray-500">Loading...</div></div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }
