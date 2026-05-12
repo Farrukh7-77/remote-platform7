@@ -15,7 +15,7 @@ export default function ProfilePage() {
   const [linkedin, setLinkedin] = useState("");
   const [github, setGithub] = useState("");
   const [portfolio, setPortfolio] = useState("");
-  const [jobStatus, setJobStatus] = useState("actively_looking");
+  const [jobStatus, setJobStatus] = useState<"actively_looking" | "open_to_offers" | "not_looking">("actively_looking");
   const [cvFile, setCvFile] = useState<{ name: string; uploadedAt: string } | null>(null);
   const [applicationCount, setApplicationCount] = useState(0);
   const [savedJobsCount, setSavedJobsCount] = useState(0);
@@ -31,7 +31,7 @@ export default function ProfilePage() {
       setLinkedin(localStorage.getItem(`profile_linkedin_${user.email}`) || "");
       setGithub(localStorage.getItem(`profile_github_${user.email}`) || "");
       setPortfolio(localStorage.getItem(`profile_portfolio_${user.email}`) || "");
-      setJobStatus(localStorage.getItem(`profile_jobstatus_${user.email}`) || "actively_looking");
+      setJobStatus((localStorage.getItem(`profile_jobstatus_${user.email}`) || "actively_looking") as "actively_looking" | "open_to_offers" | "not_looking");
       
       const savedCv = localStorage.getItem(`cv_${user.email}`);
       if (savedCv) {
