@@ -23,6 +23,8 @@ type Job = {
   id: number;
   title: string;
   company: string;
+  companyLogo: string;
+  companyLogoBgColor: string;
   location: string;
   type: string;
   salaryMin: number;
@@ -30,6 +32,7 @@ type Job = {
   description: string;
   postedAt: string;
   featured: boolean;
+  postedBy: string;
 };
 
 export default function CompanyPage() {
@@ -41,7 +44,6 @@ export default function CompanyPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get company from localStorage
     const users = JSON.parse(localStorage.getItem("auth_users") || "[]");
     const foundCompany = users.find((u: any) => u.id === companyId && u.role === "employer");
     
@@ -59,12 +61,20 @@ export default function CompanyPage() {
         companyLinkedIn: foundCompany.companyLinkedIn,
       });
       
-      // Get company jobs
-      const allJobs = JSON.parse(localStorage.getItem("posted_jobs") || "[]");
-      const sampleJobs = JSON.parse(localStorage.getItem("sample_jobs") || "[]");
-      const all = [...allJobs, ...sampleJobs];
-      const companyJobs = all.filter((job: any) => job.postedBy === foundCompany.email);
-      setJobs(companyJobs);
+      // Get all jobs (static + posted)
+      const staticJobs = JSON.parse(localStorage.getItem("sample_jobs") || "[]");
+      const postedJobs = JSON.parse(localStorage.getItem("posted_jobs") || "[]");
+      const allJobs = [...staticJobs, ...postedJobs];
+      const companyJobs = allJobs.filter((job: any) => job.postedBy === foundCompany.email);
+      
+      // Ensure each job has required properties for JobCard
+      const formattedJobs = companyJobs.map((job: any) => ({
+        ...job,
+        companyLogo: job.companyLogo || job.company?.substring(0, 2).toUpperCase(),
+        companyLogoBgColor: job.companyLogoBgColor || "bg-gray-100 text-gray-700",
+      }));
+      
+      setJobs(formattedJobs);
     }
     setLoading(false);
   }, [companyId]);
@@ -93,16 +103,15 @@ export default function CompanyPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-6xl mx-auto px-4">
-        {/* Back button */}
         <Link href="/companies" className="text-gray-500 hover:text-gray-700 mb-6 inline-block">
           ← Back to companies
         </Link>
 
         {/* Company Header */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8">
+        <div className="bg-white rounded-xl border border-gray-300 overflow-hidden mb-8">
           <div className="p-6 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center gap-6">
-              <div className="w-24 h-24 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden">
+              <div className="w-24 h-24 rounded-xl bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">
                 {company.companyLogo ? (
                   <img src={company.companyLogo} alt={company.name} className="w-full h-full object-contain" />
                 ) : (
@@ -163,7 +172,7 @@ export default function CompanyPage() {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Jobs at {company.name}</h2>
         
         {jobs.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <div className="bg-white rounded-xl border border-gray-300 p-12 text-center">
             <p className="text-gray-500">No jobs posted yet.</p>
           </div>
         ) : (
