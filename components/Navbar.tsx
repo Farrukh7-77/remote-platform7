@@ -1,4 +1,4 @@
-// components/Navbar.tsx - Sign Up only when user is not logged in
+// components/Navbar.tsx - with animated mobile menu
 "use client";
 
 import Link from "next/link";
@@ -82,7 +82,6 @@ export default function Navbar() {
                 </Link>
               )}
               
-              {/* UserMenu - only show when user IS logged in */}
               {user && <UserMenu />}
             </div>
 
@@ -97,7 +96,8 @@ export default function Navbar() {
               <ThemeToggle />
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-gray-700 dark:text-gray-300 cursor-pointer"
+                className="text-gray-700 dark:text-gray-300 cursor-pointer p-2"
+                aria-label="Menu"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -106,9 +106,13 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Menu */}
-          {isMobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-800">
+          {/* Mobile Menu - with smooth animation */}
+          <div
+            className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+              isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
+            <div className="py-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
               {links.map((link) => (
                 <Link
                   key={link.href}
@@ -141,7 +145,7 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </nav>
 
