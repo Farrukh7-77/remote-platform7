@@ -1,11 +1,11 @@
-// app/page.tsx - Click outside closes any open accordion section
+// app/page.tsx - Shows both static and posted jobs
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { jobs } from "@/data/jobs";
+import { useState, useEffect } from "react";
+import { jobs as staticJobs, type Job } from "@/data/jobs";
 import JobCard from "@/components/JobCard";
 
-// SVG Icons
+// SVG Icons (same as before)
 const BriefcaseIcon = () => <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>;
 const FolderIcon = () => <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>;
 const GlobeIcon = () => <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
@@ -20,6 +20,7 @@ export default function HomePage() {
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
 
   const [openSections, setOpenSections] = useState({
     jobType: false,
@@ -29,7 +30,17 @@ export default function HomePage() {
     salary: false,
   });
 
-  // Load saved state
+  // Load static jobs + posted jobs from localStorage
+  useEffect(() => {
+    const postedJobs = JSON.parse(localStorage.getItem("posted_jobs") || "[]");
+    const combined = [...staticJobs, ...postedJobs];
+    // Remove duplicates by id (if any)
+    const unique = combined.filter((job, index, self) => 
+      index === self.findIndex((j) => j.id === job.id)
+    );
+    setAllJobs(unique);
+  }, []);
+
   useEffect(() => {
     const saved = localStorage.getItem("filterSections");
     if (saved) setOpenSections(JSON.parse(saved));
@@ -40,36 +51,6 @@ export default function HomePage() {
     setOpenSections(newState);
     localStorage.setItem("filterSections", JSON.stringify(newState));
   };
-
-  // Close all open sections when clicking outside
-  const filterContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      // If click is outside the filter container, close all open sections
-      if (filterContainerRef.current && !filterContainerRef.current.contains(event.target as Node)) {
-        // Only close if any section is open
-        if (Object.values(openSections).some(v => v === true)) {
-          setOpenSections({
-            jobType: false,
-            category: false,
-            country: false,
-            experience: false,
-            salary: false,
-          });
-          localStorage.setItem("filterSections", JSON.stringify({
-            jobType: false,
-            category: false,
-            country: false,
-            experience: false,
-            salary: false,
-          }));
-        }
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [openSections]);
 
   const jobTypes = ["Full-time", "Part-time", "Contract", "Remote", "Internship"];
   const categories = ["Design", "Engineering", "Marketing", "Writing", "Customer Support", "Sales"];
@@ -89,7 +70,7 @@ export default function HomePage() {
     setSearchTerm("");
   };
 
-  const filteredJobs = jobs
+  const filteredJobs = allJobs
     .filter((job) => {
       const matchSearch = searchTerm === "" ||
         job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -161,7 +142,7 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row gap-6">
           {/* FILTER SIDEBAR */}
-          <div ref={filterContainerRef} className={`${showFilters ? "block" : "hidden"} md:block md:w-72 md:ml-10`}>
+          <div className={`${showFilters ? "block" : "hidden"} md:block md:w-72 md:ml-10`}>
             <div className="bg-white rounded-xl border border-gray-500 shadow-sm p-4">
               <div className="relative flex justify-center items-center mb-4">
                 <h3 className="font-semibold text-gray-800 text-center">Filters</h3>

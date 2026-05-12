@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -11,6 +12,7 @@ type AuthModalProps = {
 };
 
 export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: AuthModalProps) {
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(!defaultIsSignUp);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,9 +48,16 @@ export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: 
     }
   };
 
+  // Handle Sign Up link click - redirect to register page
+  const handleSignUpClick = () => {
+    onClose(); // Close modal first
+    router.push("/register");
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      
       <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
         <button
           onClick={onClose}
@@ -56,17 +65,20 @@ export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: 
         >
           ✕
         </button>
+
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           {isLogin ? "Welcome Back" : "Create Account"}
         </h2>
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
           {isLogin ? "Sign in to continue" : "Join RemoteJobs to find your dream remote job"}
         </p>
+
         {error && (
           <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm">
             {error}
           </div>
         )}
+
         <form onSubmit={handleSubmit}>
           {!isLogin && (
             <div className="mb-4">
@@ -82,6 +94,7 @@ export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: 
               />
             </div>
           )}
+
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Email Address
@@ -94,6 +107,7 @@ export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: 
               required
             />
           </div>
+
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Password
@@ -109,6 +123,7 @@ export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: 
               <p className="text-xs text-gray-500 mt-1">Password must be at least 6 characters</p>
             )}
           </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -117,16 +132,26 @@ export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: 
             {loading ? "Loading..." : (isLogin ? "Sign In" : "Sign Up")}
           </button>
         </form>
+
         <div className="mt-4 text-center">
-          <button
-            onClick={() => {
-              setIsLogin(!isLogin);
-              setError("");
-            }}
-            className="text-sm text-blue-600 hover:text-blue-700 cursor-pointer"
-          >
-            {isLogin ? "Need an account? Sign Up" : "Already have an account? Sign In"}
-          </button>
+          {isLogin ? (
+            <button
+              onClick={handleSignUpClick}
+              className="text-sm text-blue-600 hover:text-blue-700 cursor-pointer"
+            >
+              Need an account? Sign Up
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setIsLogin(true);
+                setError("");
+              }}
+              className="text-sm text-blue-600 hover:text-blue-700 cursor-pointer"
+            >
+              Already have an account? Sign In
+            </button>
+          )}
         </div>
       </div>
     </div>

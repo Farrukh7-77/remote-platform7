@@ -1,4 +1,4 @@
-// components/UserMenu.tsx - Role-based menu
+// components/UserMenu.tsx - Sign Out has cursor-pointer
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -60,39 +60,39 @@ export default function UserMenu() {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
-          {/* Profile - hər kəs üçün */}
+          {/* Profile - always visible */}
           <Link
             href="/profile"
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
             onClick={() => setIsOpen(false)}
           >
             <span>👤</span> My Profile
           </Link>
 
-          {/* Employer-specific: Dashboard */}
+          {/* Dashboard - only for employers */}
           {isEmployer && (
             <Link
               href="/employer/dashboard"
-              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
               onClick={() => setIsOpen(false)}
             >
               <span>📊</span> Dashboard
             </Link>
           )}
 
-          {/* Job Seeker-specific: Saved Jobs & Applications */}
+          {/* Saved Jobs & Applications - only for job seekers */}
           {!isEmployer && (
             <>
               <Link
                 href="/saved-jobs"
-                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                 onClick={() => setIsOpen(false)}
               >
                 <span>📌</span> Saved Jobs
               </Link>
               <Link
                 href="/applications"
-                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                 onClick={() => setIsOpen(false)}
               >
                 <span>📋</span> My Applications
@@ -102,13 +102,13 @@ export default function UserMenu() {
 
           <hr className="my-1 border-gray-200 dark:border-gray-700" />
 
-          {/* Sign Out - hər kəs üçün */}
+          {/* Sign Out - with cursor-pointer */}
           <button
             onClick={() => {
               signOut();
               setIsOpen(false);
             }}
-            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
           >
             <span>🚪</span> Sign Out
           </button>

@@ -1,151 +1,185 @@
-// app/profile/page.tsx - fixed avatar upload
+// app/profile/page.tsx - All cards have borders
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function ProfilePage() {
-  const { user, updateUser } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [avatar, setAvatar] = useState("");
-  const [cvFile, setCvFile] = useState<File | null>(null);
-  const [cvName, setCvName] = useState("");
-  const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+
+  const [location, setLocation] = useState("");
+  const [bio, setBio] = useState("");
+  const [linkedin, setLinkedin] = useState("");
+  const [github, setGithub] = useState("");
+  const [portfolio, setPortfolio] = useState("");
+  const [jobStatus, setJobStatus] = useState("actively_looking");
+  const [cvFile, setCvFile] = useState<{ name: string; uploadedAt: string } | null>(null);
+  const [applicationCount, setApplicationCount] = useState(0);
+  const [savedJobsCount, setSavedJobsCount] = useState(0);
 
   useEffect(() => {
-    if (!user) {
-      router.push("/");
-      return;
-    }
-    setName(user.name || "");
-    setEmail(user.email || "");
-    setAvatar(user.avatar || "");
-    const savedCv = localStorage.getItem(`cv_${user.email}`);
-    if (savedCv) {
-      try {
-        const parsed = JSON.parse(savedCv);
-        setCvName(parsed.name);
-      } catch {
-        setCvName(savedCv);
-      }
-    }
-  }, [user, router]);
+    if (!loading && !user) router.push("/");
+  }, [user, loading, router]);
 
+  useEffect(() => {
+    if (user) {
+      setLocation(localStorage.getItem(`profile_location_${user.email}`) || "");
+      setBio(localStorage.getItem(`profile_bio_${user.email}`) || "");
+      setLinkedin(localStorage.getItem(`profile_linkedin_${user.email}`) || "");
+      setGithub(localStorage.getItem(`profile_github_${user.email}`) || "");
+      setPortfolio(localStorage.getItem(`profile_portfolio_${user.email}`) || "");
+      setJobStatus(localStorage.getItem(`profile_jobstatus_${user.email}`) || "actively_looking");
+      
+      const savedCv = localStorage.getItem(`cv_${user.email}`);
+      if (savedCv) {
+        try { setCvFile(JSON.parse(savedCv)); } catch { setCvFile({ name: savedCv, uploadedAt: new Date().toISOString() }); }
+      }
+      
+      const applications = JSON.parse(localStorage.getItem("applications") || "[]");
+      setApplicationCount(applications.filter((app: any) => app.applicantEmail === user.email).length);
+      
+      let savedCount = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("bookmark_") && localStorage.getItem(key) === "true") savedCount++;
+      }
+      setSavedJobsCount(savedCount);
+    }
+  }, [user]);
+
+  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-gray-500">Loading...</div></div>;
   if (!user) return null;
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setAvatar(base64);
-      };
-      reader.readAsDataURL(file);
-    }
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const diffDays = Math.floor((new Date().getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return "today";
+    if (diffDays === 1) return "yesterday";
+    return `${diffDays} days ago`;
   };
 
-  const handleCvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setCvFile(file);
-      setCvName(file.name);
-    }
-  };
-
-  const handleSaveProfile = async () => {
-    setIsLoading(true);
-    if (updateUser) {
-      await updateUser({ name, avatar });
-    }
-    if (cvFile) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        localStorage.setItem(`cv_${user.email}`, JSON.stringify({
-          name: cvFile.name,
-          data: reader.result,
-          uploadedAt: new Date().toISOString()
-        }));
-        setMessage("✅ Profile and CV saved successfully!");
-        setTimeout(() => setMessage(""), 3000);
-      };
-      reader.readAsDataURL(cvFile);
-    } else {
-      setMessage("✅ Profile updated!");
-      setTimeout(() => setMessage(""), 3000);
-    }
-    setIsLoading(false);
+  const jobStatusLabels = {
+    actively_looking: { label: "Actively looking", color: "bg-green-100 text-green-700" },
+    open_to_offers: { label: "Open to offers", color: "bg-blue-100 text-blue-700" },
+    not_looking: { label: "Not looking", color: "bg-gray-100 text-gray-700" },
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-2xl mx-auto px-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">My Profile</h1>
+      <div className="max-w-4xl mx-auto px-4">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+          <Link href="/profile/edit" className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 cursor-pointer">
+            ✏️ Edit Profile
+          </Link>
+        </div>
 
-        {message && (
-          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-sm">
-            {message}
-          </div>
-        )}
-
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
-          {/* Avatar */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                {avatar ? (
-                  <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-3xl">👤</span>
-                )}
+        {/* Header Card - WITH BORDER */}
+        <div className="bg-white rounded-xl border border-gray-400 overflow-hidden mb-6">
+          <div className="p-6 bg-white">
+            <div className="flex items-center gap-6">
+              <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-300">
+                {user.avatar ? <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" /> : <span className="text-4xl">👤</span>}
               </div>
-              <input type="file" accept="image/*" onChange={handleAvatarUpload} className="text-sm" />
+              <div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
+                  <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">Job Seeker</span>
+                  <span className={`px-2 py-1 text-xs rounded-full ${jobStatusLabels[jobStatus]?.color}`}>{jobStatusLabels[jobStatus]?.label}</span>
+                </div>
+                <p className="text-gray-500 mt-1">{user.email}</p>
+                {location && <p className="text-gray-500 text-sm mt-1">📍 {location}</p>}
+              </div>
             </div>
-            <p className="text-xs text-gray-400 mt-2">Upload a profile picture (optional)</p>
           </div>
+        </div>
 
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
-            />
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-            <input
-              type="email"
-              value={email}
-              disabled
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500"
-            />
-          </div>
-
-          {/* CV Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">CV / Resume</label>
-            <input type="file" accept=".pdf,.doc,.docx" onChange={handleCvUpload} className="w-full text-sm" />
-            {cvName && <p className="text-xs text-green-600 mt-1">📄 Current: {cvName}</p>}
-          </div>
-
-          {/* Save Button */}
-          <button
-            onClick={handleSaveProfile}
-            disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            {isLoading ? "Saving..." : "Save Profile"}
+        {/* Statistics Cards - WITH BORDER */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <button onClick={() => router.push("/applications")} className="bg-white rounded-xl border border-gray-400 p-4 text-center hover:shadow-md transition cursor-pointer">
+            <div className="text-2xl font-bold text-blue-600">{applicationCount}</div>
+            <div className="text-sm text-gray-600">Applications sent</div>
           </button>
+          <button onClick={() => router.push("/saved-jobs")} className="bg-white rounded-xl border border-gray-400 p-4 text-center hover:shadow-md transition cursor-pointer">
+            <div className="text-2xl font-bold text-blue-600">{savedJobsCount}</div>
+            <div className="text-sm text-gray-600">Saved jobs</div>
+          </button>
+        </div>
+
+        {/* Personal Info - WITH BORDER */}
+        <div className="bg-white rounded-xl border border-gray-400 overflow-hidden mb-6">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h3 className="font-semibold text-gray-900">Personal Info</h3>
+          </div>
+          <div className="p-6 space-y-4">
+            <div><label className="block text-sm font-medium text-gray-500">Full Name</label><p className="text-gray-900">{user.name}</p></div>
+            <div><label className="block text-sm font-medium text-gray-500">Email Address</label><p className="text-gray-900">{user.email}</p></div>
+            <div><label className="block text-sm font-medium text-gray-500">Location</label><p className="text-gray-900">{location || "Not specified"}</p></div>
+            <div><label className="block text-sm font-medium text-gray-500">Job seeking status</label><p className="text-gray-900">{jobStatusLabels[jobStatus]?.label}</p></div>
+            <div><label className="block text-sm font-medium text-gray-500">Bio</label><p className="text-gray-700">{bio || "No bio added yet."}</p></div>
+          </div>
+        </div>
+
+        {/* Links - WITH BORDER */}
+        <div className="bg-white rounded-xl border border-gray-400 overflow-hidden mb-6">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h3 className="font-semibold text-gray-900">Links</h3>
+          </div>
+          <div className="p-6 space-y-3">
+            {linkedin && <div><label className="block text-sm font-medium text-gray-500">LinkedIn</label><a href={linkedin} target="_blank" className="text-blue-600 hover:underline break-all">{linkedin}</a></div>}
+            {github && <div><label className="block text-sm font-medium text-gray-500">GitHub</label><a href={github} target="_blank" className="text-blue-600 hover:underline break-all">{github}</a></div>}
+            {portfolio && <div><label className="block text-sm font-medium text-gray-500">Portfolio</label><a href={portfolio} target="_blank" className="text-blue-600 hover:underline break-all">{portfolio}</a></div>}
+            {!linkedin && !github && !portfolio && <p className="text-gray-400">No links added yet.</p>}
+          </div>
+        </div>
+
+        {/* Resume - WITH BORDER */}
+        <div className="bg-white rounded-xl border border-gray-400 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h3 className="font-semibold text-gray-900">Resume</h3>
+          </div>
+          <div className="p-6">
+            {cvFile ? (
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">📄</span>
+                  <div>
+                    <p className="font-medium text-gray-900">{cvFile.name}</p>
+                    <p className="text-xs text-gray-400">Uploaded {formatDate(cvFile.uploadedAt)}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => {
+                    const savedCv = localStorage.getItem(`cv_${user.email}`);
+                    if (savedCv) {
+                      try {
+                        const parsed = JSON.parse(savedCv);
+                        const byteCharacters = atob(parsed.data.split(',')[1]);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = parsed.name;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      } catch { alert("Download not available"); }
+                    }
+                  }}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors cursor-pointer"
+                >
+                  Download CV
+                </button>
+              </div>
+            ) : (
+              <p className="text-gray-400">No CV uploaded yet.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
