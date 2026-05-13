@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import ForgotPasswordModal from "./ForgotPasswordModal";
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -12,13 +12,13 @@ type AuthModalProps = {
 };
 
 export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: AuthModalProps) {
-  const router = useRouter();
   const [isLogin, setIsLogin] = useState(!defaultIsSignUp);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   
   const { signIn, signUp } = useAuth();
 
@@ -48,112 +48,123 @@ export default function AuthModal({ isOpen, onClose, defaultIsSignUp = false }: 
     }
   };
 
-  // Handle Sign Up link click - redirect to register page
-  const handleSignUpClick = () => {
-    onClose(); // Close modal first
-    router.push("/register");
+  const handleBackToSignIn = () => {
+    setIsForgotPasswordOpen(false);
+    setIsLogin(true);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      
-      <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
-        >
-          ✕
-        </button>
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+        
+        <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
+          >
+            ✕
+          </button>
 
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          {isLogin ? "Welcome Back" : "Create Account"}
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
-          {isLogin ? "Sign in to continue" : "Join RemoteJobs to find your dream remote job"}
-        </p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            {isLogin ? "Welcome Back" : "Create Account"}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
+            {isLogin ? "Sign in to continue" : "Join RemoteJobs to find your dream remote job"}
+          </p>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit}>
-          {!isLogin && (
+          <form onSubmit={handleSubmit}>
+            {!isLogin && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  required
+                />
+              </div>
+            )}
+
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Full Name
+                Email Address
               </label>
               <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 required
               />
             </div>
-          )}
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              required
-            />
-          </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                required
+              />
+              {!isLogin && (
+                <p className="text-xs text-gray-500 mt-1">Password must be at least 6 characters</p>
+              )}
+            </div>
 
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              required
-            />
-            {!isLogin && (
-              <p className="text-xs text-gray-500 mt-1">Password must be at least 6 characters</p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            {loading ? "Loading..." : (isLogin ? "Sign In" : "Sign Up")}
-          </button>
-        </form>
-
-        <div className="mt-4 text-center">
-          {isLogin ? (
             <button
-              onClick={handleSignUpClick}
-              className="text-sm text-blue-600 hover:text-blue-700 cursor-pointer"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
             >
-              Need an account? Sign Up
+              {loading ? "Loading..." : (isLogin ? "Sign In" : "Sign Up")}
             </button>
-          ) : (
+          </form>
+
+          <div className="mt-4 text-center">
+            {/* Forgot password link - only shown on login mode */}
+            {isLogin && (
+              <div className="mb-2">
+                <button
+                  onClick={() => setIsForgotPasswordOpen(true)}
+                  className="text-sm text-gray-500 hover:text-blue-600 cursor-pointer"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
+            
             <button
               onClick={() => {
-                setIsLogin(true);
+                setIsLogin(!isLogin);
                 setError("");
               }}
               className="text-sm text-blue-600 hover:text-blue-700 cursor-pointer"
             >
-              Already have an account? Sign In
+              {isLogin ? "Need an account? Sign Up" : "Already have an account? Sign In"}
             </button>
-          )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={isForgotPasswordOpen}
+        onClose={() => setIsForgotPasswordOpen(false)}
+        onBackToSignIn={handleBackToSignIn}
+      />
+    </>
   );
 }
