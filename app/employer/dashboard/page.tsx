@@ -52,7 +52,7 @@ export default function EmployerDashboard() {
         </div>
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{user.companyName || user.name}</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{user.company_name || user.name}</h2>
           <p className="text-gray-600">{user.email}</p>
         </div>
 
