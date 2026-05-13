@@ -74,8 +74,14 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Company Profile</h1>
-            <Link href="/profile/edit" className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2">
-              ✏️ Edit Profile
+            <Link
+              href="/profile/edit"
+              className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all flex items-center gap-2 shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              Edit Profile
             </Link>
           </div>
 
@@ -151,7 +157,15 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-          <Link href="/profile/edit" className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2">✏️ Edit Profile</Link>
+          <Link
+            href="/profile/edit"
+            className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all flex items-center gap-2 shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+            Edit Profile
+          </Link>
         </div>
 
         {/* Header Card */}
@@ -239,9 +253,9 @@ export default function ProfilePage() {
                         const byteCharacters = atob(parsed.data.split(',')[1]);
                         const byteNumbers = new Array(byteCharacters.length);
                         for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
-                        const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
+                        const blob = new Blob([new Uint8Array(byteNumbers)], { type: "application/pdf" });
                         const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
+                        const a = document.createElement("a");
                         a.href = url;
                         a.download = parsed.name;
                         a.click();
