@@ -6,14 +6,18 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 export type UserRole = "job_seeker" | "employer";
 
 export type User = {
-  id: string;
+  id: number;
   email: string;
   name: string;
   role: UserRole;
   avatar?: string;
-  companyName?: string;
-  companyWebsite?: string;
-  companyLogo?: string;
+  company_name?: string;
+  company_website?: string;
+  company_description?: string;
+  company_location?: string;
+  company_size?: string;
+  company_industry?: string;
+  company_linkedin?: string;
 };
 
 type AuthContextType = {
@@ -22,7 +26,7 @@ type AuthContextType = {
   signUp: (email: string, password: string, name: string, role: UserRole, companyName?: string) => Promise<{ success: boolean; error?: string }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => void;
-  updateUser: (data: Partial<User>) => Promise<void>;
+  updateUser: (updates: Partial<User>) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,50 +44,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, name: string, role: UserRole, companyName?: string) => {
-    if (!email || !password || !name) {
-      return { success: false, error: "All fields are required" };
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name, role, companyName }),
+      });
+      const data = await response.json();
+      if (!response.ok) return { success: false, error: data.error };
+      setUser(data.user);
+      localStorage.setItem("auth_user", JSON.stringify(data.user));
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: "Registration failed" };
     }
-    if (password.length < 6) {
-      return { success: false, error: "Password must be at least 6 characters" };
-    }
-
-    const users = JSON.parse(localStorage.getItem("auth_users") || "[]");
-    if (users.find((u: any) => u.email === email)) {
-      return { success: false, error: "User already exists" };
-    }
-
-    const newUser = {
-      id: Date.now().toString(),
-      email,
-      password,
-      name,
-      role,
-      avatar: "",
-      ...(role === "employer" && { companyName: companyName || name }),
-    };
-    users.push(newUser);
-    localStorage.setItem("auth_users", JSON.stringify(users));
-
-    const { password: _, ...userWithoutPassword } = newUser;
-    setUser(userWithoutPassword);
-    localStorage.setItem("auth_user", JSON.stringify(userWithoutPassword));
-
-    return { success: true };
   };
 
   const signIn = async (email: string, password: string) => {
-    const users = JSON.parse(localStorage.getItem("auth_users") || "[]");
-    const foundUser = users.find((u: any) => u.email === email && u.password === password);
-
-    if (!foundUser) {
-      return { success: false, error: "Invalid email or password" };
+    try {
+      const response = await fetch("/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (!response.ok) return { success: false, error: data.error };
+      setUser(data.user);
+      localStorage.setItem("auth_user", JSON.stringify(data.user));
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: "Login failed" };
     }
-
-    const { password: _, ...userWithoutPassword } = foundUser;
-    setUser(userWithoutPassword);
-    localStorage.setItem("auth_user", JSON.stringify(userWithoutPassword));
-
-    return { success: true };
   };
 
   const signOut = () => {
@@ -91,18 +82,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("auth_user");
   };
 
-  const updateUser = async (data: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...data };
-      setUser(updatedUser);
-      localStorage.setItem("auth_user", JSON.stringify(updatedUser));
-
-      const users = JSON.parse(localStorage.getItem("auth_users") || "[]");
-      const index = users.findIndex((u: any) => u.email === user.email);
-      if (index !== -1) {
-        users[index] = { ...users[index], ...data };
-        localStorage.setItem("auth_users", JSON.stringify(users));
+  const updateUser = async (updates: Partial<User>) => {
+    if (!user) return;
+    try {
+      const response = await fetch("/api/auth/update-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, updates }),
+      });
+      const data = await response.json();
+      if (response.ok && data.user) {
+        const updatedUser = { ...data.user, avatar: updates.avatar || data.user.avatar };
+        setUser(updatedUser);
+        localStorage.setItem("auth_user", JSON.stringify(updatedUser));
       }
+    } catch (error) {
+      console.error("Update failed:", error);
     }
   };
 
@@ -115,8 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (context === undefined) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }

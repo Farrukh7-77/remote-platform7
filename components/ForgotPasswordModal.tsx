@@ -28,7 +28,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToSignIn }:
     setMessage("");
 
     try {
-      const response = await fetch("/api/send-reset-email", {
+      const response = await fetch("/api/auth/send-reset-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
