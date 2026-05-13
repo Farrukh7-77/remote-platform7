@@ -1,4 +1,4 @@
-// components/Navbar.tsx - Mobile menu UserMenu fix
+// components/Navbar.tsx - Mobile menu UserMenu fix with signOut
 "use client";
 
 import Link from "next/link";
@@ -12,7 +12,7 @@ import AuthModal from "./AuthModal";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth(); // ← signOut buradan gəlir
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isJobAlertModalOpen, setIsJobAlertModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
