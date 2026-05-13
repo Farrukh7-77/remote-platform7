@@ -1,4 +1,4 @@
-// app/profile/page.tsx - All cards have borders
+// app/profile/page.tsx
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
@@ -15,7 +15,7 @@ export default function ProfilePage() {
   const [linkedin, setLinkedin] = useState("");
   const [github, setGithub] = useState("");
   const [portfolio, setPortfolio] = useState("");
-  const [jobStatus, setJobStatus] = useState<"actively_looking" | "open_to_offers" | "not_looking">("actively_looking");
+  const [jobStatus, setJobStatus] = useState("actively_looking");
   const [cvFile, setCvFile] = useState<{ name: string; uploadedAt: string } | null>(null);
   const [applicationCount, setApplicationCount] = useState(0);
   const [savedJobsCount, setSavedJobsCount] = useState(0);
@@ -25,13 +25,13 @@ export default function ProfilePage() {
   }, [user, loading, router]);
 
   useEffect(() => {
-    if (user) {
+    if (user && user.role === "job_seeker") {
       setLocation(localStorage.getItem(`profile_location_${user.email}`) || "");
       setBio(localStorage.getItem(`profile_bio_${user.email}`) || "");
       setLinkedin(localStorage.getItem(`profile_linkedin_${user.email}`) || "");
       setGithub(localStorage.getItem(`profile_github_${user.email}`) || "");
       setPortfolio(localStorage.getItem(`profile_portfolio_${user.email}`) || "");
-      setJobStatus((localStorage.getItem(`profile_jobstatus_${user.email}`) || "actively_looking") as "actively_looking" | "open_to_offers" | "not_looking");
+      setJobStatus(localStorage.getItem(`profile_jobstatus_${user.email}`) || "actively_looking");
       
       const savedCv = localStorage.getItem(`cv_${user.email}`);
       if (savedCv) {
@@ -61,24 +61,100 @@ export default function ProfilePage() {
     return `${diffDays} days ago`;
   };
 
-  const jobStatusLabels = {
+  const jobStatusLabels: Record<string, { label: string; color: string }> = {
     actively_looking: { label: "Actively looking", color: "bg-green-100 text-green-700" },
     open_to_offers: { label: "Open to offers", color: "bg-blue-100 text-blue-700" },
     not_looking: { label: "Not looking", color: "bg-gray-100 text-gray-700" },
   };
 
+  // İŞƏGÖTÜRƏN (EMPLOYER) PROFİLİ
+  if (user.role === "employer") {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Company Profile</h1>
+            <Link href="/profile/edit" className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2">
+              ✏️ Edit Profile
+            </Link>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-300 overflow-hidden">
+            <div className="p-6 border-b border-gray-200 bg-gray-50">
+              <div className="flex items-center gap-6">
+                <div className="w-24 h-24 rounded-xl bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">
+                  {(user as any).companyLogo ? (
+                    <img src={(user as any).companyLogo} alt="Logo" className="w-full h-full object-contain" />
+                  ) : (
+                    <span className="text-4xl">🏢</span>
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">{user.companyName || user.name}</h2>
+                  <p className="text-gray-500 mt-1">{user.email}</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-500">Industry</label>
+                  <p className="text-gray-900">{(user as any).companyIndustry || "Not specified"}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-500">Company Size</label>
+                  <p className="text-gray-900">{(user as any).companySize || "Not specified"} employees</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-500">Location</label>
+                  <p className="text-gray-900">{(user as any).companyLocation || "Not specified"}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-500">Contact Person</label>
+                  <p className="text-gray-900">{user.name}</p>
+                </div>
+                {(user as any).companyWebsite && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">Website</label>
+                    <a href={(user as any).companyWebsite} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      {(user as any).companyWebsite}
+                    </a>
+                  </div>
+                )}
+                {(user as any).companyLinkedIn && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-500">LinkedIn</label>
+                    <a href={(user as any).companyLinkedIn} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      LinkedIn Page
+                    </a>
+                  </div>
+                )}
+              </div>
+              {(user as any).companyDescription && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">About the Company</label>
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <p className="text-gray-700 whitespace-pre-wrap">{(user as any).companyDescription}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // İŞ AXATARAN (JOB SEEKER) PROFİLİ
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-          <Link href="/profile/edit" className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 cursor-pointer">
-            ✏️ Edit Profile
-          </Link>
+          <Link href="/profile/edit" className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2">✏️ Edit Profile</Link>
         </div>
 
-        {/* Header Card - WITH BORDER */}
+        {/* Header Card */}
         <div className="bg-white rounded-xl border border-gray-400 overflow-hidden mb-6">
           <div className="p-6 bg-white">
             <div className="flex items-center gap-6">
@@ -89,7 +165,9 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-3 flex-wrap">
                   <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
                   <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">Job Seeker</span>
-                  <span className={`px-2 py-1 text-xs rounded-full ${jobStatusLabels[jobStatus]?.color}`}>{jobStatusLabels[jobStatus]?.label}</span>
+                  <span className={`px-2 py-1 text-xs rounded-full ${jobStatusLabels[jobStatus]?.color || "bg-gray-100 text-gray-700"}`}>
+                    {jobStatusLabels[jobStatus]?.label || "Open to offers"}
+                  </span>
                 </div>
                 <p className="text-gray-500 mt-1">{user.email}</p>
                 {location && <p className="text-gray-500 text-sm mt-1">📍 {location}</p>}
@@ -98,7 +176,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Statistics Cards - WITH BORDER */}
+        {/* Statistics Cards */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <button onClick={() => router.push("/applications")} className="bg-white rounded-xl border border-gray-400 p-4 text-center hover:shadow-md transition cursor-pointer">
             <div className="text-2xl font-bold text-blue-600">{applicationCount}</div>
@@ -110,7 +188,7 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        {/* Personal Info - WITH BORDER */}
+        {/* Personal Info */}
         <div className="bg-white rounded-xl border border-gray-400 overflow-hidden mb-6">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <h3 className="font-semibold text-gray-900">Personal Info</h3>
@@ -119,12 +197,12 @@ export default function ProfilePage() {
             <div><label className="block text-sm font-medium text-gray-500">Full Name</label><p className="text-gray-900">{user.name}</p></div>
             <div><label className="block text-sm font-medium text-gray-500">Email Address</label><p className="text-gray-900">{user.email}</p></div>
             <div><label className="block text-sm font-medium text-gray-500">Location</label><p className="text-gray-900">{location || "Not specified"}</p></div>
-            <div><label className="block text-sm font-medium text-gray-500">Job seeking status</label><p className="text-gray-900">{jobStatusLabels[jobStatus]?.label}</p></div>
+            <div><label className="block text-sm font-medium text-gray-500">Job seeking status</label><p className="text-gray-900">{jobStatusLabels[jobStatus]?.label || "Open to offers"}</p></div>
             <div><label className="block text-sm font-medium text-gray-500">Bio</label><p className="text-gray-700">{bio || "No bio added yet."}</p></div>
           </div>
         </div>
 
-        {/* Links - WITH BORDER */}
+        {/* Links */}
         <div className="bg-white rounded-xl border border-gray-400 overflow-hidden mb-6">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <h3 className="font-semibold text-gray-900">Links</h3>
@@ -137,7 +215,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Resume - WITH BORDER */}
+        {/* Resume */}
         <div className="bg-white rounded-xl border border-gray-400 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <h3 className="font-semibold text-gray-900">Resume</h3>
@@ -171,7 +249,7 @@ export default function ProfilePage() {
                       } catch { alert("Download not available"); }
                     }
                   }}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors cursor-pointer"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg cursor-pointer"
                 >
                   Download CV
                 </button>
