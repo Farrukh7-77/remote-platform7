@@ -1,4 +1,4 @@
-// components/Navbar.tsx - Mobile menu fully fixed
+// components/Navbar.tsx - Both mobile and desktop working
 "use client";
 
 import Link from "next/link";
@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import AuthModal from "./AuthModal";
 import JobAlertModal from "./JobAlertModal";
+import UserMenu from "./UserMenu";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -15,6 +16,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isJobAlertModalOpen, setIsJobAlertModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isMobileUserMenuOpen, setIsMobileUserMenuOpen] = useState(false);
 
   const links = [
     { href: "/", label: "Home" },
@@ -71,6 +73,8 @@ export default function Navbar() {
                 <span>🔔</span> Alerts
               </button>
               <ThemeToggle />
+              
+              {/* Desktop User Menu - using UserMenu component */}
               {!user ? (
                 <>
                   <button
@@ -87,15 +91,7 @@ export default function Navbar() {
                   </Link>
                 </>
               ) : (
-                <div className="relative">
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
-                    <span>👤</span>
-                    <span className="text-sm font-medium">{user.name}</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                </div>
+                <UserMenu />
               )}
             </div>
 
@@ -120,13 +116,13 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Menu - ALL LINKS VISIBLE */}
+          {/* Mobile Menu - white background */}
           <div
             className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
               isMobileMenuOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
             }`}
           >
-            <div className="py-4 border-t border-gray-200 dark:border-gray-800 space-y-3">
+            <div className="py-4 border-t border-gray-200 dark:border-gray-800 space-y-2 bg-white dark:bg-gray-900">
               {links.map((link) => (
                 <Link
                   key={link.href}
@@ -166,56 +162,68 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  {/* Profile section */}
-                  <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
-                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Account</p>
-                    <Link
-                      href="/profile"
-                      className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      👤 My Profile
-                    </Link>
-                    {isEmployer ? (
+                  {/* Mobile user menu - click to toggle dropdown */}
+                  <button
+                    onClick={() => setIsMobileUserMenuOpen(!isMobileUserMenuOpen)}
+                    className="w-full flex justify-between items-center py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>👤</span> {user.name}
+                    </span>
+                    <svg className={`w-4 h-4 transition-transform ${isMobileUserMenuOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {/* Mobile dropdown menu - white background */}
+                  {isMobileUserMenuOpen && (
+                    <div className="pl-6 space-y-2 mt-1 bg-white dark:bg-gray-900">
                       <Link
-                        href="/employer/dashboard"
+                        href="/profile"
                         className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        📊 Dashboard
+                        👤 My Profile
                       </Link>
-                    ) : (
-                      <>
+                      {isEmployer ? (
                         <Link
-                          href="/saved-jobs"
+                          href="/employer/dashboard"
                           className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          📌 Saved Jobs
+                          📊 Dashboard
                         </Link>
-                        <Link
-                          href="/applications"
-                          className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
-                          onClick={() => setIsMobileMenuOpen(false)}
+                      ) : (
+                        <>
+                          <Link
+                            href="/saved-jobs"
+                            className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            📌 Saved Jobs
+                          </Link>
+                          <Link
+                            href="/applications"
+                            className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            📋 My Applications
+                          </Link>
+                        </>
+                      )}
+                      <div className="pt-1">
+                        <button
+                          onClick={() => {
+                            signOut();
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="block w-full text-left py-2 text-red-600 hover:text-red-700 cursor-pointer"
                         >
-                          📋 My Applications
-                        </Link>
-                      </>
-                    )}
-                  </div>
-                  
-                  {/* Sign Out */}
-                  <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
-                    <button
-                      onClick={() => {
-                        signOut();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="block w-full text-left py-2 text-red-600 hover:text-red-700 cursor-pointer"
-                    >
-                      🚪 Sign Out
-                    </button>
-                  </div>
+                          🚪 Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -223,16 +231,8 @@ export default function Navbar() {
         </div>
       </nav>
 
-      <JobAlertModal 
-        isOpen={isJobAlertModalOpen} 
-        onClose={() => setIsJobAlertModalOpen(false)}
-        filters={currentFilters}
-      />
-
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)}
-      />
+      <JobAlertModal isOpen={isJobAlertModalOpen} onClose={() => setIsJobAlertModalOpen(false)} filters={currentFilters} />
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </>
   );
 }
