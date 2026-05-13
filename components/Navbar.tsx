@@ -1,4 +1,4 @@
-// components/Navbar.tsx - with Sign In and Sign Up buttons
+// components/Navbar.tsx - Mobile menu UserMenu fix
 "use client";
 
 import Link from "next/link";
@@ -16,6 +16,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isJobAlertModalOpen, setIsJobAlertModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isMobileUserMenuOpen, setIsMobileUserMenuOpen] = useState(false);
 
   const links = [
     { href: "/", label: "Home" },
@@ -31,6 +32,8 @@ export default function Navbar() {
     selectedLocation: "all",
     experienceLevel: "all",
   };
+
+  const isEmployer = user?.role === "employer";
 
   return (
     <>
@@ -74,19 +77,14 @@ export default function Navbar() {
               
               <ThemeToggle />
               
-              {/* If user is logged in - show UserMenu */}
-              {user ? (
-                <UserMenu />
-              ) : (
+              {!user && (
                 <>
-                  {/* Sign In button */}
                   <button
                     onClick={() => setIsAuthModalOpen(true)}
                     className="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                   >
                     Sign In
                   </button>
-                  {/* Sign Up button */}
                   <Link
                     href="/register"
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
@@ -95,6 +93,8 @@ export default function Navbar() {
                   </Link>
                 </>
               )}
+              
+              {user && <UserMenu />}
             </div>
 
             {/* Mobile Menu Button */}
@@ -142,6 +142,7 @@ export default function Navbar() {
               >
                 Post a Job
               </Link>
+              
               {!user ? (
                 <>
                   <button
@@ -162,8 +163,67 @@ export default function Navbar() {
                   </Link>
                 </>
               ) : (
-                <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-800">
-                  <UserMenu />
+                // Mobile User Menu - click to expand/collapse
+                <div className="pt-2">
+                  <button
+                    onClick={() => setIsMobileUserMenuOpen(!isMobileUserMenuOpen)}
+                    className="w-full flex justify-between items-center py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>👤</span> {user.name}
+                    </span>
+                    <svg className={`w-4 h-4 transition-transform ${isMobileUserMenuOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {isMobileUserMenuOpen && (
+                    <div className="pl-6 space-y-2 mt-2">
+                      <Link
+                        href="/profile"
+                        className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        👤 My Profile
+                      </Link>
+                      {isEmployer ? (
+                        <Link
+                          href="/employer/dashboard"
+                          className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          📊 Dashboard
+                        </Link>
+                      ) : (
+                        <>
+                          <Link
+                            href="/saved-jobs"
+                            className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            📌 Saved Jobs
+                          </Link>
+                          <Link
+                            href="/applications"
+                            className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            📋 My Applications
+                          </Link>
+                        </>
+                      )}
+                      <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                      <button
+                        onClick={() => {
+                          signOut();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="block w-full text-left py-2 text-red-600 hover:text-red-700 cursor-pointer"
+                      >
+                        🚪 Sign Out
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
