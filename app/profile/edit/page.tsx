@@ -63,14 +63,14 @@ export default function EditProfilePage() {
       }
     } else {
       // Load Employer data
-      setCompanyName(user.companyName || "");
-      setCompanyWebsite((user as any).companyWebsite || "");
-      setCompanyDescription((user as any).companyDescription || "");
-      setCompanyLocation((user as any).companyLocation || "");
-      setCompanySize((user as any).companySize || "");
-      setCompanyIndustry((user as any).companyIndustry || "");
-      setCompanyLinkedIn((user as any).companyLinkedIn || "");
-      setCompanyLogo((user as any).companyLogo || "");
+      setCompanyName(user.company_name || "");
+      setCompanyWebsite((user as any).company_website || "");
+      setCompanyDescription((user as any).company_description || "");
+      setCompanyLocation((user as any).company_location || "");
+      setCompanySize((user as any).company_size || "");
+      setCompanyIndustry((user as any).company_industry || "");
+      setCompanyLinkedIn((user as any).company_linkedin || "");
+      setCompanyLogo((user as any).company_logo || "");
     }
   }, [user, router]);
 
@@ -121,14 +121,14 @@ export default function EditProfilePage() {
         await updateUser({
           name,
           avatar: companyLogo,
-          companyName,
-          companyWebsite,
-          companyLogo,
-          companyDescription,
-          companyLocation,
-          companySize,
-          companyIndustry,
-          companyLinkedIn,
+          company_name: companyName,
+          company_website: companyWebsite,
+          company_logo: companyLogo,
+          company_description: companyDescription,
+          company_location: companyLocation,
+          company_size: companySize,
+          company_industry: companyIndustry,
+          company_linkedin: companyLinkedIn,
         } as any);
       } else {
         await updateUser({ name, avatar });
@@ -240,7 +240,7 @@ export default function EditProfilePage() {
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Location (City, Country)</label><input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Istanbul, Turkey" className="w-full px-4 py-2 border border-gray-300 rounded-lg" /></div>
 
               {/* Bio */}
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Bio / About You</label><textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Tell employers about yourself, your experience, and what you're looking for..." className="w-full px-4 py-2 border border-gray-300 rounded-lg" /></div>
+              <div><label className="block text-sm font-medium text-gray-700 mb-1">Bio / About You</label><textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Tell employers about yourself..." className="w-full px-4 py-2 border border-gray-300 rounded-lg" /></div>
 
               {/* Job Status */}
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Job Seeking Status</label><select value={jobStatus} onChange={(e) => setJobStatus(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg"><option value="actively_looking">Actively looking</option><option value="open_to_offers">Open to offers</option><option value="not_looking">Not looking</option></select></div>
@@ -251,7 +251,7 @@ export default function EditProfilePage() {
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Portfolio / Personal Website</label><input type="url" value={portfolio} onChange={(e) => setPortfolio(e.target.value)} placeholder="https://yourportfolio.com" className="w-full px-4 py-2 border border-gray-300 rounded-lg" /></div>
 
               {/* CV */}
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">CV / Resume</label><FileInput accept=".pdf,.doc,.docx" onChange={handleCvUpload} fileName={cvName} label="Choose CV" /><p className="text-xs text-gray-400 mt-1">PDF or DOC files only</p></div>
+              <div><label className="block text-sm font-medium text-gray-700 mb-1">CV / Resume</label><FileInput accept=".pdf,.doc,.docx" onChange={handleCvUpload} fileName={cvName} label="Choose CV" /></div>
             </>
           )}
 
