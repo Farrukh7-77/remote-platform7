@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   try {
     const { email, updates } = await request.json();
 
-    const allowedFields = ["name", "avatar", "company_name", "company_website", "company_description", "company_location", "company_size", "company_industry", "company_linkedin"];
+    const allowedFields = ["name", "avatar", "company_name", "company_website", "company_description", "company_location", "company_size", "company_industry", "company_linkedin", "company_logo"];
     const setClauses = [];
     const values = [];
     let i = 1;
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     }
 
     values.push(email);
-    const query = `UPDATE users SET ${setClauses.join(", ")} WHERE email = $${i} RETURNING id, email, name, role, company_name, avatar, company_website, company_description, company_location, company_size, company_industry, company_linkedin`;
+    const query = `UPDATE users SET ${setClauses.join(", ")} WHERE email = $${i} RETURNING id, email, name, role, company_name, avatar, company_website, company_description, company_location, company_size, company_industry, company_linkedin, company_logo`;
     const result = await pool.query(query, values);
 
     return NextResponse.json({ success: true, user: result.rows[0] });

@@ -7,7 +7,9 @@ export async function POST(request: Request) {
     const { email, password } = await request.json();
 
     const result = await pool.query(
-      `SELECT id, email, name, role, company_name, avatar 
+      `SELECT id, email, name, role, company_name, avatar, 
+              company_website, company_description, company_location, 
+              company_size, company_industry, company_linkedin 
        FROM users WHERE email = $1 AND password = $2`,
       [email, password]
     );
