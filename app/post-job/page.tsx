@@ -1,4 +1,4 @@
-// app/post-job/page.tsx - redirect to /register?role=employer
+// app/post-job/page.tsx
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
@@ -47,10 +47,7 @@ export default function PostJobPage() {
             </button>
           </div>
         </div>
-        <AuthModal 
-          isOpen={isAuthModalOpen} 
-          onClose={() => setIsAuthModalOpen(false)}
-        />
+        <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       </div>
     );
   }
@@ -99,8 +96,8 @@ export default function PostJobPage() {
       salaryMin: parseInt(formData.salaryMin),
       salaryMax: parseInt(formData.salaryMax),
       requirements: formData.requirements.split(",").map(r => r.trim()),
-      company: user.companyName || user.name,
-      companyLogo: (user.companyName || user.name).substring(0, 2).toUpperCase(),
+      company: user.company_name || user.name,
+      companyLogo: (user.company_name || user.name).substring(0, 2).toUpperCase(),
       companyLogoBgColor: "bg-gray-100 text-gray-700",
       postedAt: new Date().toISOString(),
       featured: false,
