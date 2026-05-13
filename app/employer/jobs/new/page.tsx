@@ -42,8 +42,8 @@ export default function PostJobPage() {
       salaryMin: parseInt(formData.salaryMin),
       salaryMax: parseInt(formData.salaryMax),
       requirements: formData.requirements.split(",").map(r => r.trim()),
-      company: user.companyName || user.name,
-      companyLogo: user.companyName?.substring(0, 2).toUpperCase() || user.name.substring(0, 2).toUpperCase(),
+      company: user.company_name || user.name,
+      companyLogo: (user.company_name || user.name).substring(0, 2).toUpperCase(),
       companyLogoBgColor: "bg-gray-100 text-gray-700",
       postedAt: new Date().toISOString(),
       featured: false,
@@ -70,41 +70,87 @@ export default function PostJobPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
-              <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2 border rounded-lg" required />
+              <input
+                type="text"
+                value={formData.title}
+                onChange={e => setFormData({...formData, title: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                required
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
-              <input type="text" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="e.g., Global / Remote, Europe, etc." className="w-full px-4 py-2 border rounded-lg" required />
+              <input
+                type="text"
+                value={formData.location}
+                onChange={e => setFormData({...formData, location: e.target.value})}
+                placeholder="e.g., Global / Remote, Europe, etc."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                required
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
-                <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-2 border rounded-lg">
+                <select
+                  value={formData.type}
+                  onChange={e => setFormData({...formData, type: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                >
                   {jobTypes.map(t => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Salary Range (monthly)</label>
                 <div className="flex gap-2">
-                  <input type="number" value={formData.salaryMin} onChange={e => setFormData({...formData, salaryMin: e.target.value})} placeholder="Min" className="w-1/2 px-4 py-2 border rounded-lg" />
-                  <input type="number" value={formData.salaryMax} onChange={e => setFormData({...formData, salaryMax: e.target.value})} placeholder="Max" className="w-1/2 px-4 py-2 border rounded-lg" />
+                  <input
+                    type="number"
+                    value={formData.salaryMin}
+                    onChange={e => setFormData({...formData, salaryMin: e.target.value})}
+                    placeholder="Min"
+                    className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                  <input
+                    type="number"
+                    value={formData.salaryMax}
+                    onChange={e => setFormData({...formData, salaryMax: e.target.value})}
+                    placeholder="Max"
+                    className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
                 </div>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Job Description *</label>
-              <textarea rows={5} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2 border rounded-lg" required />
+              <textarea
+                rows={5}
+                value={formData.description}
+                onChange={e => setFormData({...formData, description: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                required
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Requirements (comma separated)</label>
-              <input type="text" value={formData.requirements} onChange={e => setFormData({...formData, requirements: e.target.value})} placeholder="e.g., React, TypeScript, 3+ years" className="w-full px-4 py-2 border rounded-lg" />
+              <input
+                type="text"
+                value={formData.requirements}
+                onChange={e => setFormData({...formData, requirements: e.target.value})}
+                placeholder="e.g., React, TypeScript, 3+ years experience"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+              <p className="text-xs text-gray-500 mt-1">Separate each requirement with a comma</p>
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 cursor-pointer"
+            >
               {isSubmitting ? "Posting..." : "Post Job"}
             </button>
           </form>
