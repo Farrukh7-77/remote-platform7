@@ -1,4 +1,4 @@
-// app/job/[id]/page.tsx - Fixed CV attachment
+// app/job/[id]/page.tsx - Fixed hover, cursor, company link, badge styling
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -60,15 +60,17 @@ export default function JobDetailPage() {
     setLoading(false);
   }, [id]);
 
+  // Find company ID from employer email for the link
   useEffect(() => {
     if (job) {
       const users = JSON.parse(localStorage.getItem("auth_users") || "[]");
       const employer = users.find((u: any) => u.email === job.postedBy);
-      if (employer) setCompanyId(employer.id);
+      if (employer) {
+        setCompanyId(employer.id);
+      }
     }
   }, [job]);
 
-  // EMAIL GÖNDƏRMƏ FUNKSİYASI - FIXED
   const sendApplicationEmail = async (applicationData: {
     name: string;
     email: string;
@@ -78,13 +80,14 @@ export default function JobDetailPage() {
   }) => {
     if (!job) return;
     
-    const users = JSON.parse(localStorage.getItem("auth_users") || "[]");
-    const employer = users.find((u: any) => u.email === job.postedBy);
-    if (!employer) return;
+    const employerEmail = job.postedBy;
+    if (!employerEmail) {
+      console.error("No employer email found for job:", job.id);
+      return;
+    }
 
-    // FormData istifadə edirik (fayl birbaşa göndərilir)
     const formData = new FormData();
-    formData.append("to", employer.email);
+    formData.append("to", employerEmail);
     formData.append("subject", `New Application: ${job.title} at ${job.company}`);
     formData.append("html", `
       <h2>New Job Application</h2>
@@ -107,12 +110,8 @@ export default function JobDetailPage() {
         method: "POST",
         body: formData,
       });
-      
-      if (!response.ok) {
-        console.error("Failed to send email");
-      } else {
-        console.log("Email sent successfully to", employer.email);
-      }
+      if (!response.ok) console.error("Failed to send email");
+      else console.log("Email sent successfully to", employerEmail);
     } catch (error) {
       console.error("Email send error:", error);
     }
@@ -137,13 +136,7 @@ export default function JobDetailPage() {
     applications.push({ id: Date.now(), jobId: job.id, jobTitle: job.title, company: job.company, applicantName: guestName, applicantEmail: guestEmail, coverLetter, appliedAt: new Date().toISOString(), isGuest: true });
     localStorage.setItem("applications", JSON.stringify(applications));
     
-    await sendApplicationEmail({
-      name: guestName,
-      email: guestEmail,
-      coverLetter: coverLetter,
-      cvFile: guestCv,
-      cvName: guestCv?.name,
-    });
+    await sendApplicationEmail({ name: guestName, email: guestEmail, coverLetter, cvFile: guestCv, cvName: guestCv?.name });
     
     setTimeout(() => { setIsSubmitting(false); setSubmitted(true); setShowApplyForm(false); setIsGuestMode(false); }, 1000);
   };
@@ -163,24 +156,16 @@ export default function JobDetailPage() {
       if (savedCv) {
         try {
           const parsed = JSON.parse(savedCv);
-          // saved CV base64-dən blob yarat
           const byteCharacters = atob(parsed.data.split(',')[1]);
           const byteNumbers = new Array(byteCharacters.length);
           for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: 'application/pdf' });
+          const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
           cvFile = new File([blob], parsed.name, { type: 'application/pdf' });
         } catch(e) {}
       }
     }
     
-    await sendApplicationEmail({
-      name: user?.name || "",
-      email: user?.email || "",
-      coverLetter: coverLetter,
-      cvFile: cvFile,
-      cvName: cvFile?.name,
-    });
+    await sendApplicationEmail({ name: user?.name || "", email: user?.email || "", coverLetter, cvFile, cvName: cvFile?.name });
     
     setTimeout(() => { setIsSubmitting(false); setSubmitted(true); setShowApplyForm(false); }, 1000);
   };
@@ -188,52 +173,103 @@ export default function JobDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
-        <button onClick={() => router.back()} className="mb-6 text-gray-600 hover:text-blue-600 transition cursor-pointer">← Back to all jobs</button>
+        <button onClick={() => router.back()} className="mb-6 text-gray-600 hover:text-blue-600 transition cursor-pointer">
+          ← Back to all jobs
+        </button>
+
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="p-6 border-b border-gray-200">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <div className={`w-16 h-16 rounded-xl ${job.companyLogoBgColor || "bg-gray-100 text-gray-700"} flex items-center justify-center font-bold text-2xl`}>{job.companyLogo || job.company?.substring(0,2).toUpperCase()}</div>
-                <div><h1 className="text-2xl md:text-3xl font-bold text-gray-900">{job.title}</h1>{companyId ? <Link href={`/company/${companyId}`} className="text-lg text-gray-600 hover:text-blue-600">{job.company}</Link> : <p className="text-lg text-gray-600">{job.company}</p>}</div>
+            <div className="flex justify-between items-start">
+              <div className="flex gap-4">
+                <div className={`w-16 h-16 rounded-xl ${job.companyLogoBgColor || "bg-gray-100"} flex items-center justify-center font-bold text-2xl`}>
+                  {job.companyLogo || job.company?.substring(0,2).toUpperCase()}
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">{job.title}</h1>
+                  {companyId ? (
+                    <Link href={`/company/${companyId}`} className="text-gray-600 hover:text-blue-600 transition-colors inline-block mt-1 cursor-pointer">
+                      {job.company}
+                    </Link>
+                  ) : (
+                    <p className="text-gray-600 mt-1">{job.company}</p>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-col items-end gap-2"><span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">{job.type}</span>{job.applyType === "external" && <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">External application</span>}</div>
+              <div className="flex flex-col items-end gap-2">
+                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                  {job.type}
+                </span>
+                {job.applyType === "external" && (
+                  <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">
+                    External application
+                  </span>
+                )}
+              </div>
             </div>
           </div>
+
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
               <div className="flex items-center text-gray-700"><LocationIcon /> {job.location}</div>
               <div className="flex items-center text-gray-700"><DollarIcon /> ${job.salaryMin.toLocaleString()} - ${job.salaryMax.toLocaleString()}/mo</div>
               <div className="flex items-center text-gray-700"><CalendarIcon /> {new Date(job.postedAt).toLocaleDateString()}</div>
             </div>
+
             <div><h2 className="text-xl font-semibold text-gray-900 mb-3">Job Description</h2><p className="text-gray-700 leading-relaxed">{job.description}</p></div>
             <div><h2 className="text-xl font-semibold text-gray-900 mb-3">Requirements</h2><ul className="list-disc list-inside space-y-2 text-gray-700">{(job.requirements || []).map((req: string, i: number) => (<li key={i}>{req}</li>))}</ul></div>
 
             {isEmployer ? (
               <div className="pt-4 border-t border-gray-200 p-4 bg-gray-50 rounded-lg text-center">
                 <p className="text-gray-500">You are logged in as an employer. To apply for jobs, please use a job seeker account.</p>
-                <Link href="/register?role=job_seeker" className="text-blue-600 hover:underline text-sm mt-2 inline-block">Create a job seeker account →</Link>
+                <Link href="/register?role=job_seeker" className="text-blue-600 hover:underline text-sm mt-2 inline-block">
+                  Create a job seeker account →
+                </Link>
               </div>
             ) : (
               <div className="pt-4 border-t border-gray-200">
                 {!submitted ? (
                   <div className="space-y-4">
                     {!showApplyForm && !isGuestMode ? (
-                      <button onClick={handleApplyClick} className={`w-full md:w-auto font-semibold py-3 px-8 rounded-lg transition-colors cursor-pointer ${job.applyType === "external" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"}`}>{job.applyType === "external" ? "Apply on Company Site →" : "Apply for this position →"}</button>
+                      <button
+                        onClick={handleApplyClick}
+                        className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-all cursor-pointer"
+                      >
+                        Apply for this position →
+                      </button>
                     ) : isGuestMode ? (
                       <form onSubmit={handleGuestSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label><input type="text" value={guestName} onChange={(e) => setGuestName(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900" required /></div><div><label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label><input type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900" required /></div></div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div><label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label><input type="text" value={guestName} onChange={(e) => setGuestName(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900" required /></div>
+                          <div><label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label><input type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900" required /></div>
+                        </div>
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">CV/Resume (PDF, DOC)</label><input type="file" onChange={(e) => setGuestCv(e.target.files?.[0] || null)} accept=".pdf,.doc,.docx" className="w-full" /></div>
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">Cover Letter (Optional)</label><textarea value={coverLetter} onChange={(e) => setCoverLetter(e.target.value)} rows={4} className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900" placeholder="Why are you interested in this position?" /></div>
-                        <div className="flex gap-3"><button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg disabled:opacity-50 cursor-pointer">{isSubmitting ? "Submitting..." : "Submit Application"}</button><button type="button" onClick={() => { setIsGuestMode(false); setShowApplyForm(false); }} className="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-400 cursor-pointer">Cancel</button></div>
+                        <div className="flex gap-3">
+                          <button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-all cursor-pointer">{isSubmitting ? "Submitting..." : "Submit Application"}</button>
+                          <button type="button" onClick={() => { setIsGuestMode(false); setShowApplyForm(false); }} className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-2 px-6 rounded-lg transition-all cursor-pointer">Cancel</button>
+                        </div>
                       </form>
                     ) : (
                       <div className="space-y-4">
-                        <div><label className="block text-sm font-medium text-gray-700 mb-2">Cover Letter (Optional)</label><textarea value={coverLetter} onChange={(e) => setCoverLetter(e.target.value)} rows={5} className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900" /></div>
+                        <div><label className="block text-sm font-medium text-gray-700 mb-2">Cover Letter (Optional)</label><textarea value={coverLetter} onChange={(e) => setCoverLetter(e.target.value)} rows={5} className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900" placeholder="Why are you interested in this position?" /></div>
+                        
                         <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={useDifferentCv} onChange={(e) => { setUseDifferentCv(e.target.checked); if (!e.target.checked) setDifferentCvFile(null); }} className="w-4 h-4 text-blue-600" /><span className="text-sm text-gray-700">Use a different CV for this application</span></label>
-                          {useDifferentCv && <div className="mt-3"><input type="file" accept=".pdf,.doc,.docx" onChange={(e) => { const file = e.target.files?.[0]; if (file) { setDifferentCvFile(file); setDifferentCvName(file.name); } }} className="w-full text-sm" />{differentCvName && <p className="text-xs text-green-600 mt-1">📄 {differentCvName} will be used for this application</p>}</div>}
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={useDifferentCv} onChange={(e) => { setUseDifferentCv(e.target.checked); if (!e.target.checked) setDifferentCvFile(null); }} className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm text-gray-700">Use a different CV for this application</span>
+                          </label>
+                          {useDifferentCv && (
+                            <div className="mt-3">
+                              <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => { const file = e.target.files?.[0]; if (file) { setDifferentCvFile(file); setDifferentCvName(file.name); } }} className="w-full text-sm" />
+                              {differentCvName && <p className="text-xs text-green-600 mt-1">📄 {differentCvName} will be used for this application</p>}
+                            </div>
+                          )}
                         </div>
-                        <div className="flex gap-3"><button onClick={handleSignedInSubmit} disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg disabled:opacity-50 cursor-pointer">{isSubmitting ? "Submitting..." : "Submit Application"}</button><button onClick={() => setShowApplyForm(false)} className="bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-400 cursor-pointer">Cancel</button></div>
+                        
+                        <div className="flex gap-3">
+                          <button onClick={handleSignedInSubmit} disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-all cursor-pointer">{isSubmitting ? "Submitting..." : "Submit Application"}</button>
+                          <button onClick={() => setShowApplyForm(false)} className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-2 px-6 rounded-lg transition-all cursor-pointer">Cancel</button>
+                        </div>
                       </div>
                     )}
                   </div>
