@@ -40,4 +40,4 @@ export async function POST(request: Request) {
     console.error("Email error:", error);
     return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
   }
-}   
+}
