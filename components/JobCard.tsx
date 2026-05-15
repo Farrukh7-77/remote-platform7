@@ -12,8 +12,8 @@ type Job = {
   companyLogoBgColor: string;
   location: string;
   type: string;
-  salaryMin: number | null;
-  salaryMax: number | null;
+  salary_min: number | null;
+  salary_max: number | null;
   description: string;
   postedAt: string;
   featured: boolean;
