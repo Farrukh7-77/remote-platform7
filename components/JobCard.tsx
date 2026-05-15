@@ -118,7 +118,7 @@ export default function JobCard({ job }: { job: Job }) {
             <GraduationIcon /> Senior Level
           </span>
           <span className="inline-flex items-center px-2.5 py-1 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
-            <DollarIcon /> {formatSalary(job.salaryMin, job.salaryMax)}
+            <DollarIcon /> {formatSalary(job.salary_min, job.salary_max)}
           </span>
         </div>
         <span className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
