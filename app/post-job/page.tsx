@@ -1,4 +1,4 @@
-// app/post-job/page.tsx
+// app/post-job/page.tsx - with external URL option
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
@@ -10,7 +10,9 @@ export default function PostJobPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
   const [formData, setFormData] = useState({
     title: "",
     location: "",
@@ -19,32 +21,20 @@ export default function PostJobPage() {
     salaryMax: "5000",
     description: "",
     requirements: "",
+    applyType: "internal",
+    applyUrl: "",
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Case 1: User not logged in at all
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12">
         <div className="max-w-md w-full mx-auto bg-white rounded-xl shadow-md p-8 text-center">
           <div className="text-6xl mb-4">🔒</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
-          <p className="text-gray-600 mb-6">
-            Only employers can post jobs. Please sign in to your employer account or create one.
-          </p>
+          <p className="text-gray-600 mb-6">Only employers can post jobs.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition cursor-pointer"
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => router.push("/register?role=employer")}
-              className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition cursor-pointer"
-            >
-              Create Employer Account
-            </button>
+            <button onClick={() => setIsAuthModalOpen(true)} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer">Sign In</button>
+            <button onClick={() => router.push("/register?role=employer")} className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg cursor-pointer">Create Employer Account</button>
           </div>
         </div>
         <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
@@ -52,157 +42,132 @@ export default function PostJobPage() {
     );
   }
 
-  // Case 2: User is logged in but not an employer
   if (user.role !== "employer") {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12">
         <div className="max-w-md w-full mx-auto bg-white rounded-xl shadow-md p-8 text-center">
           <div className="text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Not an Employer Account</h1>
-          <p className="text-gray-600 mb-6">
-            You are logged in as a <strong>Job Seeker</strong>. Only employer accounts can post jobs.
-          </p>
-          <button
-            onClick={() => router.push("/")}
-            className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition cursor-pointer"
-          >
-            ← Back to Home
-          </button>
-          <p className="text-sm text-gray-500 mt-4">
-            Need to post a job?{" "}
-            <button
-              onClick={() => router.push("/register?role=employer")}
-              className="text-blue-600 hover:underline cursor-pointer"
-            >
-              Create an employer account
-            </button>
-          </p>
+          <p className="text-gray-600 mb-6">You are logged in as a <strong>Job Seeker</strong>. Only employer accounts can post jobs.</p>
+          <button onClick={() => router.push("/")} className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg cursor-pointer">← Back to Home</button>
         </div>
       </div>
     );
   }
 
-  // Case 3: User is logged in as employer - show the form
-  const jobTypes = ["Full-time", "Part-time", "Contract", "Remote", "Internship"];
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError("");
 
-    const jobs = JSON.parse(localStorage.getItem("posted_jobs") || "[]");
-    const newJob = {
-      id: Date.now(),
-      ...formData,
-      salaryMin: parseInt(formData.salaryMin),
-      salaryMax: parseInt(formData.salaryMax),
-      requirements: formData.requirements.split(",").map(r => r.trim()),
+    const jobData = {
+      title: formData.title,
       company: user.company_name || user.name,
       companyLogo: (user.company_name || user.name).substring(0, 2).toUpperCase(),
       companyLogoBgColor: "bg-gray-100 text-gray-700",
-      postedAt: new Date().toISOString(),
-      featured: false,
+      location: formData.location,
+      type: formData.type,
+      salaryMin: parseInt(formData.salaryMin),
+      salaryMax: parseInt(formData.salaryMax),
+      description: formData.description,
+      requirements: formData.requirements.split(",").map(r => r.trim()),
       postedBy: user.email,
-      applyType: "internal",
+      applyType: formData.applyType,
+      applyUrl: formData.applyUrl || null,
     };
-    jobs.push(newJob);
-    localStorage.setItem("posted_jobs", JSON.stringify(jobs));
 
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(jobData),
+      });
+
+      if (response.ok) {
+        router.push("/employer/dashboard");
+      } else {
+        const data = await response.json();
+        setError(data.error || "Failed to post job");
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
+    } finally {
       setIsSubmitting(false);
-      router.push("/employer/dashboard");
-    }, 1000);
+    }
   };
+
+  const jobTypes = ["Full-time", "Part-time", "Contract", "Remote", "Internship"];
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-3xl mx-auto px-4">
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-6">Post a New Job</h1>
+          {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
           
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={e => setFormData({...formData, title: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                required
-              />
+              <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={e => setFormData({...formData, location: e.target.value})}
-                placeholder="e.g., Global / Remote, Europe, etc."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                required
-              />
+              <input type="text" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="e.g., Global / Remote, Europe" className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
-                <select
-                  value={formData.type}
-                  onChange={e => setFormData({...formData, type: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                >
+                <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg">
                   {jobTypes.map(t => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Salary Range (monthly)</label>
                 <div className="flex gap-2">
-                  <input
-                    type="number"
-                    value={formData.salaryMin}
-                    onChange={e => setFormData({...formData, salaryMin: e.target.value})}
-                    placeholder="Min"
-                    className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                  <input
-                    type="number"
-                    value={formData.salaryMax}
-                    onChange={e => setFormData({...formData, salaryMax: e.target.value})}
-                    placeholder="Max"
-                    className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
+                  <input type="number" value={formData.salaryMin} onChange={e => setFormData({...formData, salaryMin: e.target.value})} placeholder="Min" className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg" />
+                  <input type="number" value={formData.salaryMax} onChange={e => setFormData({...formData, salaryMax: e.target.value})} placeholder="Max" className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg" />
                 </div>
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Job Description *</label>
-              <textarea
-                rows={5}
-                value={formData.description}
-                onChange={e => setFormData({...formData, description: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                required
-              />
+              <textarea rows={5} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Requirements (comma separated)</label>
-              <input
-                type="text"
-                value={formData.requirements}
-                onChange={e => setFormData({...formData, requirements: e.target.value})}
-                placeholder="e.g., React, TypeScript, 3+ years experience"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              />
+              <input type="text" value={formData.requirements} onChange={e => setFormData({...formData, requirements: e.target.value})} placeholder="e.g., React, TypeScript, 3+ years" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
               <p className="text-xs text-gray-500 mt-1">Separate each requirement with a comma</p>
             </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 cursor-pointer"
-            >
+            
+            {/* External Apply URL Option */}
+            <div className="border-t border-gray-200 pt-4 mt-2">
+              <label className="flex items-center gap-2 cursor-pointer mb-3">
+                <input
+                  type="checkbox"
+                  checked={formData.applyType === "external"}
+                  onChange={(e) => setFormData({...formData, applyType: e.target.checked ? "external" : "internal", applyUrl: e.target.checked ? formData.applyUrl : ""})}
+                  className="w-4 h-4 text-blue-600"
+                />
+                <span className="text-sm font-medium text-gray-700">External Application (apply on company website)</span>
+              </label>
+              
+              {formData.applyType === "external" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Application URL *</label>
+                  <input
+                    type="url"
+                    value={formData.applyUrl}
+                    onChange={(e) => setFormData({...formData, applyUrl: e.target.value})}
+                    placeholder="https://company.com/careers/apply"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Candidates will be redirected to this URL when clicking "Apply"</p>
+                </div>
+              )}
+            </div>
+            
+            <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 cursor-pointer">
               {isSubmitting ? "Posting..." : "Post Job"}
             </button>
           </form>

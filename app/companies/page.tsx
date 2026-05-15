@@ -5,54 +5,43 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 
 type Company = {
-  id: string;
-  name: string;
+  id: number;
   email: string;
-  companyLogo?: string;
-  companyIndustry?: string;
-  companyLocation?: string;
-  companySize?: string;
-  companyDescription?: string;
-  companyWebsite?: string;
-  companyLinkedIn?: string;
-  jobsPosted?: number;
+  name: string;
+  logo?: string;
+  industry?: string;
+  location?: string;
+  size?: string;
+  description?: string;
+  website?: string;
+  linkedin?: string;
 };
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get all employer users from localStorage
-    const users = JSON.parse(localStorage.getItem("auth_users") || "[]");
-    const employers = users.filter((u: any) => u.role === "employer");
-    
-    // Get all jobs to count jobs per company
-    const allJobs = JSON.parse(localStorage.getItem("posted_jobs") || "[]");
-    
-    const companyList = employers.map((emp: any) => {
-      const companyJobs = allJobs.filter((job: any) => job.postedBy === emp.email);
-      return {
-        id: emp.id,
-        name: emp.companyName || emp.name,
-        email: emp.email,
-        companyLogo: emp.companyLogo || emp.avatar,
-        companyIndustry: emp.companyIndustry,
-        companyLocation: emp.companyLocation,
-        companySize: emp.companySize,
-        companyDescription: emp.companyDescription,
-        companyWebsite: emp.companyWebsite,
-        companyLinkedIn: emp.companyLinkedIn,
-        jobsPosted: companyJobs.length,
-      };
-    });
-    
-    setCompanies(companyList);
+    fetch("/api/companies")
+      .then(res => res.json())
+      .then(data => {
+        setCompanies(data.companies || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to load companies:", err);
+        setLoading(false);
+      });
   }, []);
 
   const filteredCompanies = companies.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -83,24 +72,23 @@ export default function CompaniesPage() {
               >
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-14 h-14 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden">
-                    {company.companyLogo ? (
-                      <img src={company.companyLogo} alt={company.name} className="w-full h-full object-contain" />
+                    {company.logo ? (
+                      <img src={company.logo} alt={company.name} className="w-full h-full object-contain" />
                     ) : (
                       <span className="text-2xl">🏢</span>
                     )}
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900">{company.name}</h3>
-                    <p className="text-sm text-gray-500">{company.companyIndustry || "Technology"}</p>
+                    <p className="text-sm text-gray-500">{company.industry || "Technology"}</p>
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                  {company.companyDescription || "A company hiring remote talent worldwide."}
+                  {company.description || "A company hiring remote talent worldwide."}
                 </p>
                 <div className="flex flex-wrap gap-3 text-sm text-gray-500">
-                  {company.companyLocation && <span>📍 {company.companyLocation}</span>}
-                  {company.companySize && <span>👥 {company.companySize} employees</span>}
-                  <span className="text-blue-600 font-medium">📋 {company.jobsPosted} jobs</span>
+                  {company.location && <span>📍 {company.location}</span>}
+                  {company.size && <span>👥 {company.size} employees</span>}
                 </div>
               </Link>
             ))}

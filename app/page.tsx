@@ -1,9 +1,9 @@
-// app/page.tsx - Shows both static and posted jobs
+// app/page.tsx - Load jobs from database
 "use client";
 
 import { useState, useEffect } from "react";
-import { jobs as staticJobs, type Job } from "@/data/jobs";
 import JobCard from "@/components/JobCard";
+import Link from "next/link";
 
 // SVG Icons (same as before)
 const BriefcaseIcon = () => <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>;
@@ -13,6 +13,8 @@ const GraduationIcon = () => <svg className="w-4 h-4 text-gray-500" fill="none" 
 const DollarIcon = () => <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
 
 export default function HomePage() {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -20,7 +22,6 @@ export default function HomePage() {
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-  const [allJobs, setAllJobs] = useState<Job[]>([]);
 
   const [openSections, setOpenSections] = useState({
     jobType: false,
@@ -30,26 +31,21 @@ export default function HomePage() {
     salary: false,
   });
 
-  // Load static jobs + posted jobs from localStorage
   useEffect(() => {
-    const postedJobs = JSON.parse(localStorage.getItem("posted_jobs") || "[]");
-    const combined = [...staticJobs, ...postedJobs];
-    // Remove duplicates by id (if any)
-    const unique = combined.filter((job, index, self) => 
-      index === self.findIndex((j) => j.id === job.id)
-    );
-    setAllJobs(unique);
-  }, []);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("filterSections");
-    if (saved) setOpenSections(JSON.parse(saved));
+    fetch("/api/jobs")
+      .then(res => res.json())
+      .then(data => {
+        setJobs(data.jobs || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to load jobs:", err);
+        setLoading(false);
+      });
   }, []);
 
   const toggleSection = (section: keyof typeof openSections) => {
-    const newState = { ...openSections, [section]: !openSections[section] };
-    setOpenSections(newState);
-    localStorage.setItem("filterSections", JSON.stringify(newState));
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const jobTypes = ["Full-time", "Part-time", "Contract", "Remote", "Internship"];
@@ -70,8 +66,8 @@ export default function HomePage() {
     setSearchTerm("");
   };
 
-  const filteredJobs = allJobs
-    .filter((job) => {
+  const filteredJobs = jobs
+    .filter((job: any) => {
       const matchSearch = searchTerm === "" ||
         job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.company.toLowerCase().includes(searchTerm.toLowerCase());
@@ -93,15 +89,28 @@ export default function HomePage() {
         );
       }
 
-      const avgSalary = (job.salaryMin + job.salaryMax) / 2;
+      const avgSalary = (job.salary_min + job.salary_max) / 2;
       const matchSalary = avgSalary >= salaryRange[0] && avgSalary <= salaryRange[1];
       const matchCountry = selectedCountries.length === 0 || selectedCountries.some(c => job.location.includes(c));
 
-      return matchSearch && matchType && matchCategory && matchSalary && matchCountry;
+      let matchesExperience = true;
+      if (selectedExperience.length > 0) {
+        let expMatched = false;
+        if (selectedExperience.includes("Entry (0-2 years)") && job.salary_max < 4000) expMatched = true;
+        if (selectedExperience.includes("Mid (3-5 years)") && job.salary_max >= 4000 && job.salary_max < 8000) expMatched = true;
+        if (selectedExperience.includes("Senior (5+ years)") && job.salary_max >= 8000) expMatched = true;
+        matchesExperience = expMatched;
+      }
+
+      return matchSearch && matchType && matchCategory && matchSalary && matchCountry && matchesExperience;
     })
-    .sort((a, b) => (a.featured === b.featured ? 0 : a.featured ? -1 : 1));
+    .sort((a: any, b: any) => (a.featured === b.featured ? 0 : a.featured ? -1 : 1));
 
   const activeFilterCount = selectedTypes.length + selectedCategories.length + selectedCountries.length + selectedExperience.length;
+
+  if (loading) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-gray-500">Loading jobs...</div></div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -162,7 +171,9 @@ export default function HomePage() {
 
           <div className="flex-1 max-w-3xl mx-auto">
             <div className="space-y-4">
-              {filteredJobs.map((job) => <JobCard key={job.id} job={job} />)}
+              {filteredJobs.map((job: any) => (
+                <JobCard key={job.id} job={job} />
+              ))}
             </div>
           </div>
         </div>
@@ -196,51 +207,25 @@ function FilterCard({
 }) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:shadow-md">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex justify-between items-center text-gray-800 cursor-pointer px-3 py-3"
-      >
+      <button onClick={onToggle} className="w-full flex justify-between items-center text-gray-800 cursor-pointer px-3 py-3">
         <span className="flex items-center gap-2 text-sm font-medium">
           {icon && <span className="text-gray-500">{icon}</span>}
           {title}
         </span>
         <span className="text-gray-500 text-xs">{open ? "▼" : "▶"}</span>
       </button>
-
       {open && (
         <div className="px-3 pb-3 space-y-1 border-t border-gray-100 pt-2">
           {!isSalary && items && selected && onChange && items.map((item) => (
             <label key={item} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selected.includes(item)}
-                onChange={() => onChange(item)}
-                className="cursor-pointer"
-              />
+              <input type="checkbox" checked={selected.includes(item)} onChange={() => onChange(item)} className="cursor-pointer" />
               {item}
             </label>
           ))}
           {isSalary && salaryRange && setSalaryRange && (
             <div className="space-y-2">
-              <input
-                type="range"
-                min="2000"
-                max="15000"
-                step="500"
-                value={salaryRange[0]}
-                onChange={(e) => setSalaryRange([+e.target.value, salaryRange[1]])}
-                className="w-full cursor-pointer"
-              />
-              <input
-                type="range"
-                min="2000"
-                max="15000"
-                step="500"
-                value={salaryRange[1]}
-                onChange={(e) => setSalaryRange([salaryRange[0], +e.target.value])}
-                className="w-full cursor-pointer"
-              />
+              <input type="range" min="2000" max="15000" step="500" value={salaryRange[0]} onChange={(e) => setSalaryRange([+e.target.value, salaryRange[1]])} className="w-full cursor-pointer" />
+              <input type="range" min="2000" max="15000" step="500" value={salaryRange[1]} onChange={(e) => setSalaryRange([salaryRange[0], +e.target.value])} className="w-full cursor-pointer" />
               <div className="text-xs text-gray-500">${salaryRange[0]} – ${salaryRange[1]}</div>
             </div>
           )}

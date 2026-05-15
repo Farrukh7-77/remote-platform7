@@ -15,13 +15,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User already exists" }, { status: 400 });
     }
 
-    const result = await pool.query(
+    // Create user
+    const userResult = await pool.query(
       `INSERT INTO users (email, password, name, role, company_name) 
        VALUES ($1, $2, $3, $4, $5) RETURNING id, email, name, role, company_name`,
       [email, password, name, role, companyName || null]
     );
 
-    return NextResponse.json({ success: true, user: result.rows[0] });
+    // If employer, add to companies table
+    if (role === "employer" && companyName) {
+      await pool.query(
+        `INSERT INTO companies (email, name) 
+         VALUES ($1, $2)
+         ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name`,
+        [email, companyName]
+      );
+    }
+
+    return NextResponse.json({ success: true, user: userResult.rows[0] });
   } catch (error) {
     console.error("Signup error:", error);
     return NextResponse.json({ error: "Failed to create account" }, { status: 500 });
