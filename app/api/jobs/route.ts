@@ -20,14 +20,25 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const result = await pool.query(
-      `SELECT id, title, company, company_logo, company_logo_bg_color, location, type, 
-              salary_min, salary_max, description, requirements, posted_at, featured, 
-              posted_by, apply_type, apply_url 
-       FROM jobs ORDER BY posted_at DESC`
-    );
+    const { searchParams } = new URL(request.url);
+    const companyId = searchParams.get("companyId");
+    
+    let query = `SELECT id, title, company, company_logo, company_logo_bg_color, location, type, 
+                        salary_min, salary_max, description, requirements, posted_at, featured, 
+                        posted_by, apply_type, apply_url 
+                 FROM jobs`;
+    const params = [];
+    
+    if (companyId) {
+      query += ` WHERE posted_by = (SELECT email FROM companies WHERE id = $1)`;
+      params.push(companyId);
+    }
+    
+    query += ` ORDER BY posted_at DESC`;
+    
+    const result = await pool.query(query, params);
     return NextResponse.json({ jobs: result.rows });
   } catch (error) {
     console.error("Get jobs error:", error);
