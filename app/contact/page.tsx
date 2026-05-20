@@ -1,7 +1,7 @@
-// app/contact/page.tsx - Compact hero with icon
+// app/contact/page.tsx - Fixed useEffect
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function ContactPage() {
@@ -16,7 +16,7 @@ export default function ContactPage() {
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [pageLoaded, setPageLoaded] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     setTimeout(() => setPageLoaded(true), 100);
   }, []);
 
@@ -243,7 +243,7 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* Map Section (Simple placeholder) */}
+      {/* Map Section */}
       <div className="max-w-7xl mx-auto px-4 pb-10">
         <div className="bg-gray-200 rounded-xl overflow-hidden h-48 flex items-center justify-center border border-gray-200">
           <div className="text-center">
