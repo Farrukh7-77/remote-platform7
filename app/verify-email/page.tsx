@@ -1,10 +1,12 @@
+// app/verify-email/page.tsx
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -30,13 +32,11 @@ export default function VerifyEmailPage() {
           setStatus("success");
           setMessage("Email verified! Redirecting to your profile...");
           
-          // Save user and token to localStorage
           if (data.user && data.token) {
             localStorage.setItem("auth_user", JSON.stringify(data.user));
             localStorage.setItem("auth_token", data.token);
           }
           
-          // Redirect to profile after 2 seconds
           setTimeout(() => router.push("/profile"), 2000);
         } else {
           setStatus("error");
@@ -81,5 +81,13 @@ export default function VerifyEmailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
