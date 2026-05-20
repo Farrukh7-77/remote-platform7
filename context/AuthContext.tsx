@@ -23,7 +23,7 @@ export type User = {
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string, name: string, role: UserRole, companyName?: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (email: string, password: string, name: string, role: UserRole, companyName?: string) => Promise<{ success: boolean; error?: string; message?: string }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => void;
   updateUser: (updates: Partial<User>) => Promise<void>;
@@ -37,13 +37,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("auth_user");
-    if (storedUser) {
+    const storedToken = localStorage.getItem("auth_token");
+    
+    if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, []);
 
   const signUp = async (email: string, password: string, name: string, role: UserRole, companyName?: string) => {
+    setLoading(true);
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
@@ -51,16 +54,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password, name, role, companyName }),
       });
       const data = await response.json();
-      if (!response.ok) return { success: false, error: data.error };
-      setUser(data.user);
-      localStorage.setItem("auth_user", JSON.stringify(data.user));
-      return { success: true };
+      
+      if (response.ok) {
+        return { success: true, message: data.message };
+      } else {
+        return { success: false, error: data.error };
+      }
     } catch (error) {
-      return { success: false, error: "Registration failed" };
+      return { success: false, error: "Network error" };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
+    setLoading(true);
     try {
       const response = await fetch("/api/auth/signin", {
         method: "POST",
@@ -68,11 +76,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
       const data = await response.json();
-      if (!response.ok) return { success: false, error: data.error };
+      if (!response.ok) {
+        setLoading(false);
+        return { success: false, error: data.error };
+      }
       setUser(data.user);
       localStorage.setItem("auth_user", JSON.stringify(data.user));
+      if (data.token) {
+        localStorage.setItem("auth_token", data.token);
+      }
+      setLoading(false);
       return { success: true };
     } catch (error) {
+      setLoading(false);
       return { success: false, error: "Login failed" };
     }
   };
@@ -80,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = () => {
     setUser(null);
     localStorage.removeItem("auth_user");
+    localStorage.removeItem("auth_token");
   };
 
   const updateUser = async (updates: Partial<User>) => {
@@ -92,7 +109,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       const data = await response.json();
       if (response.ok && data.user) {
-        const updatedUser = { ...data.user, avatar: updates.avatar || data.user.avatar };
+        // Merge existing user with updates from database
+        const updatedUser = { ...user, ...data.user };
         setUser(updatedUser);
         localStorage.setItem("auth_user", JSON.stringify(updatedUser));
       }

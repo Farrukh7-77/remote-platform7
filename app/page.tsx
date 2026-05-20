@@ -1,4 +1,4 @@
-// app/page.tsx - Load jobs from database
+// app/page.tsx - Only animations added, design unchanged
 "use client";
 
 import { useState, useEffect } from "react";
@@ -22,6 +22,7 @@ export default function HomePage() {
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
 
   const [openSections, setOpenSections] = useState({
     jobType: false,
@@ -37,6 +38,7 @@ export default function HomePage() {
       .then(data => {
         setJobs(data.jobs || []);
         setLoading(false);
+        setTimeout(() => setPageLoaded(true), 100);
       })
       .catch(err => {
         console.error("Failed to load jobs:", err);
@@ -109,23 +111,34 @@ export default function HomePage() {
   const activeFilterCount = selectedTypes.length + selectedCategories.length + selectedCountries.length + selectedExperience.length;
 
   if (loading) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-gray-500">Loading jobs...</div></div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-gray-500 animate-pulse">Loading jobs...</div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-gradient-to-r from-blue-600 to-indigo-700 py-8">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold text-white mb-4">Remote Jobs</h1>
-          <div className="max-w-xl mx-auto flex bg-white rounded-lg shadow">
+    <div className={`min-h-screen bg-gray-100 transition-opacity duration-700 ${pageLoaded ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Header - Gradient (unchanged but added subtle animation) */}
+      <header className="bg-gradient-to-r from-blue-600 to-indigo-700 py-8 relative overflow-hidden">
+        <div className="absolute inset-0 bg-white/5 transform -skew-y-6"></div>
+        <div className="max-w-7xl mx-auto px-4 text-center relative">
+          <h1 className="text-3xl font-bold text-white mb-4 animate-fade-in-up">Remote Jobs</h1>
+          <div className="max-w-xl mx-auto flex bg-white rounded-lg shadow-md transition-all duration-300 focus-within:shadow-lg">
             <input
               type="text"
               placeholder="Search by title, company..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 px-4 py-2 rounded-l-lg focus:outline-none text-gray-900 placeholder-gray-500"
+              className="flex-1 px-4 py-2 rounded-l-lg focus:outline-none text-gray-900 placeholder-gray-500 transition-all duration-200"
             />
-            <button className="bg-blue-600 text-white px-5 rounded-r-lg hover:bg-blue-700 cursor-pointer">Search</button>
+            <button className="bg-blue-600 text-white px-5 rounded-r-lg hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+              Search
+            </button>
           </div>
         </div>
       </header>
@@ -134,14 +147,14 @@ export default function HomePage() {
       <div className="md:hidden flex justify-end px-4 py-3">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium shadow-md hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium shadow-md hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
           Filters
           {activeFilterCount > 0 && (
-            <span className="bg-yellow-400 text-black text-xs px-1.5 py-0.5 rounded-full">
+            <span className="bg-yellow-400 text-black text-xs px-1.5 py-0.5 rounded-full animate-pulse">
               {activeFilterCount}
             </span>
           )}
@@ -151,11 +164,11 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row gap-6">
           {/* FILTER SIDEBAR */}
-          <div className={`${showFilters ? "block" : "hidden"} md:block md:w-72 md:ml-10`}>
-            <div className="bg-white rounded-xl border border-gray-500 shadow-sm p-4">
+          <div className={`${showFilters ? "block animate-slide-down" : "hidden"} md:block md:w-72 md:ml-10`}>
+            <div className="bg-white rounded-xl border border-gray-500 shadow-sm p-4 transition-all duration-200 hover:shadow-md">
               <div className="relative flex justify-center items-center mb-4">
                 <h3 className="font-semibold text-gray-800 text-center">Filters</h3>
-                <button onClick={resetFilters} className="absolute right-0 text-xs text-red-600 hover:text-red-700 cursor-pointer">
+                <button onClick={resetFilters} className="absolute right-0 text-xs text-red-600 hover:text-red-700 transition-colors duration-200 hover:scale-105 cursor-pointer">
                   Reset all
                 </button>
               </div>
@@ -171,17 +184,72 @@ export default function HomePage() {
 
           <div className="flex-1 max-w-3xl mx-auto">
             <div className="space-y-4">
-              {filteredJobs.map((job: any) => (
-                <JobCard key={job.id} job={job} />
+              {filteredJobs.map((job: any, index: number) => (
+                <div 
+                  key={job.id} 
+                  className="animate-card"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <JobCard job={job} />
+                </div>
               ))}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Global Animation Styles */}
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-in-up {
+          animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .animate-slide-down {
+          animation: slideDown 0.3s ease-out;
+        }
+        
+        .animate-card {
+          opacity: 0;
+          animation: fadeInUp 0.4s ease-out forwards;
+        }
+        
+        /* Filter card hover effect */
+        .filter-card-hover {
+          transition: all 0.2s ease;
+        }
+        
+        .filter-card-hover:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+      `}</style>
     </div>
   );
 }
 
+// FilterCard Component (with added hover effect)
 function FilterCard({
   title,
   icon,
@@ -206,27 +274,27 @@ function FilterCard({
   setSalaryRange?: (range: [number, number]) => void;
 }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:shadow-md">
-      <button onClick={onToggle} className="w-full flex justify-between items-center text-gray-800 cursor-pointer px-3 py-3">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm transition-all duration-200 filter-card-hover">
+      <button onClick={onToggle} className="w-full flex justify-between items-center text-gray-800 cursor-pointer px-3 py-3 transition-colors duration-200 hover:text-blue-600">
         <span className="flex items-center gap-2 text-sm font-medium">
-          {icon && <span className="text-gray-500">{icon}</span>}
+          {icon && <span className="text-gray-500 group-hover:text-blue-500 transition-colors">{icon}</span>}
           {title}
         </span>
-        <span className="text-gray-500 text-xs">{open ? "▼" : "▶"}</span>
+        <span className={`text-gray-500 text-xs transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>▼</span>
       </button>
       {open && (
-        <div className="px-3 pb-3 space-y-1 border-t border-gray-100 pt-2">
+        <div className="px-3 pb-3 space-y-1 border-t border-gray-100 pt-2 animate-slide-down">
           {!isSalary && items && selected && onChange && items.map((item) => (
-            <label key={item} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-              <input type="checkbox" checked={selected.includes(item)} onChange={() => onChange(item)} className="cursor-pointer" />
+            <label key={item} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer hover:text-blue-600 transition-colors duration-200">
+              <input type="checkbox" checked={selected.includes(item)} onChange={() => onChange(item)} className="cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-all" />
               {item}
             </label>
           ))}
           {isSalary && salaryRange && setSalaryRange && (
             <div className="space-y-2">
-              <input type="range" min="2000" max="15000" step="500" value={salaryRange[0]} onChange={(e) => setSalaryRange([+e.target.value, salaryRange[1]])} className="w-full cursor-pointer" />
-              <input type="range" min="2000" max="15000" step="500" value={salaryRange[1]} onChange={(e) => setSalaryRange([salaryRange[0], +e.target.value])} className="w-full cursor-pointer" />
-              <div className="text-xs text-gray-500">${salaryRange[0]} – ${salaryRange[1]}</div>
+              <input type="range" min="2000" max="15000" step="500" value={salaryRange[0]} onChange={(e) => setSalaryRange([+e.target.value, salaryRange[1]])} className="w-full cursor-pointer accent-blue-600 transition-all duration-100" />
+              <input type="range" min="2000" max="15000" step="500" value={salaryRange[1]} onChange={(e) => setSalaryRange([salaryRange[0], +e.target.value])} className="w-full cursor-pointer accent-blue-600 transition-all duration-100" />
+              <div className="text-xs text-gray-500 text-center">${salaryRange[0]} – ${salaryRange[1]}</div>
             </div>
           )}
         </div>

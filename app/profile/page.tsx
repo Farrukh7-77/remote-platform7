@@ -19,6 +19,7 @@ export default function ProfilePage() {
   const [cvFile, setCvFile] = useState<{ name: string; uploadedAt: string } | null>(null);
   const [applicationCount, setApplicationCount] = useState(0);
   const [savedJobsCount, setSavedJobsCount] = useState(0);
+  const [applications, setApplications] = useState([]);
 
   useEffect(() => {
     if (!loading && !user) router.push("/");
@@ -38,8 +39,11 @@ export default function ProfilePage() {
         try { setCvFile(JSON.parse(savedCv)); } catch { setCvFile({ name: savedCv, uploadedAt: new Date().toISOString() }); }
       }
       
-      const applications = JSON.parse(localStorage.getItem("applications") || "[]");
-      setApplicationCount(applications.filter((app: any) => app.applicantEmail === user.email).length);
+      // FIX: Filter applications by current user's email
+      const allApplications = JSON.parse(localStorage.getItem("applications") || "[]");
+      const userApplications = allApplications.filter((app: any) => app.applicantEmail === user?.email);
+      setApplications(userApplications);
+      setApplicationCount(userApplications.length);
       
       let savedCount = 0;
       for (let i = 0; i < localStorage.length; i++) {
@@ -173,7 +177,11 @@ export default function ProfilePage() {
           <div className="p-6 bg-white">
             <div className="flex items-center gap-6">
               <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-300">
-                {user.avatar ? <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" /> : <span className="text-4xl">👤</span>}
+                {user.avatar ? (
+                  <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-4xl">👤</span>
+                )}
               </div>
               <div>
                 <div className="flex items-center gap-3 flex-wrap">
