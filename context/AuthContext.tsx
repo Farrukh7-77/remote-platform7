@@ -11,6 +11,7 @@ export type User = {
   name: string;
   role: UserRole;
   avatar?: string;
+  company_logo?: string;
   company_name?: string;
   company_website?: string;
   company_description?: string;
