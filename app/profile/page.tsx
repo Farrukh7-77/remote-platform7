@@ -39,7 +39,6 @@ export default function ProfilePage() {
         try { setCvFile(JSON.parse(savedCv)); } catch { setCvFile({ name: savedCv, uploadedAt: new Date().toISOString() }); }
       }
       
-      // FIX: Filter applications by current user's email
       const allApplications = JSON.parse(localStorage.getItem("applications") || "[]");
       const userApplications = allApplications.filter((app: any) => app.applicantEmail === user?.email);
       setApplications(userApplications);
@@ -93,11 +92,23 @@ export default function ProfilePage() {
             <div className="p-6 border-b border-gray-200 bg-gray-50">
               <div className="flex items-center gap-6">
                 <div className="w-24 h-24 rounded-xl bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">
-                  {(user as any).company_logo ? (
-                    <img src={(user as any).company_logo} alt="Logo" className="w-full h-full object-contain" />
-                  ) : (
-                    <span className="text-4xl">🏢</span>
-                  )}
+                  {(() => {
+                    let logo = (user as any).company_logo || (user as any).avatar;
+                    if (!logo) {
+                      const stored = localStorage.getItem("auth_user");
+                      if (stored) {
+                        try {
+                          const parsed = JSON.parse(stored);
+                          logo = parsed.company_logo || parsed.avatar;
+                        } catch(e) {}
+                      }
+                    }
+                    return logo ? (
+                      <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="text-4xl">🏢</span>
+                    );
+                  })()}
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">{user.company_name || user.name}</h2>
@@ -177,11 +188,23 @@ export default function ProfilePage() {
           <div className="p-6 bg-white">
             <div className="flex items-center gap-6">
               <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-300">
-                {user.avatar ? (
-                  <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-4xl">👤</span>
-                )}
+                {(() => {
+                  let avatar = user.avatar;
+                  if (!avatar) {
+                    const stored = localStorage.getItem("auth_user");
+                    if (stored) {
+                      try {
+                        const parsed = JSON.parse(stored);
+                        avatar = parsed.avatar;
+                      } catch(e) {}
+                    }
+                  }
+                  return avatar ? (
+                    <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-4xl">👤</span>
+                  );
+                })()}
               </div>
               <div>
                 <div className="flex items-center gap-3 flex-wrap">

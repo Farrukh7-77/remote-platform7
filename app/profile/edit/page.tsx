@@ -47,7 +47,6 @@ export default function EditProfilePage() {
       setPortfolio(localStorage.getItem(`profile_portfolio_${user.email}`) || "");
       setJobStatus(localStorage.getItem(`profile_jobstatus_${user.email}`) || "actively_looking");
       
-      // Employer fields
       setCompanyName(user.company_name || "");
       setCompanyIndustry((user as any).company_industry || "");
       setCompanySize((user as any).company_size || "");
@@ -56,9 +55,9 @@ export default function EditProfilePage() {
       setCompanyLinkedin((user as any).company_linkedin || "");
       setCompanyDescription((user as any).company_description || "");
       
-      // Load avatar preview
-      if (user.avatar) {
-        setAvatarPreview(user.avatar);
+      const avatar = (user as any).company_logo || user.avatar;
+      if (avatar) {
+        setAvatarPreview(avatar);
       }
     }
   }, [user]);
@@ -67,7 +66,7 @@ export default function EditProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Preview immediately
+    // Show preview immediately
     const reader = new FileReader();
     reader.onloadend = () => {
       setAvatarPreview(reader.result as string);
@@ -78,7 +77,27 @@ export default function EditProfilePage() {
     const reader2 = new FileReader();
     reader2.onloadend = async () => {
       const base64String = reader2.result as string;
-      await updateUser({ avatar: base64String });
+      
+      // Update both avatar and company_logo for employer
+      if (user?.role === "employer") {
+        await updateUser({ 
+          avatar: base64String,
+          company_logo: base64String 
+        });
+      } else {
+        await updateUser({ avatar: base64String });
+      }
+      
+      // Force update localStorage
+      const storedUser = localStorage.getItem("auth_user");
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        userData.avatar = base64String;
+        if (user?.role === "employer") {
+          userData.company_logo = base64String;
+        }
+        localStorage.setItem("auth_user", JSON.stringify(userData));
+      }
     };
     reader2.readAsDataURL(file);
   };
@@ -95,7 +114,6 @@ export default function EditProfilePage() {
     e.preventDefault();
     setSaving(true);
 
-    // Save profile data to localStorage
     if (user) {
       localStorage.setItem(`profile_location_${user.email}`, location);
       localStorage.setItem(`profile_bio_${user.email}`, bio);
@@ -105,7 +123,6 @@ export default function EditProfilePage() {
       localStorage.setItem(`profile_jobstatus_${user.email}`, jobStatus);
     }
 
-    // Save to database
     if (user?.role === "employer") {
       await updateUser({
         name,
@@ -118,12 +135,9 @@ export default function EditProfilePage() {
         company_description: companyDescription,
       });
     } else {
-      await updateUser({
-        name,
-      });
+      await updateUser({ name });
     }
 
-    // Save CV
     if (cvFile && user) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -148,7 +162,6 @@ export default function EditProfilePage() {
 
   if (!user) return null;
 
-  // İŞƏGÖTÜRƏN (EMPLOYER) EDIT FORMU
   if (user.role === "employer") {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
@@ -241,7 +254,6 @@ export default function EditProfilePage() {
     );
   }
 
-  // İŞ AXATARAN (JOB SEEKER) EDIT FORMU
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-3xl mx-auto px-4">

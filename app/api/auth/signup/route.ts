@@ -11,36 +11,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    // Check if email already EXISTS and ALREADY VERIFIED
-    const existingUser = await pool.query(
-      "SELECT * FROM users WHERE email = $1 AND is_verified = true", 
-      [email]
-    );
+    // Check if user exists
+    const existingUser = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     if (existingUser.rows.length > 0) {
       return NextResponse.json({ error: "User already exists" }, { status: 400 });
     }
 
-    // Check if there's a pending verification token
-    const existingToken = await pool.query(
-      "SELECT * FROM verification_tokens WHERE email = $1",
-      [email]
+    // Create user (is_verified = false)
+    const userResult = await pool.query(
+      `INSERT INTO users (email, password, name, role, company_name, is_verified) 
+       VALUES ($1, $2, $3, $4, $5, false) RETURNING id, email, name, role, company_name`,
+      [email, password, name, role, companyName || null]
     );
-    
-    if (existingToken.rows.length > 0) {
-      // Delete old token
-      await pool.query("DELETE FROM verification_tokens WHERE email = $1", [email]);
+
+    // If employer, add to companies table
+    if (role === "employer" && companyName) {
+      await pool.query(
+        `INSERT INTO companies (email, name) 
+         VALUES ($1, $2)
+         ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name`,
+        [email, companyName]
+      );
     }
 
-    // Create verification token (expires in 24 hours)
+    // Create verification token
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
 
-    // Store verification data (NOT in users table yet!)
     await pool.query(
-      `INSERT INTO verification_tokens (email, token, expires_at, user_data) 
-       VALUES ($1, $2, $3, $4)`,
-      [email, token, expiresAt, JSON.stringify({ password, name, role, companyName })]
+      `INSERT INTO verification_tokens (email, token, expires_at) VALUES ($1, $2, $3)`,
+      [email, token, expiresAt]
     );
 
     // Send verification email
@@ -48,7 +49,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ 
       success: true, 
-      message: "Verification email sent! Please check your inbox to activate your account."
+      user: userResult.rows[0],
+      message: "Verification email sent! Please check your inbox."
     });
   } catch (error) {
     console.error("Signup error:", error);

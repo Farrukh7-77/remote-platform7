@@ -1,4 +1,4 @@
-// app/companies/page.tsx - Dark borders preserved
+// app/companies/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";

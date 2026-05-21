@@ -99,25 +99,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("auth_token");
   };
 
-  const updateUser = async (updates: Partial<User>) => {
-    if (!user) return;
-    try {
-      const response = await fetch("/api/auth/update-profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.email, updates }),
-      });
-      const data = await response.json();
-      if (response.ok && data.user) {
-        // Merge existing user with updates from database
-        const updatedUser = { ...user, ...data.user };
-        setUser(updatedUser);
-        localStorage.setItem("auth_user", JSON.stringify(updatedUser));
-      }
-    } catch (error) {
-      console.error("Update failed:", error);
+  // context/AuthContext.tsx - YALNIZ updateUser HİSSƏSİ
+// Qalan hissə eyni qalır
+
+const updateUser = async (updates: Partial<User>) => {
+  if (!user) return;
+  
+  try {
+    const response = await fetch("/api/auth/update-profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: user.email, updates }),
+    });
+    const data = await response.json();
+    
+    if (response.ok && data.user) {
+      // Əgər updates-də avatar varsa, onu da əlavə et
+      const updatedUser = { 
+        ...user, 
+        ...data.user,
+        avatar: updates.avatar || data.user.avatar || user.avatar
+      };
+      setUser(updatedUser);
+      localStorage.setItem("auth_user", JSON.stringify(updatedUser));
     }
-  };
+  } catch (error) {
+    console.error("Update failed:", error);
+  }
+}; 
 
   return (
     <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut, updateUser }}>

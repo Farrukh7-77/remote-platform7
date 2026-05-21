@@ -1,3 +1,4 @@
+// app/company/[id]/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -21,10 +22,10 @@ type Job = {
   id: number;
   title: string;
   location?: string;
-  job_type?: string;
+  type?: string;
   salary_min?: number;
   salary_max?: number;
-  created_at: string;
+  posted_at: string;
 };
 
 export default function CompanyPage() {
@@ -57,28 +58,33 @@ export default function CompanyPage() {
   }, [params?.id]);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">Yüklənir...</div>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-gray-500 animate-pulse">Loading company...</div>
+      </div>
+    </div>
   );
 
   if (error || !company) return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
       <p className="text-red-500">{error || "Şirkət tapılmadı"}</p>
-      <Link href="/companies" className="text-blue-500 hover:underline">← Geri qayıt</Link>
+      <Link href="/companies" className="text-blue-500 hover:underline cursor-pointer">← Geri qayıt</Link>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
-        <Link href="/companies" className="text-blue-500 hover:underline text-sm mb-6 inline-block">
+        <Link href="/companies" className="text-blue-500 hover:underline text-sm mb-6 inline-block cursor-pointer">
           ← Bütün şirkətlər
         </Link>
 
         {/* Şirkət profil kartı */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
+        <div className="bg-white rounded-xl border border-gray-700 overflow-hidden mb-6 shadow-sm hover:shadow-md transition-all duration-300">
           <div className="p-6 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center gap-6">
-              <div className="w-20 h-20 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden">
+              <div className="w-24 h-24 rounded-xl bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">
                 {company.logo ? (
                   <img src={company.logo} alt={company.name} className="w-full h-full object-contain" />
                 ) : (
@@ -136,20 +142,20 @@ export default function CompanyPage() {
         </div>
 
         {/* İş elanları */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-700 overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <h2 className="font-semibold text-gray-900">Open Positions ({jobs.length})</h2>
           </div>
           <div className="divide-y divide-gray-100">
             {jobs.length === 0 ? (
-              <p className="p-6 text-gray-400">No open positions at the moment.</p>
+              <p className="p-6 text-gray-400 text-center">No open positions at the moment.</p>
             ) : (
               jobs.map(job => (
-                <Link key={job.id} href={`/jobs/${job.id}`} className="block p-6 hover:bg-gray-50 transition">
-                  <h3 className="font-semibold text-gray-900">{job.title}</h3>
+                <Link key={job.id} href={`/job/${job.id}`} className="block p-6 hover:bg-gray-50 transition-all duration-200 cursor-pointer">
+                  <h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors">{job.title}</h3>
                   <div className="flex gap-4 mt-1 text-sm text-gray-500 flex-wrap">
                     {job.location && <span>📍 {job.location}</span>}
-                    {job.job_type && <span>💼 {job.job_type}</span>}
+                    {job.type && <span>💼 {job.type}</span>}
                     {job.salary_min && job.salary_max && (
                       <span>💰 ${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}</span>
                     )}
