@@ -153,15 +153,17 @@ export default function EmployerAnalytics() {
   };
 
   const getDailyData = () => {
-    const last30Days: { date: string; applications: number }[] = [];
-    const today = new Date();
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
-      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      last30Days.push({ date: dateStr, applications: 0 });
-    }
-    
+  const last30Days: { date: string; applications: number }[] = [];
+  const today = new Date();
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    last30Days.push({ date: dateStr, applications: 0 });
+  }
+  
+  // localStorage yalnız client-də işləsin
+  if (typeof window !== 'undefined') {
     const allApplications = JSON.parse(localStorage.getItem("applications") || "[]");
     const employerJobIds = new Set(jobs.map(j => j.id));
     
@@ -172,9 +174,10 @@ export default function EmployerAnalytics() {
         if (dayData) dayData.applications++;
       }
     });
-    
-    return last30Days;
-  };
+  }
+  
+  return last30Days;
+};
 
   const topJobs = [...jobs].filter(j => j.application_count > 0).sort((a, b) => b.application_count - a.application_count).slice(0, 5);
   const monthlyData = prepareMonthlyData();
