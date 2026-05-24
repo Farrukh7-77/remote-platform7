@@ -153,7 +153,7 @@ export default function EmployerAnalytics() {
   };
 
   const getDailyData = () => {
-    const last30Days = [];
+    const last30Days: { date: string; count: number }[] = [];
     const today = new Date();
     for (let i = 29; i >= 0; i--) {
       const date = new Date(today);
