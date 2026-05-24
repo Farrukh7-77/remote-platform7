@@ -97,7 +97,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   const result = await signUp(email, password, name, role, role === "employer" ? companyName : undefined);
   
   if (result.success) {
-  setSuccessMessage(result.message);
+  setSuccessMessage(result.message || "Registration successful!");
   setShowSuccess(true);
   // Formu təmizlə - amma email-i SAXLA!
   setName("");
