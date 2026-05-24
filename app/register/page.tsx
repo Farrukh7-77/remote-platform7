@@ -85,26 +85,30 @@ function RegisterForm() {
     );
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccessMessage("");
-    setShowSuccess(false);
-    setLoading(true);
+  // app/register/page.tsx-də handleSubmit hissəsi
 
-    const result = await signUp(email, password, name, role, role === "employer" ? companyName : undefined);
-    
-    if (result.success) {
-      setSuccessMessage(result.message || "Verification email sent! Please check your inbox and click the link to verify your account.");
-      setShowSuccess(true);
-      setName("");
-      setCompanyName("");
-      setPassword("");
-    } else {
-      setError(result.error || "Registration failed");
-    }
-    setLoading(false);
-  };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
+  setSuccessMessage("");
+  setShowSuccess(false);
+  setLoading(true);
+
+  const result = await signUp(email, password, name, role, role === "employer" ? companyName : undefined);
+  
+  if (result.success) {
+  setSuccessMessage(result.message);
+  setShowSuccess(true);
+  // Formu təmizlə - amma email-i SAXLA!
+  setName("");
+  setCompanyName("");
+  // setEmail(""); // BUNU SİL!
+  setPassword("");
+  } else {
+    setError(result.error || "Registration failed");
+  }
+  setLoading(false);
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center py-12 relative overflow-hidden">

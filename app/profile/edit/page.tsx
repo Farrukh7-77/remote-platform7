@@ -63,44 +63,21 @@ export default function EditProfilePage() {
   }, [user]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    // Show preview immediately
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setAvatarPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // Upload to server
-    const reader2 = new FileReader();
-    reader2.onloadend = async () => {
-      const base64String = reader2.result as string;
-      
-      // Update both avatar and company_logo for employer
-      if (user?.role === "employer") {
-        await updateUser({ 
-          avatar: base64String,
-          company_logo: base64String 
-        });
-      } else {
-        await updateUser({ avatar: base64String });
-      }
-      
-      // Force update localStorage
-      const storedUser = localStorage.getItem("auth_user");
-      if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        userData.avatar = base64String;
-        if (user?.role === "employer") {
-          userData.company_logo = base64String;
-        }
-        localStorage.setItem("auth_user", JSON.stringify(userData));
-      }
-    };
-    reader2.readAsDataURL(file);
+  const reader = new FileReader();
+  reader.onloadend = async () => {
+    const base64String = reader.result as string;
+    
+    // Həm avatar, həm də company_logo yenilə
+    await updateUser({ 
+      avatar: base64String,
+      company_logo: base64String 
+    });
   };
+  reader.readAsDataURL(file);
+};
 
   const handleCvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -1,9 +1,7 @@
-// app/verify-email/page.tsx
 "use client";
 
-import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 
 function VerifyEmailContent() {
@@ -30,14 +28,8 @@ function VerifyEmailContent() {
       .then(data => {
         if (data.success) {
           setStatus("success");
-          setMessage("Email verified! Redirecting to your profile...");
-          
-          if (data.user && data.token) {
-            localStorage.setItem("auth_user", JSON.stringify(data.user));
-            localStorage.setItem("auth_token", data.token);
-          }
-          
-          setTimeout(() => router.push("/profile"), 2000);
+          setMessage("Email verified! Redirecting to sign in...");
+          setTimeout(() => router.push("/signin"), 3000);
         } else {
           setStatus("error");
           setMessage(data.error || "Failed to verify email");
@@ -65,7 +57,9 @@ function VerifyEmailContent() {
             <div className="text-4xl mb-4">✅</div>
             <h1 className="text-2xl font-bold text-green-600 mb-2">Email Verified!</h1>
             <p className="text-gray-600 mb-4">{message}</p>
-            <p className="text-sm text-gray-500">Redirecting to your profile...</p>
+            <Link href="/signin" className="text-blue-600 hover:underline">
+              Go to Sign In →
+            </Link>
           </>
         )}
         

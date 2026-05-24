@@ -5,7 +5,12 @@ export async function POST(request: Request) {
   try {
     const { email, updates } = await request.json();
 
-    const allowedFields = ["name", "company_name", "company_website", "company_description", "company_location", "company_size", "company_industry", "company_linkedin", "avatar", "company_logo"];
+    const allowedFields = [
+      "name", "avatar", "company_logo",
+      "company_name", "company_industry", "company_location",
+      "company_size", "company_website", "company_linkedin", "company_description"
+    ];
+    
     const updateFields: string[] = [];
     const values: any[] = [];
     let paramIndex = 1;
@@ -23,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     values.push(email);
-    const query = `UPDATE users SET ${updateFields.join(", ")} WHERE email = $${paramIndex} RETURNING id, email, name, role, company_name, avatar, company_logo`;
+    const query = `UPDATE users SET ${updateFields.join(", ")} WHERE email = $${paramIndex} RETURNING *`;
 
     const result = await pool.query(query, values);
     
@@ -31,49 +36,52 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Also update companies table if employer
     const user = result.rows[0];
+
+    // İşəgötürəndirsə, companies cədvəlini də yenilə
     if (user.role === "employer") {
       const companyUpdates: string[] = [];
       const companyValues: any[] = [];
       let companyIndex = 1;
 
-      if (updates.company_name) {
+      // company_logo (users-dakı avatar və ya company_logo)
+      const logoValue = updates.company_logo || updates.avatar;
+      if (logoValue !== undefined) {
+        companyUpdates.push(`logo = $${companyIndex}`);
+        companyValues.push(logoValue);
+        companyIndex++;
+      }
+      if (updates.company_name !== undefined) {
         companyUpdates.push(`name = $${companyIndex}`);
         companyValues.push(updates.company_name);
         companyIndex++;
       }
-      if (updates.company_logo) {
-        companyUpdates.push(`logo = $${companyIndex}`);
-        companyValues.push(updates.company_logo);
-        companyIndex++;
-      }
-      if (updates.company_industry) {
+      if (updates.company_industry !== undefined) {
         companyUpdates.push(`industry = $${companyIndex}`);
         companyValues.push(updates.company_industry);
         companyIndex++;
       }
-      if (updates.company_location) {
+      if (updates.company_location !== undefined) {
         companyUpdates.push(`location = $${companyIndex}`);
         companyValues.push(updates.company_location);
         companyIndex++;
       }
-      if (updates.company_size) {
+      if (updates.company_size !== undefined) {
         companyUpdates.push(`size = $${companyIndex}`);
         companyValues.push(updates.company_size);
         companyIndex++;
       }
-      if (updates.company_description) {
+      if (updates.company_description !== undefined) {
         companyUpdates.push(`description = $${companyIndex}`);
         companyValues.push(updates.company_description);
         companyIndex++;
       }
-      if (updates.company_website) {
+      if (updates.company_website !== undefined) {
         companyUpdates.push(`website = $${companyIndex}`);
         companyValues.push(updates.company_website);
         companyIndex++;
       }
-      if (updates.company_linkedin) {
+      if (updates.company_linkedin !== undefined) {
         companyUpdates.push(`linkedin = $${companyIndex}`);
         companyValues.push(updates.company_linkedin);
         companyIndex++;

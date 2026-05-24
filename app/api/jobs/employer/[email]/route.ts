@@ -1,4 +1,3 @@
-// app/api/jobs/employer/[email]/route.ts
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 
@@ -8,17 +7,16 @@ export async function GET(
 ) {
   try {
     const { email } = await params;
-    const decodedEmail = decodeURIComponent(email);
-
+    
     const result = await pool.query(
       `SELECT id, title, company, location, type, salary_min, salary_max, 
-              description, posted_at, featured 
+              posted_at, is_featured
        FROM jobs 
        WHERE posted_by = $1 
-       ORDER BY posted_at DESC`,
-      [decodedEmail]
+       ORDER BY is_featured DESC, posted_at DESC`,
+      [email]
     );
-
+    
     return NextResponse.json({ jobs: result.rows });
   } catch (error) {
     console.error("Get employer jobs error:", error);

@@ -1,8 +1,9 @@
-// components/JobCard.tsx - Fixed null salary
+// components/JobCard.tsx - Fixed to show real company logo from API
 "use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import CategoryIcon from "./CategoryIcon";
 
 type Job = {
   id: number;
@@ -16,24 +17,47 @@ type Job = {
   salary_max: number | null;
   description: string;
   postedAt: string;
-  featured: boolean;
+  is_featured: boolean;
+  category?: string;
+  company_logo_from_companies?: string;
 };
 
-function getRelativeTime(dateString: string): string {
-  const now = new Date();
-  const posted = new Date(dateString);
-  const diffMs = now.getTime() - posted.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-
-  if (diffDays > 30) return posted.toLocaleDateString();
-  if (diffDays > 7) return `${Math.floor(diffDays / 7)} weeks ago`;
-  if (diffDays >= 1) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
-  if (diffHours >= 1) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-  if (diffMinutes >= 1) return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`;
-  return "Just now";
-}
+// Category colors mapping - Professional dark colors with white text
+const getCategoryColor = (category?: string) => {
+  switch (category?.toLowerCase()) {
+    case "project management":
+      return "bg-indigo-700 text-white border-indigo-600";
+    case "computer & it":
+    case "engineering":
+      return "bg-blue-700 text-white border-blue-600";
+    case "sales & business development":
+      return "bg-emerald-700 text-white border-emerald-600";
+    case "medical & health":
+      return "bg-red-700 text-white border-red-600";
+    case "operations":
+      return "bg-purple-700 text-white border-purple-600";
+    case "marketing & communications":
+      return "bg-pink-700 text-white border-pink-600";
+    case "accounting & finance":
+      return "bg-green-700 text-white border-green-600";
+    case "customer service":
+      return "bg-yellow-700 text-white border-yellow-600";
+    case "education & training":
+      return "bg-orange-700 text-white border-orange-600";
+    case "design":
+      return "bg-cyan-700 text-white border-cyan-600";
+    case "writing":
+      return "bg-teal-700 text-white border-teal-600";
+    case "legal":
+      return "bg-violet-700 text-white border-violet-600";
+    case "human resources":
+      return "bg-rose-700 text-white border-rose-600";
+    case "administrative":
+      return "bg-gray-700 text-white border-gray-600";
+    default:
+      return "bg-gray-600 text-white border-gray-500";
+  }
+};
 
 // Icons
 const LocationIcon = () => (
@@ -63,16 +87,16 @@ const GraduationIcon = () => (
 
 export default function JobCard({ job }: { job: Job }) {
   const router = useRouter();
-  const [isBookmarked, setIsBookmarked] = useState(() => {
+  const [isSaved, setIsSaved] = useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem(`bookmark_${job.id}`) === 'true';
     return false;
   });
 
-  const toggleBookmark = (e: React.MouseEvent) => {
+  const toggleSave = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const newVal = !isBookmarked;
-    setIsBookmarked(newVal);
+    const newVal = !isSaved;
+    setIsSaved(newVal);
     localStorage.setItem(`bookmark_${job.id}`, String(newVal));
   };
 
@@ -82,47 +106,113 @@ export default function JobCard({ job }: { job: Job }) {
     return `$${min.toLocaleString()}–${max.toLocaleString()}`;
   };
 
-  const relativeTime = getRelativeTime(job.postedAt);
+  const categoryColor = getCategoryColor(job.category);
+
+  const getShortCategory = (category?: string) => {
+    if (!category) return "Uncategorized";
+    switch (category.toLowerCase()) {
+      case "project management":
+        return "Project Mgmt";
+      case "sales & business development":
+        return "Sales & BD";
+      case "marketing & communications":
+        return "Marketing";
+      case "customer service":
+        return "Customer Support";
+      case "accounting & finance":
+        return "Finance";
+      case "education & training":
+        return "Education";
+      case "human resources":
+        return "HR";
+      default:
+        return category;
+    }
+  };
+
+  // Real logo from companies table, fallback to first letter
+  const getLogo = () => {
+    // Əvvəlcə API-dən gələn real logo
+    if (job.company_logo_from_companies) {
+      return job.company_logo_from_companies;
+    }
+    // Əgər yoxdursa, jobs cədvəlindəki companyLogo
+    if (job.companyLogo && job.companyLogo.length > 2) {
+      return job.companyLogo;
+    }
+    // Heç biri yoxdursa, şirkət adının ilk hərfi
+    return null;
+  };
+
+  const logoToShow = getLogo();
+  const showLetterOnly = !logoToShow;
 
   return (
     <div
       onClick={() => router.push(`/job/${job.id}`)}
-      className={`bg-white border border-gray-600 rounded-lg p-4 hover:shadow-lg cursor-pointer transition-all duration-200 ${
-        job.featured ? "border-l-4 border-l-yellow-500 bg-yellow-50/30" : ""
+      className={`bg-white border rounded-lg p-3 hover:shadow-lg cursor-pointer transition-all duration-200 relative ${
+        job.is_featured 
+          ? "border-yellow-500 bg-yellow-50/30 border-l-4 border-l-yellow-500" 
+          : "border-gray-600"
       }`}
     >
-      <div className="flex justify-between items-start">
-        <h3 className="text-base font-semibold text-gray-950">{job.title}</h3>
-        <button
-          onClick={toggleBookmark}
-          className={`text-lg cursor-pointer transition-all duration-200 hover:scale-110 ${
-            isBookmarked ? "text-red-500" : "text-gray-400 hover:text-yellow-500"
-          }`}
-          aria-label="Save job"
-        >
-          ★
-        </button>
+      {/* Save Button - Top Right */}
+      <button
+        onClick={toggleSave}
+        className="absolute top-2 right-2 w-7 h-7 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all duration-200 cursor-pointer"
+        aria-label="Save job"
+      >
+        {isSaved ? (
+          <svg className="w-3.5 h-3.5 text-blue-600" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+          </svg>
+        ) : (
+          <svg className="w-3.5 h-3.5 text-gray-500 hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+          </svg>
+        )}
+      </button>
+
+      {/* Top row: Logo on far right, title and company on left */}
+      <div className="flex justify-between items-start gap-2 pr-8">
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <CategoryIcon category={job.category} />
+            <h3 className="text-sm font-semibold text-gray-950">{job.title}</h3>
+          </div>
+          <p className="text-xs text-gray-700 mt-0.5">{job.company}</p>
+        </div>
+        
+        {/* Company Logo - Real image or letter */}
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 ${showLetterOnly ? (job.companyLogoBgColor || "bg-gray-100 text-gray-700") : "bg-transparent"}`}>
+          {logoToShow ? (
+            <img src={logoToShow} alt={job.company} className="w-full h-full object-contain rounded-lg" />
+          ) : (
+            job.company?.charAt(0).toUpperCase() || "C"
+          )}
+        </div>
       </div>
 
-      <p className="text-sm text-gray-700 mt-1">{job.company}</p>
-
-      <div className="flex flex-wrap items-center justify-between gap-2 mt-3">
-        <div className="flex flex-wrap gap-2">
-          <span className="inline-flex items-center px-2.5 py-1 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
+      {/* Icons and Category Badge - Bottom section */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-1 border-t border-gray-100">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
             <LocationIcon /> {job.location}
           </span>
-          <span className="inline-flex items-center px-2.5 py-1 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
+          <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
             <BriefcaseIcon /> {job.type}
           </span>
-          <span className="inline-flex items-center px-2.5 py-1 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
+          <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
             <GraduationIcon /> Senior Level
           </span>
-          <span className="inline-flex items-center px-2.5 py-1 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
+          <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
             <DollarIcon /> {formatSalary(job.salary_min, job.salary_max)}
           </span>
         </div>
-        <span className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-          📅 {relativeTime}
+        
+        {/* Category Badge - Bottom right */}
+        <span className={`inline-flex items-center justify-center w-24 px-2 py-0.5 text-xs font-medium rounded-md border truncate ${categoryColor}`}>
+          {getShortCategory(job.category)}
         </span>
       </div>
     </div>

@@ -1,16 +1,39 @@
-// app/page.tsx - Only animations added, design unchanged
+// app/page.tsx - UPDATED CATEGORIES in filter (same as post job)
 "use client";
 
 import { useState, useEffect } from "react";
 import JobCard from "@/components/JobCard";
 import Link from "next/link";
 
-// SVG Icons (same as before)
+// SVG Icons
 const BriefcaseIcon = () => <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>;
 const FolderIcon = () => <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>;
 const GlobeIcon = () => <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
 const GraduationIcon = () => <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422M12 14l6.16-3.422M12 18l9-5-9-5-9 5 9 5zm0 0l6.16-3.422" /></svg>;
 const DollarIcon = () => <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+
+// REAL WORLD CATEGORIES - same as post job
+const CATEGORIES = [
+  "Project Management",
+  "Computer & IT",
+  "Sales & Business Development",
+  "Medical & Health",
+  "Operations",
+  "Marketing & Communications",
+  "Accounting & Finance",
+  "Customer Service",
+  "Engineering",
+  "Education & Training",
+  "Design",
+  "Writing",
+  "Legal",
+  "Human Resources",
+  "Administrative"
+];
+
+const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Remote", "Internship"];
+const COUNTRIES = ["USA", "UK", "Germany", "Canada", "Australia", "Spain", "France", "Netherlands"];
+const EXPERIENCE_LEVELS = ["Entry (0-2 years)", "Mid (3-5 years)", "Senior (5+ years)"];
 
 export default function HomePage() {
   const [jobs, setJobs] = useState([]);
@@ -18,7 +41,7 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [salaryRange, setSalaryRange] = useState<[number, number]>([2000, 15000]);
+  const [salaryRange, setSalaryRange] = useState<[number, number]>([0, 200000]);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -50,23 +73,18 @@ export default function HomePage() {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const jobTypes = ["Full-time", "Part-time", "Contract", "Remote", "Internship"];
-  const categories = ["Design", "Engineering", "Marketing", "Writing", "Customer Support", "Sales"];
-  const countries = ["USA", "UK", "Germany", "Canada", "Australia", "Spain", "France", "Netherlands"];
-  const experienceLevels = ["Entry (0-2 years)", "Mid (3-5 years)", "Senior (5+ years)"];
-
   const toggleArray = (arr: string[], setArr: any, val: string) => {
     setArr(arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val]);
   };
 
   const resetFilters = () => {
-    setSelectedTypes([]);
-    setSelectedCategories([]);
-    setSalaryRange([2000, 15000]);
-    setSelectedCountries([]);
-    setSelectedExperience([]);
-    setSearchTerm("");
-  };
+  setSelectedTypes([]);
+  setSelectedCategories([]);
+  setSalaryRange([0, 200000]);  // ← DÜZGÜN - default dəyərə qayıt
+  setSelectedCountries([]);
+  setSelectedExperience([]);
+  setSearchTerm("");
+};
 
   const filteredJobs = jobs
     .filter((job: any) => {
@@ -75,38 +93,22 @@ export default function HomePage() {
         job.company.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchType = selectedTypes.length === 0 || selectedTypes.includes(job.type);
-
-      let matchCategory = true;
-      if (selectedCategories.length > 0) {
-        const categoryKeywords: Record<string, string[]> = {
-          Design: ["design", "ui", "ux", "creative"],
-          Engineering: ["developer", "engineer", "devops", "frontend", "backend"],
-          Marketing: ["marketing", "seo", "social media"],
-          Writing: ["writer", "content", "copywriter"],
-          "Customer Support": ["support", "customer success"],
-          Sales: ["sales", "business development"],
-        };
-        matchCategory = selectedCategories.some(cat =>
-          categoryKeywords[cat]?.some(kw => job.title.toLowerCase().includes(kw))
-        );
-      }
+      const matchCategory = selectedCategories.length === 0 || 
+        (job.category && selectedCategories.includes(job.category));
 
       const avgSalary = (job.salary_min + job.salary_max) / 2;
       const matchSalary = avgSalary >= salaryRange[0] && avgSalary <= salaryRange[1];
       const matchCountry = selectedCountries.length === 0 || selectedCountries.some(c => job.location.includes(c));
-
-      let matchesExperience = true;
-      if (selectedExperience.length > 0) {
-        let expMatched = false;
-        if (selectedExperience.includes("Entry (0-2 years)") && job.salary_max < 4000) expMatched = true;
-        if (selectedExperience.includes("Mid (3-5 years)") && job.salary_max >= 4000 && job.salary_max < 8000) expMatched = true;
-        if (selectedExperience.includes("Senior (5+ years)") && job.salary_max >= 8000) expMatched = true;
-        matchesExperience = expMatched;
-      }
+      const matchesExperience = selectedExperience.length === 0 || 
+        (job.experience_level && selectedExperience.includes(job.experience_level));
 
       return matchSearch && matchType && matchCategory && matchSalary && matchCountry && matchesExperience;
     })
-    .sort((a: any, b: any) => (a.featured === b.featured ? 0 : a.featured ? -1 : 1));
+    .sort((a: any, b: any) => {
+      if (a.is_featured && !b.is_featured) return -1;
+      if (!a.is_featured && b.is_featured) return 1;
+      return 0;
+    });
 
   const activeFilterCount = selectedTypes.length + selectedCategories.length + selectedCountries.length + selectedExperience.length;
 
@@ -123,7 +125,6 @@ export default function HomePage() {
 
   return (
     <div className={`min-h-screen bg-gray-100 transition-opacity duration-700 ${pageLoaded ? 'opacity-100' : 'opacity-0'}`}>
-      {/* Header - Gradient (unchanged but added subtle animation) */}
       <header className="bg-gradient-to-r from-blue-600 to-indigo-700 py-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-white/5 transform -skew-y-6"></div>
         <div className="max-w-7xl mx-auto px-4 text-center relative">
@@ -143,7 +144,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Mobile Filter Button */}
       <div className="md:hidden flex justify-end px-4 py-3">
         <button
           onClick={() => setShowFilters(!showFilters)}
@@ -173,10 +173,10 @@ export default function HomePage() {
                 </button>
               </div>
               <div className="space-y-3">
-                <FilterCard title="Job Type" icon={<BriefcaseIcon />} open={openSections.jobType} onToggle={() => toggleSection("jobType")} items={jobTypes} selected={selectedTypes} onChange={(v) => toggleArray(selectedTypes, setSelectedTypes, v)} />
-                <FilterCard title="Category" icon={<FolderIcon />} open={openSections.category} onToggle={() => toggleSection("category")} items={categories} selected={selectedCategories} onChange={(v) => toggleArray(selectedCategories, setSelectedCategories, v)} />
-                <FilterCard title="Country" icon={<GlobeIcon />} open={openSections.country} onToggle={() => toggleSection("country")} items={countries} selected={selectedCountries} onChange={(v) => toggleArray(selectedCountries, setSelectedCountries, v)} />
-                <FilterCard title="Experience" icon={<GraduationIcon />} open={openSections.experience} onToggle={() => toggleSection("experience")} items={experienceLevels} selected={selectedExperience} onChange={(v) => toggleArray(selectedExperience, setSelectedExperience, v)} />
+                <FilterCard title="Job Type" icon={<BriefcaseIcon />} open={openSections.jobType} onToggle={() => toggleSection("jobType")} items={JOB_TYPES} selected={selectedTypes} onChange={(v) => toggleArray(selectedTypes, setSelectedTypes, v)} />
+                <FilterCard title="Category" icon={<FolderIcon />} open={openSections.category} onToggle={() => toggleSection("category")} items={CATEGORIES} selected={selectedCategories} onChange={(v) => toggleArray(selectedCategories, setSelectedCategories, v)} />
+                <FilterCard title="Country" icon={<GlobeIcon />} open={openSections.country} onToggle={() => toggleSection("country")} items={COUNTRIES} selected={selectedCountries} onChange={(v) => toggleArray(selectedCountries, setSelectedCountries, v)} />
+                <FilterCard title="Experience" icon={<GraduationIcon />} open={openSections.experience} onToggle={() => toggleSection("experience")} items={EXPERIENCE_LEVELS} selected={selectedExperience} onChange={(v) => toggleArray(selectedExperience, setSelectedExperience, v)} />
                 <FilterCard title="Salary" icon={<DollarIcon />} open={openSections.salary} onToggle={() => toggleSection("salary")} isSalary salaryRange={salaryRange} setSalaryRange={setSalaryRange} />
               </div>
             </div>
@@ -185,11 +185,7 @@ export default function HomePage() {
           <div className="flex-1 max-w-3xl mx-auto">
             <div className="space-y-4">
               {filteredJobs.map((job: any, index: number) => (
-                <div 
-                  key={job.id} 
-                  className="animate-card"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
+                <div key={job.id} className="animate-card" style={{ animationDelay: `${index * 50}ms` }}>
                   <JobCard job={job} />
                 </div>
               ))}
@@ -198,58 +194,25 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Global Animation Styles */}
       <style jsx global>{`
         @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        
         @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        
-        .animate-fade-in-up {
-          animation: fadeInUp 0.6s ease-out;
-        }
-        
-        .animate-slide-down {
-          animation: slideDown 0.3s ease-out;
-        }
-        
-        .animate-card {
-          opacity: 0;
-          animation: fadeInUp 0.4s ease-out forwards;
-        }
-        
-        /* Filter card hover effect */
-        .filter-card-hover {
-          transition: all 0.2s ease;
-        }
-        
-        .filter-card-hover:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
+        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out; }
+        .animate-slide-down { animation: slideDown 0.3s ease-out; }
+        .animate-card { opacity: 0; animation: fadeInUp 0.4s ease-out forwards; }
+        .filter-card-hover { transition: all 0.2s ease; }
+        .filter-card-hover:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
       `}</style>
     </div>
   );
 }
 
-// FilterCard Component (with added hover effect)
 function FilterCard({
   title,
   icon,

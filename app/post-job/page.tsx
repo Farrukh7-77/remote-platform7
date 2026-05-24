@@ -1,10 +1,33 @@
-// app/post-job/page.tsx - with external URL option
+// app/post-job/page.tsx - UPDATED CATEGORIES
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import AuthModal from "@/components/AuthModal";
+
+const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Remote", "Internship"];
+
+// REAL WORLD CATEGORIES - prioritized by demand
+const CATEGORIES = [
+  "Project Management",
+  "Computer & IT",
+  "Sales & Business Development",
+  "Medical & Health",
+  "Operations",
+  "Marketing & Communications",
+  "Accounting & Finance",
+  "Customer Service",
+  "Engineering",
+  "Education & Training",
+  "Design",
+  "Writing",
+  "Legal",
+  "Human Resources",
+  "Administrative"
+];
+
+const EXPERIENCE_LEVELS = ["Entry (0-2 years)", "Mid (3-5 years)", "Senior (5+ years)"];
 
 export default function PostJobPage() {
   const { user } = useAuth();
@@ -17,12 +40,15 @@ export default function PostJobPage() {
     title: "",
     location: "",
     type: "Full-time",
+    category: "",
+    experienceLevel: "",
     salaryMin: "3000",
     salaryMax: "5000",
     description: "",
     requirements: "",
     applyType: "internal",
     applyUrl: "",
+    isFeatured: false,
   });
 
   if (!user) {
@@ -32,10 +58,7 @@ export default function PostJobPage() {
           <div className="text-6xl mb-4">🔒</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
           <p className="text-gray-600 mb-6">Only employers can post jobs.</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button onClick={() => setIsAuthModalOpen(true)} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer">Sign In</button>
-            <button onClick={() => router.push("/register?role=employer")} className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg cursor-pointer">Create Employer Account</button>
-          </div>
+          <button onClick={() => setIsAuthModalOpen(true)} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer">Sign In</button>
         </div>
         <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       </div>
@@ -46,9 +69,8 @@ export default function PostJobPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12">
         <div className="max-w-md w-full mx-auto bg-white rounded-xl shadow-md p-8 text-center">
-          <div className="text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Not an Employer Account</h1>
-          <p className="text-gray-600 mb-6">You are logged in as a <strong>Job Seeker</strong>. Only employer accounts can post jobs.</p>
+          <p className="text-gray-600 mb-6">Only employer accounts can post jobs.</p>
           <button onClick={() => router.push("/")} className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg cursor-pointer">← Back to Home</button>
         </div>
       </div>
@@ -67,6 +89,8 @@ export default function PostJobPage() {
       companyLogoBgColor: "bg-gray-100 text-gray-700",
       location: formData.location,
       type: formData.type,
+      category: formData.category,
+      experience_level: formData.experienceLevel,
       salaryMin: parseInt(formData.salaryMin),
       salaryMax: parseInt(formData.salaryMax),
       description: formData.description,
@@ -74,6 +98,7 @@ export default function PostJobPage() {
       postedBy: user.email,
       applyType: formData.applyType,
       applyUrl: formData.applyUrl || null,
+      is_featured: formData.isFeatured,
     };
 
     try {
@@ -96,8 +121,6 @@ export default function PostJobPage() {
     }
   };
 
-  const jobTypes = ["Full-time", "Part-time", "Contract", "Remote", "Internship"];
-
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-3xl mx-auto px-4">
@@ -110,15 +133,34 @@ export default function PostJobPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
               <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                  <option value="">Select category</option>
+                  {CATEGORIES.map(cat => <option key={cat}>{cat}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Experience Level *</label>
+                <select value={formData.experienceLevel} onChange={e => setFormData({...formData, experienceLevel: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                  <option value="">Select experience</option>
+                  {EXPERIENCE_LEVELS.map(exp => <option key={exp}>{exp}</option>)}
+                </select>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
               <input type="text" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="e.g., Global / Remote, Europe" className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
                 <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                  {jobTypes.map(t => <option key={t}>{t}</option>)}
+                  {JOB_TYPES.map(t => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div>
@@ -129,18 +171,32 @@ export default function PostJobPage() {
                 </div>
               </div>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Job Description *</label>
               <textarea rows={5} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Requirements (comma separated)</label>
               <input type="text" value={formData.requirements} onChange={e => setFormData({...formData, requirements: e.target.value})} placeholder="e.g., React, TypeScript, 3+ years" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
-              <p className="text-xs text-gray-500 mt-1">Separate each requirement with a comma</p>
             </div>
-            
+
+            {/* Featured Job Checkbox */}
+            <div className="border-t border-gray-200 pt-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isFeatured}
+                  onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
+                  className="w-4 h-4 text-yellow-500 rounded"
+                />
+                <span className="text-sm font-medium text-gray-700">⭐ Featured Job (appears on top)</span>
+              </label>
+            </div>
+
             {/* External Apply URL Option */}
-            <div className="border-t border-gray-200 pt-4 mt-2">
+            <div className="border-t border-gray-200 pt-4">
               <label className="flex items-center gap-2 cursor-pointer mb-3">
                 <input
                   type="checkbox"
@@ -154,19 +210,11 @@ export default function PostJobPage() {
               {formData.applyType === "external" && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Application URL *</label>
-                  <input
-                    type="url"
-                    value={formData.applyUrl}
-                    onChange={(e) => setFormData({...formData, applyUrl: e.target.value})}
-                    placeholder="https://company.com/careers/apply"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Candidates will be redirected to this URL when clicking "Apply"</p>
+                  <input type="url" value={formData.applyUrl} onChange={e => setFormData({...formData, applyUrl: e.target.value})} placeholder="https://company.com/careers/apply" className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
                 </div>
               )}
             </div>
-            
+
             <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 cursor-pointer">
               {isSubmitting ? "Posting..." : "Post Job"}
             </button>

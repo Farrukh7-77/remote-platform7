@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 export async function POST(request: Request) {
   try {
@@ -15,8 +18,15 @@ export async function POST(request: Request) {
     }
 
     const user = result.rows[0];
+    
+    // Create JWT token
+    const token = jwt.sign(
+      { id: user.id, email: user.email, name: user.name, role: user.role },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
-    return NextResponse.json({ success: true, user });
+    return NextResponse.json({ success: true, user, token });
   } catch (error) {
     console.error("Signin error:", error);
     return NextResponse.json({ error: "Failed to sign in" }, { status: 500 });

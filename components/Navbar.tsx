@@ -1,4 +1,4 @@
-// components/Navbar.tsx - Both mobile and desktop working
+// components/Navbar.tsx - UPDATED with Analytics link for employers
 "use client";
 
 import Link from "next/link";
@@ -186,13 +186,22 @@ export default function Navbar() {
                         👤 My Profile
                       </Link>
                       {isEmployer ? (
-                        <Link
-                          href="/employer/dashboard"
-                          className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          📊 Dashboard
-                        </Link>
+                        <>
+                          <Link
+                            href="/employer/dashboard"
+                            className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            📊 Dashboard
+                          </Link>
+                          <Link
+                            href="/employer/analytics"
+                            className="block py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            📈 Analytics
+                          </Link>
+                        </>
                       ) : (
                         <>
                           <Link

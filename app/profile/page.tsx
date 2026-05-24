@@ -1,4 +1,4 @@
-// app/profile/page.tsx
+// app/profile/page.tsx - FULLY FIXED WITH ALL COMPANY FIELDS
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
@@ -70,7 +70,7 @@ export default function ProfilePage() {
     not_looking: { label: "Not looking", color: "bg-gray-100 text-gray-700" },
   };
 
-  // İŞƏGÖTÜRƏN (EMPLOYER) PROFİLİ
+  // İŞƏGÖTÜRƏN (EMPLOYER) PROFİLİ - FULLY FIXED
   if (user.role === "employer") {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
@@ -92,23 +92,11 @@ export default function ProfilePage() {
             <div className="p-6 border-b border-gray-200 bg-gray-50">
               <div className="flex items-center gap-6">
                 <div className="w-24 h-24 rounded-xl bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">
-                  {(() => {
-                    let logo = (user as any).company_logo || (user as any).avatar;
-                    if (!logo) {
-                      const stored = localStorage.getItem("auth_user");
-                      if (stored) {
-                        try {
-                          const parsed = JSON.parse(stored);
-                          logo = parsed.company_logo || parsed.avatar;
-                        } catch(e) {}
-                      }
-                    }
-                    return logo ? (
-                      <img src={logo} alt="Logo" className="w-full h-full object-contain" />
-                    ) : (
-                      <span className="text-4xl">🏢</span>
-                    );
-                  })()}
+                  {user.avatar ? (
+                    <img src={user.avatar} alt="Logo" className="w-full h-full object-contain" />
+                  ) : (
+                    <span className="text-4xl">🏢</span>
+                  )}
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">{user.company_name || user.name}</h2>
@@ -120,42 +108,42 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-500">Industry</label>
-                  <p className="text-gray-900">{(user as any).company_industry || "Not specified"}</p>
+                  <p className="text-gray-900">{user.company_industry || "Not specified"}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">Company Size</label>
-                  <p className="text-gray-900">{(user as any).company_size || "Not specified"} employees</p>
+                  <p className="text-gray-900">{user.company_size || "Not specified"} employees</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">Location</label>
-                  <p className="text-gray-900">{(user as any).company_location || "Not specified"}</p>
+                  <p className="text-gray-900">{user.company_location || "Not specified"}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">Contact Person</label>
                   <p className="text-gray-900">{user.name}</p>
                 </div>
-                {(user as any).company_website && (
+                {user.company_website && (
                   <div>
                     <label className="block text-sm font-medium text-gray-500">Website</label>
-                    <a href={(user as any).company_website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                      {(user as any).company_website}
+                    <a href={user.company_website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      {user.company_website}
                     </a>
                   </div>
                 )}
-                {(user as any).company_linkedin && (
+                {user.company_linkedin && (
                   <div>
                     <label className="block text-sm font-medium text-gray-500">LinkedIn</label>
-                    <a href={(user as any).company_linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    <a href={user.company_linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                       LinkedIn Page
                     </a>
                   </div>
                 )}
               </div>
-              {(user as any).company_description && (
+              {user.company_description && (
                 <div>
                   <label className="block text-sm font-medium text-gray-500 mb-1">About the Company</label>
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <p className="text-gray-700 whitespace-pre-wrap">{(user as any).company_description}</p>
+                    <p className="text-gray-700 whitespace-pre-wrap">{user.company_description}</p>
                   </div>
                 </div>
               )}
@@ -188,23 +176,11 @@ export default function ProfilePage() {
           <div className="p-6 bg-white">
             <div className="flex items-center gap-6">
               <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-300">
-                {(() => {
-                  let avatar = user.avatar;
-                  if (!avatar) {
-                    const stored = localStorage.getItem("auth_user");
-                    if (stored) {
-                      try {
-                        const parsed = JSON.parse(stored);
-                        avatar = parsed.avatar;
-                      } catch(e) {}
-                    }
-                  }
-                  return avatar ? (
-                    <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-4xl">👤</span>
-                  );
-                })()}
+                {user.avatar ? (
+                  <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-4xl">👤</span>
+                )}
               </div>
               <div>
                 <div className="flex items-center gap-3 flex-wrap">
