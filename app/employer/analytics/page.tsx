@@ -153,28 +153,29 @@ export default function EmployerAnalytics() {
   };
 
   const getDailyData = () => {
-    const last30Days: { date: string; count: number }[] = [];
-    const today = new Date();
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      last30Days.push({ date: dateStr, applications: 0 });
+  const last30Days: { date: string; applications: number }[] = [];
+  const today = new Date();
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    last30Days.push({ date: dateStr, applications: 0 });
+  }
+  
+  const allApplications = JSON.parse(localStorage.getItem("applications") || "[]");
+  const employerJobIds = new Set(jobs.map(j => j.id));
+  
+  // Hər gün üçün tətbiq sayını hesablayın
+  allApplications.forEach((app: any) => {
+    if (employerJobIds.has(app.jobId)) {
+      const appDate = new Date(app.appliedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const dayData = last30Days.find(d => d.date === appDate);
+      if (dayData) dayData.applications++;
     }
-    const allApplications = JSON.parse(localStorage.getItem("applications") || "[]");
-    const employerJobIds = new Set(jobs.map(j => j.id));
-    allApplications.forEach((app: any) => {
-      if (employerJobIds.has(app.jobId)) {
-        const appDate = new Date(app.appliedAt);
-        const dayIndex = Math.floor((today.getTime() - appDate.getTime()) / (1000 * 60 * 60 * 24));
-        if (dayIndex >= 0 && dayIndex < 30) {
-          const idx = 29 - dayIndex;
-          if (last30Days[idx]) last30Days[idx].applications += 1;
-        }
-      }
-    });
-    return last30Days;
-  };
+  });
+  
+  return last30Days;
+};
 
   const topJobs = [...jobs].filter(j => j.application_count > 0).sort((a, b) => b.application_count - a.application_count).slice(0, 5);
   const monthlyData = prepareMonthlyData();
