@@ -153,29 +153,28 @@ export default function EmployerAnalytics() {
   };
 
   const getDailyData = () => {
-  const last30Days: { date: string; applications: number }[] = [];
-  const today = new Date();
-  for (let i = 29; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - i);
-    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    last30Days.push({ date: dateStr, applications: 0 });
-  }
-  
-  const allApplications = JSON.parse(localStorage.getItem("applications") || "[]");
-  const employerJobIds = new Set(jobs.map(j => j.id));
-  
-  // Hər gün üçün tətbiq sayını hesablayın
-  allApplications.forEach((app: any) => {
-    if (employerJobIds.has(app.jobId)) {
-      const appDate = new Date(app.appliedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      const dayData = last30Days.find(d => d.date === appDate);
-      if (dayData) dayData.applications++;
+    const last30Days: { date: string; applications: number }[] = [];
+    const today = new Date();
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      last30Days.push({ date: dateStr, applications: 0 });
     }
-  });
-  
-  return last30Days;
-};
+    
+    const allApplications = JSON.parse(localStorage.getItem("applications") || "[]");
+    const employerJobIds = new Set(jobs.map(j => j.id));
+    
+    allApplications.forEach((app: any) => {
+      if (employerJobIds.has(app.jobId)) {
+        const appDate = new Date(app.appliedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const dayData = last30Days.find(d => d.date === appDate);
+        if (dayData) dayData.applications++;
+      }
+    });
+    
+    return last30Days;
+  };
 
   const topJobs = [...jobs].filter(j => j.application_count > 0).sort((a, b) => b.application_count - a.application_count).slice(0, 5);
   const monthlyData = prepareMonthlyData();
@@ -231,7 +230,11 @@ export default function EmployerAnalytics() {
                 { value: "year", label: "Year" },
                 { value: "all", label: "All Time" }
               ].map((filter) => (
-                <button key={filter.value} onClick={() => setTimeFilter(filter.value as TimeFilter)} className={`px-4 py-2 text-sm font-medium rounded-md transition-all cursor-pointer ${timeFilter === filter.value ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-100"}`}>
+                <button 
+                  key={filter.value} 
+                  onClick={() => setTimeFilter(filter.value as TimeFilter)} 
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all cursor-pointer ${timeFilter === filter.value ? "bg-blue-600 text-white shadow-sm" : "text-gray-600 hover:bg-gray-100"}`}
+                >
                   {filter.label}
                 </button>
               ))}
@@ -338,8 +341,18 @@ export default function EmployerAnalytics() {
             {categoryData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
-                  <Pie data={categoryData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, percent = 0 }) => `${name}: ${(percent * 100).toFixed(0)}%`}>
-                    {categoryData.map((entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />))}
+                  <Pie 
+                    data={categoryData} 
+                    dataKey="value" 
+                    nameKey="name" 
+                    cx="50%" 
+                    cy="50%" 
+                    outerRadius={100} 
+                    label={({ name, percent = 0 }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
                   </Pie>
                   <Tooltip />
                   <Legend />
@@ -358,8 +371,19 @@ export default function EmployerAnalytics() {
             {jobTypeData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
-                  <Pie data={jobTypeData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={100} label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}>
-                    {jobTypeData.map((entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />))}
+                  <Pie 
+                    data={jobTypeData} 
+                    dataKey="value" 
+                    nameKey="name" 
+                    cx="50%" 
+                    cy="50%" 
+                    innerRadius={60} 
+                    outerRadius={100} 
+                    label={({ name, percent = 0 }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {jobTypeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
                   </Pie>
                   <Tooltip />
                   <Legend />
@@ -411,7 +435,7 @@ export default function EmployerAnalytics() {
                   <th className="text-center py-3 px-4 font-semibold text-gray-600">Posted Date</th>
                   <th className="text-center py-3 px-4 font-semibold text-gray-600">Applications</th>
                   <th className="text-center py-3 px-4 font-semibold text-gray-600">Status</th>
-                 </tr>
+                </tr>
               </thead>
               <tbody>
                 {jobs.length > 0 ? jobs.map((job) => (
