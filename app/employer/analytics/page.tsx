@@ -1,4 +1,4 @@
-// app/employer/analytics/page.tsx - FIXED
+// app/employer/analytics/page.tsx - FIXED TypeScript errors
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
@@ -78,7 +78,8 @@ export default function EmployerAnalytics() {
         setJobs(jobsWithApps);
         const filteredJobs = jobsWithApps.filter((job: any) => isWithinTimeFilter(job.posted_at));
         setTotalJobs(filteredJobs.length);
-        setTotalApplications(filteredJobs.reduce((sum, job) => sum + job.application_count, 0));
+        const total = filteredJobs.reduce((sum: number, job: any) => sum + job.application_count, 0);
+        setTotalApplications(total);
       } catch (error) {
         console.error("Failed to fetch analytics:", error);
       } finally {
@@ -104,7 +105,8 @@ export default function EmployerAnalytics() {
         const filteredJobs = jobsWithApps.filter((job: any) => isWithinTimeFilter(job.posted_at));
         setJobs(filteredJobs);
         setTotalJobs(filteredJobs.length);
-        setTotalApplications(filteredJobs.reduce((sum, job) => sum + job.application_count, 0));
+        const total = filteredJobs.reduce((sum: number, job: any) => sum + job.application_count, 0);
+        setTotalApplications(total);
       } catch (error) {
         console.error("Failed to refresh data:", error);
       } finally {
@@ -127,7 +129,7 @@ export default function EmployerAnalytics() {
         existing.applications += job.application_count;
       }
     });
-    return Array.from(monthlyMap.values()).filter(m => m.jobs > 0 || m.applications > 0);
+    return Array.from(monthlyMap.values()).filter((m: any) => m.jobs > 0 || m.applications > 0);
   };
 
   const getCategoryData = () => {
@@ -274,7 +276,6 @@ export default function EmployerAnalytics() {
 
         {/* Charts - Row 1 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Monthly Activity */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Activity</h3>
             {monthlyData.length > 0 ? (
@@ -294,7 +295,6 @@ export default function EmployerAnalytics() {
             )}
           </div>
 
-          {/* Daily Applications Trend (Last 30 Days) */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Daily Applications (Last 30 Days)</h3>
             {dailyData.some(d => d.applications > 0) ? (
@@ -315,7 +315,6 @@ export default function EmployerAnalytics() {
 
         {/* Charts - Row 2 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Top Jobs by Applications */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Jobs by Applications</h3>
             {topJobs.length > 0 ? (
@@ -333,7 +332,6 @@ export default function EmployerAnalytics() {
             )}
           </div>
 
-          {/* Applications by Category - Pie Chart */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Applications by Category</h3>
             {categoryData.length > 0 ? (
@@ -354,7 +352,6 @@ export default function EmployerAnalytics() {
 
         {/* Charts - Row 3 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Applications by Job Type - Donut Chart */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Applications by Job Type</h3>
             {jobTypeData.length > 0 ? (
@@ -372,7 +369,6 @@ export default function EmployerAnalytics() {
             )}
           </div>
 
-          {/* Quick Insights */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Insights</h3>
             <div className="space-y-4">
@@ -395,7 +391,7 @@ export default function EmployerAnalytics() {
                 <span className="text-gray-600">Featured jobs boost</span>
                 <span className="font-semibold text-green-600">
                   {jobs.filter(j => j.is_featured).length > 0 && jobs.filter(j => !j.is_featured).length > 0
-                    ? `${Math.round((jobs.filter(j => j.is_featured).reduce((s, j) => s + j.application_count, 0) / jobs.filter(j => j.is_featured).length) / (jobs.filter(j => !j.is_featured).reduce((s, j) => s + j.application_count, 0) / jobs.filter(j => !j.is_featured).length) * 100)}% more`
+                    ? `${Math.round((jobs.filter(j => j.is_featured).reduce((s: number, j: any) => s + j.application_count, 0) / jobs.filter(j => j.is_featured).length) / (jobs.filter(j => !j.is_featured).reduce((s: number, j: any) => s + j.application_count, 0) / jobs.filter(j => !j.is_featured).length) * 100)}% more`
                     : "N/A"}
                 </span>
               </div>
@@ -414,7 +410,7 @@ export default function EmployerAnalytics() {
                   <th className="text-center py-3 px-4 font-semibold text-gray-600">Posted Date</th>
                   <th className="text-center py-3 px-4 font-semibold text-gray-600">Applications</th>
                   <th className="text-center py-3 px-4 font-semibold text-gray-600">Status</th>
-                </tr>
+                 </tr>
               </thead>
               <tbody>
                 {jobs.length > 0 ? jobs.map((job) => (
