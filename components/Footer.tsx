@@ -17,30 +17,30 @@ export default function Footer() {
           <div>
             <h4 className="font-medium text-gray-900 dark:text-white mb-4">Quick Links</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/" className="text-gray-600 dark:text-gray-400 hover:text-blue-600">Home</Link></li>
-              <li><Link href="/companies" className="text-gray-600 dark:text-gray-400 hover:text-blue-600">Companies</Link></li>
-              <li><Link href="/about" className="text-gray-600 dark:text-gray-400 hover:text-blue-600">About</Link></li>
-              <li><Link href="/contact" className="text-gray-600 dark:text-gray-400 hover:text-blue-600">Contact</Link></li>
+              <li><Link href="/" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 transition">Home</Link></li>
+              <li><Link href="/companies" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 transition">Companies</Link></li>
+              <li><Link href="/about" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 transition">About</Link></li>
+              <li><Link href="/contact" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 transition">Contact</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-medium text-gray-900 dark:text-white mb-4">For Employers</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/post-job" className="text-gray-600 dark:text-gray-400 hover:text-blue-600">Post a Job</Link></li>
-              <li><a href="#" className="text-gray-600 dark:text-gray-400 hover:text-blue-600">Pricing</a></li>
-              <li><a href="#" className="text-gray-600 dark:text-gray-400 hover:text-blue-600">Hire Talent</a></li>
+              <li><Link href="/post-job" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 transition">Post a Job</Link></li>
+              <li><a href="#" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 transition">Pricing</a></li>
+              <li><a href="#" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 transition">Hire Talent</a></li>
             </ul>
           </div>
           <div>
             <h4 className="font-medium text-gray-900 dark:text-white mb-4">Legal</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-gray-600 dark:text-gray-400 hover:text-blue-600">Privacy Policy</a></li>
-              <li><a href="#" className="text-gray-600 dark:text-gray-400 hover:text-blue-600">Terms of Service</a></li>
+              <li><Link href="/privacy" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 transition">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 transition">Terms of Service</Link></li>
             </ul>
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800 text-center text-sm text-gray-500 dark:text-gray-400">
-          <p>© 2026 RemoteJobs. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} RemoteJobs. All rights reserved.</p>
         </div>
       </div>
     </footer>

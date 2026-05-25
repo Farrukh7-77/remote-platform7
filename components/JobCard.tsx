@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import CategoryIcon from "./CategoryIcon";
+import { useToast, Toast } from "./Toast";
 
 type Job = {
   id: number;
@@ -88,6 +89,7 @@ const GraduationIcon = () => (
 
 export default function JobCard({ job }: { job: Job }) {
   const { user, openAuthModal } = useAuth();
+  const { toast, showToast, hideToast } = useToast();
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -128,6 +130,11 @@ export default function JobCard({ job }: { job: Job }) {
   const toggleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (user?.role === "employer") {
+      showToast("Employers cannot save jobs. This feature is for job seekers only.", "warning");
+      return;
+    }
     
     if (!user) {
       openAuthModal();
@@ -156,6 +163,7 @@ export default function JobCard({ job }: { job: Job }) {
         
         if (response.ok) {
           setIsSaved(false);
+          showToast("Job removed from saved list", "success");
         } else {
           console.error("Failed to remove saved job");
         }
@@ -172,6 +180,7 @@ export default function JobCard({ job }: { job: Job }) {
         
         if (response.ok) {
           setIsSaved(true);
+          showToast("Job saved successfully", "success");
         } else {
           console.error("Failed to save job");
         }
@@ -227,73 +236,77 @@ export default function JobCard({ job }: { job: Job }) {
   const showLetterOnly = !logoToShow;
 
   return (
-    <div
-      onClick={() => router.push(`/job/${job.id}`)}
-      className={`bg-white border rounded-lg p-3 hover:shadow-lg cursor-pointer transition-all duration-200 relative ${
-        job.is_featured 
-          ? "border-yellow-500 bg-yellow-50/30 border-l-4 border-l-yellow-500" 
-          : "border-gray-600"
-      }`}
-    >
-      {/* Save Button - Top Right */}
-      <button
-        onClick={toggleSave}
-        disabled={loading}
-        className="absolute top-2 right-2 w-7 h-7 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-50"
-        aria-label="Save job"
+    <>
+      <div
+        onClick={() => router.push(`/job/${job.id}`)}
+        className={`bg-white border rounded-lg p-3 hover:shadow-lg cursor-pointer transition-all duration-200 relative ${
+          job.is_featured 
+            ? "border-yellow-500 bg-yellow-50/30 border-l-4 border-l-yellow-500" 
+            : "border-gray-600"
+        }`}
       >
-        {isSaved ? (
-          <svg className="w-3.5 h-3.5 text-blue-600" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-          </svg>
-        ) : (
-          <svg className="w-3.5 h-3.5 text-gray-500 hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-          </svg>
-        )}
-      </button>
-
-      {/* Top row: Logo on far right, title and company on left */}
-      <div className="flex justify-between items-start gap-2 pr-8">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <CategoryIcon category={job.category} />
-            <h3 className="text-sm font-semibold text-gray-950">{job.title}</h3>
-          </div>
-          <p className="text-xs text-gray-700 mt-0.5">{job.company}</p>
-        </div>
-        
-        {/* Company Logo */}
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 ${showLetterOnly ? (job.companyLogoBgColor || "bg-gray-100 text-gray-700") : "bg-transparent"}`}>
-          {logoToShow ? (
-            <img src={logoToShow} alt={job.company} className="w-full h-full object-contain rounded-lg" />
+        {/* Save Button - Top Right */}
+        <button
+          onClick={toggleSave}
+          disabled={loading}
+          className="absolute top-2 right-2 w-7 h-7 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-50"
+          aria-label="Save job"
+        >
+          {isSaved ? (
+            <svg className="w-3.5 h-3.5 text-blue-600" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
           ) : (
-            job.company?.charAt(0).toUpperCase() || "C"
+            <svg className="w-3.5 h-3.5 text-gray-500 hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
           )}
-        </div>
-      </div>
+        </button>
 
-      {/* Icons and Category Badge */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-1 border-t border-gray-100">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
-            <LocationIcon /> {job.location}
-          </span>
-          <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
-            <BriefcaseIcon /> {job.type}
-          </span>
-          <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
-            <GraduationIcon /> Senior Level
-          </span>
-          <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
-            <DollarIcon /> {formatSalary(job.salary_min, job.salary_max)}
+        {/* Top row: Logo on far right, title and company on left */}
+        <div className="flex justify-between items-start gap-2 pr-8">
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <CategoryIcon category={job.category} />
+              <h3 className="text-sm font-semibold text-gray-950">{job.title}</h3>
+            </div>
+            <p className="text-xs text-gray-700 mt-0.5">{job.company}</p>
+          </div>
+          
+          {/* Company Logo */}
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 ${showLetterOnly ? (job.companyLogoBgColor || "bg-gray-100 text-gray-700") : "bg-transparent"}`}>
+            {logoToShow ? (
+              <img src={logoToShow} alt={job.company} className="w-full h-full object-contain rounded-lg" />
+            ) : (
+              job.company?.charAt(0).toUpperCase() || "C"
+            )}
+          </div>
+        </div>
+
+        {/* Icons and Category Badge */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-1 border-t border-gray-100">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
+              <LocationIcon /> {job.location}
+            </span>
+            <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
+              <BriefcaseIcon /> {job.type}
+            </span>
+            <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
+              <GraduationIcon /> Senior Level
+            </span>
+            <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
+              <DollarIcon /> {formatSalary(job.salary_min, job.salary_max)}
+            </span>
+          </div>
+          
+          <span className={`inline-flex items-center justify-center w-24 px-2 py-0.5 text-xs font-medium rounded-md border truncate ${categoryColor}`}>
+            {getShortCategory(job.category)}
           </span>
         </div>
-        
-        <span className={`inline-flex items-center justify-center w-24 px-2 py-0.5 text-xs font-medium rounded-md border truncate ${categoryColor}`}>
-          {getShortCategory(job.category)}
-        </span>
       </div>
-    </div>
+      
+      {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
+    </>
   );
 }
