@@ -28,6 +28,9 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => void;
   updateUser: (updates: Partial<User>) => Promise<void>;
+  openAuthModal: () => void;
+  closeAuthModal: () => void;
+  showAuthModal: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,6 +38,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Load user from localStorage on page load/refresh
   useEffect(() => {
@@ -53,6 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setLoading(false);
   }, []);
+
+  const openAuthModal = () => setShowAuthModal(true);
+  const closeAuthModal = () => setShowAuthModal(false);
 
   const signUp = async (email: string, password: string, name: string, role: UserRole, companyName?: string) => {
     setLoading(true);
@@ -77,30 +84,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-  setLoading(true);
-  try {
-    const response = await fetch("/api/auth/signin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setLoading(false);
+        return { success: false, error: data.error };
+      }
+      setUser(data.user);
+      localStorage.setItem("auth_user", JSON.stringify(data.user));
+      if (data.token) {
+        localStorage.setItem("auth_token", data.token);
+      }
       setLoading(false);
-      return { success: false, error: data.error };
+      return { success: true };
+    } catch (error) {
+      setLoading(false);
+      return { success: false, error: "Login failed" };
     }
-    setUser(data.user);
-    localStorage.setItem("auth_user", JSON.stringify(data.user));
-    if (data.token) {
-      localStorage.setItem("auth_token", data.token);
-    }
-    setLoading(false);
-    return { success: true };
-  } catch (error) {
-    setLoading(false);
-    return { success: false, error: "Login failed" };
-  }
-};
+  };
 
   const signOut = () => {
     setUser(null);
@@ -130,7 +137,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut, updateUser }}>
+    <AuthContext.Provider value={{ 
+      user, loading, signUp, signIn, signOut, updateUser,
+      openAuthModal, closeAuthModal, showAuthModal
+    }}>
       {children}
     </AuthContext.Provider>
   );

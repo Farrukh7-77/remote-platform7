@@ -12,10 +12,9 @@ import UserMenu from "./UserMenu";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { user, signOut } = useAuth();
+  const { user, signOut, showAuthModal, closeAuthModal, openAuthModal } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isJobAlertModalOpen, setIsJobAlertModalOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isMobileUserMenuOpen, setIsMobileUserMenuOpen] = useState(false);
 
   const links = [
@@ -78,7 +77,7 @@ export default function Navbar() {
               {!user ? (
                 <>
                   <button
-                    onClick={() => setIsAuthModalOpen(true)}
+                    onClick={openAuthModal}
                     className="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                   >
                     Sign In
@@ -145,7 +144,7 @@ export default function Navbar() {
                 <>
                   <button
                     onClick={() => {
-                      setIsAuthModalOpen(true);
+                      openAuthModal();
                       setIsMobileMenuOpen(false);
                     }}
                     className="block w-full text-left py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 cursor-pointer"
@@ -241,7 +240,7 @@ export default function Navbar() {
       </nav>
 
       <JobAlertModal isOpen={isJobAlertModalOpen} onClose={() => setIsJobAlertModalOpen(false)} filters={currentFilters} />
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <AuthModal isOpen={showAuthModal} onClose={closeAuthModal} />
     </>
   );
 }

@@ -1,8 +1,9 @@
-// components/JobCard.tsx - Fixed to show real company logo from API
+// components/JobCard.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 import CategoryIcon from "./CategoryIcon";
 
 type Job = {
@@ -22,7 +23,7 @@ type Job = {
   company_logo_from_companies?: string;
 };
 
-// Category colors mapping - Professional dark colors with white text
+// Category colors mapping
 const getCategoryColor = (category?: string) => {
   switch (category?.toLowerCase()) {
     case "project management":
@@ -86,18 +87,100 @@ const GraduationIcon = () => (
 );
 
 export default function JobCard({ job }: { job: Job }) {
+  const { user, openAuthModal } = useAuth();
   const router = useRouter();
-  const [isSaved, setIsSaved] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem(`bookmark_${job.id}`) === 'true';
-    return false;
-  });
+  const [isSaved, setIsSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const toggleSave = (e: React.MouseEvent) => {
+  // Get token
+  const getToken = () => localStorage.getItem("auth_token");
+
+  // Check if job is saved on mount and when user changes
+  useEffect(() => {
+    const checkSavedStatus = async () => {
+      const token = getToken();
+      if (!user || !token) {
+        setIsSaved(false);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/saved-jobs", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        if (data.savedJobIds) {
+          setIsSaved(data.savedJobIds.includes(job.id));
+        }
+      } catch (error) {
+        console.error("Error checking saved status:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkSavedStatus();
+  }, [user, job.id]);
+
+  const toggleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const newVal = !isSaved;
-    setIsSaved(newVal);
-    localStorage.setItem(`bookmark_${job.id}`, String(newVal));
+    
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+
+    const token = getToken();
+    if (!token) {
+      openAuthModal();
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      if (isSaved) {
+        // Unsave
+        const response = await fetch("/api/saved-jobs", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ jobId: job.id })
+        });
+        
+        if (response.ok) {
+          setIsSaved(false);
+        } else {
+          console.error("Failed to remove saved job");
+        }
+      } else {
+        // Save
+        const response = await fetch("/api/saved-jobs", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ jobId: job.id })
+        });
+        
+        if (response.ok) {
+          setIsSaved(true);
+        } else {
+          console.error("Failed to save job");
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling save:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatSalary = (min: number | null, max: number | null) => {
@@ -130,17 +213,13 @@ export default function JobCard({ job }: { job: Job }) {
     }
   };
 
-  // Real logo from companies table, fallback to first letter
   const getLogo = () => {
-    // Əvvəlcə API-dən gələn real logo
     if (job.company_logo_from_companies) {
       return job.company_logo_from_companies;
     }
-    // Əgər yoxdursa, jobs cədvəlindəki companyLogo
     if (job.companyLogo && job.companyLogo.length > 2) {
       return job.companyLogo;
     }
-    // Heç biri yoxdursa, şirkət adının ilk hərfi
     return null;
   };
 
@@ -159,7 +238,8 @@ export default function JobCard({ job }: { job: Job }) {
       {/* Save Button - Top Right */}
       <button
         onClick={toggleSave}
-        className="absolute top-2 right-2 w-7 h-7 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all duration-200 cursor-pointer"
+        disabled={loading}
+        className="absolute top-2 right-2 w-7 h-7 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-50"
         aria-label="Save job"
       >
         {isSaved ? (
@@ -183,7 +263,7 @@ export default function JobCard({ job }: { job: Job }) {
           <p className="text-xs text-gray-700 mt-0.5">{job.company}</p>
         </div>
         
-        {/* Company Logo - Real image or letter */}
+        {/* Company Logo */}
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 ${showLetterOnly ? (job.companyLogoBgColor || "bg-gray-100 text-gray-700") : "bg-transparent"}`}>
           {logoToShow ? (
             <img src={logoToShow} alt={job.company} className="w-full h-full object-contain rounded-lg" />
@@ -193,7 +273,7 @@ export default function JobCard({ job }: { job: Job }) {
         </div>
       </div>
 
-      {/* Icons and Category Badge - Bottom section */}
+      {/* Icons and Category Badge */}
       <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-1 border-t border-gray-100">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
@@ -210,7 +290,6 @@ export default function JobCard({ job }: { job: Job }) {
           </span>
         </div>
         
-        {/* Category Badge - Bottom right */}
         <span className={`inline-flex items-center justify-center w-24 px-2 py-0.5 text-xs font-medium rounded-md border truncate ${categoryColor}`}>
           {getShortCategory(job.category)}
         </span>

@@ -1,4 +1,4 @@
-// app/job/[id]/page.tsx - BOTH APPLY BUTTONS (top right AND bottom)
+// app/job/[id]/page.tsx - WITH DATABASE APPLICATIONS
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -60,6 +60,7 @@ export default function JobDetailPage() {
   const [differentCvName, setDifferentCvName] = useState("");
 
   const isEmployer = user?.role === "employer";
+  const getToken = () => localStorage.getItem("auth_token");
 
   useEffect(() => {
     fetch(`/api/jobs/${id}`)
@@ -86,14 +87,30 @@ export default function JobDetailPage() {
       });
   }, [id]);
 
+  // Check if user has already applied - from DATABASE
   useEffect(() => {
-    if (user && job) {
-      const applications = JSON.parse(localStorage.getItem("applications") || "[]");
-      const alreadyApplied = applications.some(
-        (app: any) => app.jobId === job.id && app.applicantEmail === user.email
-      );
-      setHasApplied(alreadyApplied);
-    }
+    const checkAppliedStatus = async () => {
+      if (!user || !job) return;
+      
+      const token = getToken();
+      if (!token) return;
+      
+      try {
+        const response = await fetch("/api/applications", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        const applications = data.applications || [];
+        const alreadyApplied = applications.some((app: any) => app.job_id === job.id);
+        setHasApplied(alreadyApplied);
+      } catch (error) {
+        console.error("Error checking application status:", error);
+      }
+    };
+    
+    checkAppliedStatus();
   }, [user, job]);
 
   const sendApplicationEmail = async (applicationData: {
@@ -155,34 +172,81 @@ export default function JobDetailPage() {
   };
 
   const handleSubmitApplication = async () => {
-    setIsSubmitting(true);
-    
-    const applications = JSON.parse(localStorage.getItem("applications") || "[]");
-    applications.push({ id: Date.now(), jobId: job.id, jobTitle: job.title, company: job.company, applicantName: user?.name, applicantEmail: user?.email, coverLetter, appliedAt: new Date().toISOString(), isGuest: false });
-    localStorage.setItem("applications", JSON.stringify(applications));
-    
-    let cvFile = null;
-    if (useDifferentCv && differentCvFile) {
-      cvFile = differentCvFile;
-    } else {
-      const savedCv = localStorage.getItem(`cv_${user?.email}`);
-      if (savedCv) {
-        try {
-          const parsed = JSON.parse(savedCv);
-          const byteCharacters = atob(parsed.data.split(',')[1]);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
-          const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
-          cvFile = new File([blob], parsed.name, { type: 'application/pdf' });
-        } catch(e) {}
-      }
+    if (!user) {
+      alert("Please sign in to apply");
+      return;
     }
     
-    await sendApplicationEmail({ name: user?.name || "", email: user?.email || "", coverLetter, cvFile });
-    setHasApplied(true);
-    setSubmitted(true);
-    setShowApplyModal(false);
-    setIsSubmitting(false);
+    setIsSubmitting(true);
+    
+    const token = getToken();
+    if (!token) {
+      alert("Please sign in again");
+      setIsSubmitting(false);
+      return;
+    }
+    
+    try {
+      // Save application to DATABASE
+      const response = await fetch("/api/applications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          jobId: job.id,
+          fullName: user.name,
+          email: user.email,
+          phone: "",
+          coverLetter: coverLetter,
+          resumeUrl: "",
+          portfolioUrl: "",
+          linkedinUrl: ""
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Send email notification
+        let cvFile = null;
+        if (useDifferentCv && differentCvFile) {
+          cvFile = differentCvFile;
+        } else {
+          const savedCv = localStorage.getItem(`cv_${user?.email}`);
+          if (savedCv) {
+            try {
+              const parsed = JSON.parse(savedCv);
+              const byteCharacters = atob(parsed.data.split(',')[1]);
+              const byteNumbers = new Array(byteCharacters.length);
+              for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
+              const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
+              cvFile = new File([blob], parsed.name, { type: 'application/pdf' });
+            } catch(e) {}
+          }
+        }
+        
+        await sendApplicationEmail({ 
+          name: user.name, 
+          email: user.email, 
+          coverLetter, 
+          cvFile 
+        });
+        
+        setHasApplied(true);
+        setSubmitted(true);
+        setShowApplyModal(false);
+        alert("Application submitted successfully!");
+      } else {
+        alert(data.error || "Failed to submit application");
+      }
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-gray-500">Loading...</div></div>;
