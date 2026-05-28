@@ -1,10 +1,9 @@
-// components/JobCard.tsx
+// components/JobCard.tsx - FULLY UPDATED WITH GROUP HOVER FOR SALARY
 "use client";
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import CategoryIcon from "./CategoryIcon";
 import { useToast, Toast } from "./Toast";
 
 type Job = {
@@ -21,71 +20,112 @@ type Job = {
   postedAt: string;
   is_featured: boolean;
   category?: string;
+  experience_level?: string;
   company_logo_from_companies?: string;
+  applicants_count?: number;
 };
 
 // Category colors mapping
 const getCategoryColor = (category?: string) => {
   switch (category?.toLowerCase()) {
     case "project management":
-      return "bg-indigo-700 text-white border-indigo-600";
+      return "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
     case "computer & it":
     case "engineering":
-      return "bg-blue-700 text-white border-blue-600";
+      return "bg-blue-500/10 text-blue-400 border-blue-500/20";
     case "sales & business development":
-      return "bg-emerald-700 text-white border-emerald-600";
+      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
     case "medical & health":
-      return "bg-red-700 text-white border-red-600";
+      return "bg-red-500/10 text-red-400 border-red-500/20";
     case "operations":
-      return "bg-purple-700 text-white border-purple-600";
+      return "bg-purple-500/10 text-purple-400 border-purple-500/20";
     case "marketing & communications":
-      return "bg-pink-700 text-white border-pink-600";
+      return "bg-pink-500/10 text-pink-400 border-pink-500/20";
     case "accounting & finance":
-      return "bg-green-700 text-white border-green-600";
+      return "bg-green-500/10 text-green-400 border-green-500/20";
     case "customer service":
-      return "bg-yellow-700 text-white border-yellow-600";
+      return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
     case "education & training":
-      return "bg-orange-700 text-white border-orange-600";
+      return "bg-orange-500/10 text-orange-400 border-orange-500/20";
     case "design":
-      return "bg-cyan-700 text-white border-cyan-600";
+      return "bg-cyan-500/10 text-cyan-400 border-cyan-500/20";
     case "writing":
-      return "bg-teal-700 text-white border-teal-600";
+      return "bg-teal-500/10 text-teal-400 border-teal-500/20";
     case "legal":
-      return "bg-violet-700 text-white border-violet-600";
+      return "bg-violet-500/10 text-violet-400 border-violet-500/20";
     case "human resources":
-      return "bg-rose-700 text-white border-rose-600";
+      return "bg-rose-500/10 text-rose-400 border-rose-500/20";
     case "administrative":
-      return "bg-gray-700 text-white border-gray-600";
+      return "bg-gray-500/10 text-gray-400 border-gray-500/20";
     default:
-      return "bg-gray-600 text-white border-gray-500";
+      return "bg-gray-500/10 text-gray-400 border-gray-500/20";
+  }
+};
+
+// Experience level color
+const getLevelColor = (level?: string) => {
+  switch (level?.toLowerCase()) {
+    case "entry (0-2 years)":
+      return "text-green-400";
+    case "mid (3-5 years)":
+      return "text-blue-400";
+    case "senior (5+ years)":
+      return "text-purple-400";
+    default:
+      return "text-gray-400";
   }
 };
 
 // Icons
 const LocationIcon = () => (
-  <svg className="w-3.5 h-3.5 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
   </svg>
 );
 
 const BriefcaseIcon = () => (
-  <svg className="w-3.5 h-3.5 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
   </svg>
 );
 
 const DollarIcon = () => (
-  <svg className="w-3.5 h-3.5 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 );
 
 const GraduationIcon = () => (
-  <svg className="w-3.5 h-3.5 text-gray-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422M12 14l6.16-3.422M12 18l9-5-9-5-9 5 9 5zm0 0l6.16-3.422" />
   </svg>
 );
+
+const ClockIcon = () => (
+  <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const EyeIcon = () => (
+  <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+  </svg>
+);
+
+// Helper function to format time ago
+function timeAgo(date: string) {
+  const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d`;
+}
 
 export default function JobCard({ job }: { job: Job }) {
   const { user, openAuthModal } = useAuth();
@@ -94,10 +134,8 @@ export default function JobCard({ job }: { job: Job }) {
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Get token
   const getToken = () => localStorage.getItem("auth_token");
 
-  // Check if job is saved on mount and when user changes
   useEffect(() => {
     const checkSavedStatus = async () => {
       const token = getToken();
@@ -109,9 +147,7 @@ export default function JobCard({ job }: { job: Job }) {
 
       try {
         const response = await fetch("/api/saved-jobs", {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
+          headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await response.json();
         if (data.savedJobIds) {
@@ -151,7 +187,6 @@ export default function JobCard({ job }: { job: Job }) {
     
     try {
       if (isSaved) {
-        // Unsave
         const response = await fetch("/api/saved-jobs", {
           method: "DELETE",
           headers: {
@@ -164,11 +199,8 @@ export default function JobCard({ job }: { job: Job }) {
         if (response.ok) {
           setIsSaved(false);
           showToast("Job removed from saved list", "success");
-        } else {
-          console.error("Failed to remove saved job");
         }
       } else {
-        // Save
         const response = await fetch("/api/saved-jobs", {
           method: "POST",
           headers: {
@@ -181,8 +213,6 @@ export default function JobCard({ job }: { job: Job }) {
         if (response.ok) {
           setIsSaved(true);
           showToast("Job saved successfully", "success");
-        } else {
-          console.error("Failed to save job");
         }
       }
     } catch (error) {
@@ -199,36 +229,11 @@ export default function JobCard({ job }: { job: Job }) {
   };
 
   const categoryColor = getCategoryColor(job.category);
-
-  const getShortCategory = (category?: string) => {
-    if (!category) return "Uncategorized";
-    switch (category.toLowerCase()) {
-      case "project management":
-        return "Project Mgmt";
-      case "sales & business development":
-        return "Sales & BD";
-      case "marketing & communications":
-        return "Marketing";
-      case "customer service":
-        return "Customer Support";
-      case "accounting & finance":
-        return "Finance";
-      case "education & training":
-        return "Education";
-      case "human resources":
-        return "HR";
-      default:
-        return category;
-    }
-  };
+  const levelColor = getLevelColor(job.experience_level);
 
   const getLogo = () => {
-    if (job.company_logo_from_companies) {
-      return job.company_logo_from_companies;
-    }
-    if (job.companyLogo && job.companyLogo.length > 2) {
-      return job.companyLogo;
-    }
+    if (job.company_logo_from_companies) return job.company_logo_from_companies;
+    if (job.companyLogo && job.companyLogo.length > 2) return job.companyLogo;
     return null;
   };
 
@@ -239,70 +244,102 @@ export default function JobCard({ job }: { job: Job }) {
     <>
       <div
         onClick={() => router.push(`/job/${job.id}`)}
-        className={`bg-white border rounded-lg p-3 hover:shadow-lg cursor-pointer transition-all duration-200 relative ${
+        className={`group bg-[#0f172a] rounded-xl border transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/50 hover:shadow-[0_0_25px_rgba(59,130,246,0.35)] cursor-pointer ${
           job.is_featured 
-            ? "border-yellow-500 bg-yellow-50/30 border-l-4 border-l-yellow-500" 
-            : "border-gray-600"
+            ? "border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.1)]" 
+            : "border-white/10"
         }`}
       >
-        {/* Save Button - Top Right */}
-        <button
-          onClick={toggleSave}
-          disabled={loading}
-          className="absolute top-2 right-2 w-7 h-7 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-50"
-          aria-label="Save job"
-        >
-          {isSaved ? (
-            <svg className="w-3.5 h-3.5 text-blue-600" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-            </svg>
-          ) : (
-            <svg className="w-3.5 h-3.5 text-gray-500 hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-            </svg>
-          )}
-        </button>
-
-        {/* Top row: Logo on far right, title and company on left */}
-        <div className="flex justify-between items-start gap-2 pr-8">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <CategoryIcon category={job.category} />
-              <h3 className="text-sm font-semibold text-gray-950">{job.title}</h3>
+        <div className="p-3">
+          <div className="flex gap-3">
+            {/* Logo - LEFT SIDE */}
+            <div className="flex-shrink-0 self-start">
+              <div 
+                className={`rounded-xl flex items-center justify-center text-lg font-bold ${showLetterOnly ? (job.companyLogoBgColor || "bg-gradient-to-br from-blue-500/20 to-purple-500/20") : "bg-transparent"} border border-white/10`}
+                style={{ width: "80px", height: "80px", minWidth: "80px", minHeight: "80px" }}
+              >
+                {logoToShow ? (
+                  <img src={logoToShow} alt={job.company} className="w-full h-full object-contain rounded-xl" />
+                ) : (
+                  <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent text-3xl">
+                    {job.company?.charAt(0).toUpperCase() || "C"}
+                  </span>
+                )}
+              </div>
             </div>
-            <p className="text-xs text-gray-700 mt-0.5">{job.company}</p>
-          </div>
-          
-          {/* Company Logo */}
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 ${showLetterOnly ? (job.companyLogoBgColor || "bg-gray-100 text-gray-700") : "bg-transparent"}`}>
-            {logoToShow ? (
-              <img src={logoToShow} alt={job.company} className="w-full h-full object-contain rounded-lg" />
-            ) : (
-              job.company?.charAt(0).toUpperCase() || "C"
-            )}
-          </div>
-        </div>
 
-        {/* Icons and Category Badge */}
-        <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-1 border-t border-gray-100">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
-              <LocationIcon /> {job.location}
-            </span>
-            <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
-              <BriefcaseIcon /> {job.type}
-            </span>
-            <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
-              <GraduationIcon /> Senior Level
-            </span>
-            <span className="inline-flex items-center px-2 py-0.5 text-xs bg-gray-50 text-gray-700 rounded-full border border-gray-300">
-              <DollarIcon /> {formatSalary(job.salary_min, job.salary_max)}
-            </span>
+            {/* All Content - Right side */}
+            <div className="flex-1 min-w-0">
+              {/* Title Row - Title on LEFT, Save + Arrow on RIGHT */}
+              <div className="flex items-center justify-between gap-2">
+                {/* Job Title - LEFT SIDE */}
+                <h3 className="text-white font-semibold text-sm md:text-base">{job.title}</h3>
+                
+                {/* Save Button + Arrow - RIGHT SIDE */}
+                <div className="flex items-center gap-6 flex-shrink-0">
+                  {/* Save Button */}
+                  <button
+                    onClick={toggleSave}
+                    disabled={loading}
+                    className="w-7 h-7 rounded-md bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-50 mr-2"
+                    aria-label="Save job"
+                  >
+                    {isSaved ? (
+                      <svg className="w-5 h-5 text-yellow-400" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 text-white hover:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                      </svg>
+                    )}
+                  </button>
+                  
+                  {/* Arrow Icon */}
+                  <svg className="w-5 h-5 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Company Name */}
+              <p className="text-gray-400 text-xs mt-0.5">{job.company}</p>
+
+              {/* Details - Location, Job Type, Experience, Salary (side by side) */}
+              <div className="flex flex-wrap items-center gap-x-7 gap-y-2 mt-2 text-xs">
+                <span className="flex items-center gap-1 text-gray-400">
+                  <LocationIcon /> {job.location}
+                </span>
+                <span className="flex items-center gap-1 text-gray-400">
+                  <BriefcaseIcon /> {job.type}
+                </span>
+                <span className={`flex items-center gap-1 ${levelColor}`}>
+                  <GraduationIcon /> {job.experience_level || "Not specified"}
+                </span>
+                {/* Salary - turns green when card is hovered */}
+                <span className="flex items-center gap-1 text-gray-400 group-hover:text-green-400 transition-colors duration-200">
+                  <DollarIcon /> {formatSalary(job.salary_min, job.salary_max)}
+                </span>
+              </div>
+
+              {/* Bottom Row - Posted time, Views, and Category */}
+              <div className="flex flex-wrap items-center justify-between gap-2 mt-2 pt-2 border-t border-white/10">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="flex items-center gap-0.5 text-gray-500 text-xs">
+                    <ClockIcon /> {timeAgo(job.postedAt)}
+                  </span>
+                  <span className="flex items-center gap-0.5 text-gray-500 text-xs">
+                    <EyeIcon /> {job.applicants_count || 0}
+                  </span>
+                </div>
+                
+                {/* Category Badge */}
+                <span className={`text-xs px-2.5 py-0.5 rounded-full border ${categoryColor}`}>
+                  {job.category || "Uncategorized"}
+                </span>
+              </div>
+            </div>
           </div>
-          
-          <span className={`inline-flex items-center justify-center w-24 px-2 py-0.5 text-xs font-medium rounded-md border truncate ${categoryColor}`}>
-            {getShortCategory(job.category)}
-          </span>
         </div>
       </div>
       

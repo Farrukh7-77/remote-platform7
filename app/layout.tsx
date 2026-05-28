@@ -1,17 +1,20 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { AuthProvider } from "@/context/AuthContext";
-import Script from "next/script";
 
-const inter = Inter({ subsets: ["latin"] });
+// Google Font importu
+const inter = {
+  style: 'normal',
+  weight: '400',
+  src: 'https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap'
+};
 
 export const metadata: Metadata = {
-  title: "RemoteJobs - Find Remote Jobs Worldwide",
-  description: "Discover thousands of remote jobs from companies hiring globally",
+  title: "RemoteJobs - Global Remote Work Platform",
+  description: "Find the best remote jobs from companies around the world",
 };
 
 export default function RootLayout({
@@ -22,27 +25,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Google Analytics */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-7Y40LXDQ50"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-7Y40LXDQ50');
-          `}
-        </Script>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+        {/* Security meta tags */}
+        <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
+        <meta httpEquiv="X-Frame-Options" content="DENY" />
+        <meta name="referrer" content="strict-origin-when-cross-origin" />
       </head>
-      <body className={`${inter.className} bg-gray-50 dark:bg-gray-950 min-h-screen flex flex-col`}>
+      <body className="font-['Inter']">
         <AuthProvider>
-          <Navbar />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-grow">{children}</main>
+            <Footer />
+          </div>
         </AuthProvider>
       </body>
     </html>

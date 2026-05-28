@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendVerificationEmail(email: string, token: string) {
-  const verificationUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${token}`;
+  const verificationUrl = `${process.env.NEXTAUTH_URL}/api/auth/verify-email?token=${token}`;
   
   await transporter.sendMail({
     from: `"RemoteJobs" <${process.env.SMTP_USER}>`,
@@ -24,6 +24,10 @@ export async function sendVerificationEmail(email: string, token: string) {
         <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px;">Verify Email</a>
         <p>This link expires in 24 hours.</p>
         <p>If you didn't create an account, please ignore this email.</p>
+        <hr style="margin: 20px 0; border-color: #e5e7eb;" />
+        <p style="font-size: 12px; color: #6b7280;">
+          After verification, <a href="${process.env.NEXTAUTH_URL}" style="color: #2563eb;">click here</a> to return to the homepage.
+        </p>
       </div>
     `,
   });

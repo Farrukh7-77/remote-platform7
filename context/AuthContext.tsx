@@ -1,7 +1,7 @@
 // context/AuthContext.tsx
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 
 export type UserRole = "job_seeker" | "employer";
 
@@ -34,6 +34,8 @@ type AuthContextType = {
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 dəqiqə
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -109,11 +111,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signOut = () => {
+  const signOut = useCallback(() => {
     setUser(null);
     localStorage.removeItem("auth_user");
     localStorage.removeItem("auth_token");
-  };
+  }, []);
 
   const updateUser = async (updates: Partial<User>) => {
     if (!user) return;
@@ -135,6 +137,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Update failed:", error);
     }
   };
+
+  // SESSION TIMEOUT - DÜZGÜN VERSİYA
+  useEffect(() => {
+    if (!user) return;
+    
+    let timeoutId: NodeJS.Timeout;
+    
+    const startTimeout = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        signOut();
+        alert("Session expired. Please sign in again.");
+      }, SESSION_TIMEOUT);
+    };
+    
+    startTimeout();
+    
+    const resetTimeout = () => {
+      startTimeout();
+    };
+    
+    window.addEventListener("click", resetTimeout);
+    window.addEventListener("keypress", resetTimeout);
+    window.addEventListener("scroll", resetTimeout);
+    window.addEventListener("mousemove", resetTimeout);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener("click", resetTimeout);
+      window.removeEventListener("keypress", resetTimeout);
+      window.removeEventListener("scroll", resetTimeout);
+      window.removeEventListener("mousemove", resetTimeout);
+    };
+  }, [user, signOut]);
 
   return (
     <AuthContext.Provider value={{ 

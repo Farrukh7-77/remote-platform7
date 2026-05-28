@@ -17,6 +17,7 @@ function RegisterForm() {
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
@@ -52,6 +53,49 @@ function RegisterForm() {
     setFocusedFields({ ...focusedFields, [field]: false });
   };
 
+  // Parol validasiyası - SADƏLƏŞDİRİLMİŞ (yalnız 3 tələb)
+  const validatePassword = (value: string): string => {
+    if (value.length < 12) {
+      return "Password must be at least 12 characters";
+    }
+    if (!/[A-Z]/.test(value)) {
+      return "Password must contain at least one uppercase letter";
+    }
+    if (!/[@$!%*?&]/.test(value)) {
+      return "Password must contain at least one special character (@$!%*?&)";
+    }
+    return "";
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPassword(value);
+    setPasswordError(validatePassword(value));
+  };
+
+  // Parol güc göstəricisi (sadələşdirilmiş)
+  const getPasswordStrength = () => {
+    let score = 0;
+    if (password.length >= 12) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[@$!%*?&]/.test(password)) score++;
+    return score;
+  };
+
+  const getStrengthColor = () => {
+    const strength = getPasswordStrength();
+    if (strength <= 1) return "bg-red-500";
+    if (strength <= 2) return "bg-yellow-500";
+    return "bg-green-500";
+  };
+
+  const getStrengthLabel = () => {
+    const strength = getPasswordStrength();
+    if (strength <= 1) return "Weak";
+    if (strength <= 2) return "Fair";
+    return "Strong";
+  };
+
   if (user && initialUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center py-12">
@@ -85,30 +129,35 @@ function RegisterForm() {
     );
   }
 
-  // app/register/page.tsx-də handleSubmit hissəsi
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+    setShowSuccess(false);
+    
+    // Client-side password validation
+    const passwordValidationError = validatePassword(password);
+    if (passwordValidationError) {
+      setError(passwordValidationError);
+      return;
+    }
+    
+    setLoading(true);
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError("");
-  setSuccessMessage("");
-  setShowSuccess(false);
-  setLoading(true);
-
-  const result = await signUp(email, password, name, role, role === "employer" ? companyName : undefined);
-  
-  if (result.success) {
-  setSuccessMessage(result.message || "Registration successful!");
-  setShowSuccess(true);
-  // Formu təmizlə - amma email-i SAXLA!
-  setName("");
-  setCompanyName("");
-  // setEmail(""); // BUNU SİL!
-  setPassword("");
-  } else {
-    setError(result.error || "Registration failed");
-  }
-  setLoading(false);
-};
+    const result = await signUp(email, password, name, role, role === "employer" ? companyName : undefined);
+    
+    if (result.success) {
+      setSuccessMessage(result.message || "Registration successful!");
+      setShowSuccess(true);
+      setName("");
+      setCompanyName("");
+      setPassword("");
+      setPasswordError("");
+    } else {
+      setError(result.error || "Registration failed");
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center py-12 relative overflow-hidden">
@@ -153,11 +202,8 @@ const handleSubmit = async (e: React.FormEvent) => {
                 We've sent a verification link to <strong className="text-white">{email}</strong>. 
                 Please check your email and click the link to activate your account.
               </p>
-              <button
-                onClick={() => router.push("/signin")}
-                className="mt-6 text-blue-300 hover:text-blue-200 underline text-sm transition-colors cursor-pointer"
-              >
-                Go to Sign In →
+              <button onClick={() => router.push("/")}>
+                  Back to Home →
               </button>
             </div>
           ) : (
@@ -253,7 +299,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 />
               </div>
 
-              {/* Password Field */}
+              {/* Password Field with Strength Indicator */}
               <div className="relative">
                 <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
                   focusedFields.password || password
@@ -265,19 +311,49 @@ const handleSubmit = async (e: React.FormEvent) => {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={handlePasswordChange}
                   onFocus={() => handleFocus("password")}
                   onBlur={() => handleBlur("password")}
                   className="w-full px-3 py-3 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white placeholder-white/30"
                   required
                 />
-                <p className="text-xs text-white/40 mt-1">Minimum 6 characters</p>
+                
+                {/* Password Strength Indicator */}
+                {password && (
+                  <div className="mt-2">
+                    <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${getStrengthColor()} transition-all duration-300`}
+                        style={{ width: `${(getPasswordStrength() / 3) * 100}%` }}
+                      />
+                    </div>
+                    <p className={`text-xs mt-1 ${
+                      getPasswordStrength() <= 1 ? "text-red-400" : 
+                      getPasswordStrength() <= 2 ? "text-yellow-400" : "text-green-400"
+                    }`}>
+                      Password strength: {getStrengthLabel()}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Password requirements list - SADƏLƏŞDİRİLMİŞ (yalnız 3 tələb) */}
+                <div className="text-xs text-white/40 mt-2 space-y-1">
+                  <p className={password.length >= 12 ? "text-green-400" : ""}>
+                    {password.length >= 12 ? "✓" : "•"} At least 12 characters
+                  </p>
+                  <p className={/[A-Z]/.test(password) ? "text-green-400" : ""}>
+                    {/[A-Z]/.test(password) ? "✓" : "•"} At least one uppercase letter
+                  </p>
+                  <p className={/[@$!%*?&]/.test(password) ? "text-green-400" : ""}>
+                    {/[@$!%*?&]/.test(password) ? "✓" : "•"} At least one special character (@$!%*?&)
+                  </p>
+                </div>
               </div>
 
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !!passwordError}
                 className="relative w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer shadow-lg hover:shadow-xl mt-2"
               >
                 {loading ? (
