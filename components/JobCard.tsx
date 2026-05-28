@@ -1,4 +1,4 @@
-// components/JobCard.tsx - FULLY UPDATED WITH GROUP HOVER FOR SALARY
+// components/JobCard.tsx - FULLY RESPONSIVE WITH ALL DETAILS SIDE BY SIDE
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -78,38 +78,38 @@ const getLevelColor = (level?: string) => {
 
 // Icons
 const LocationIcon = () => (
-  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
   </svg>
 );
 
 const BriefcaseIcon = () => (
-  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
   </svg>
 );
 
 const DollarIcon = () => (
-  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 );
 
 const GraduationIcon = () => (
-  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422M12 14l6.16-3.422M12 18l9-5-9-5-9 5 9 5zm0 0l6.16-3.422" />
   </svg>
 );
 
 const ClockIcon = () => (
-  <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 );
 
 const EyeIcon = () => (
-  <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
   </svg>
@@ -250,18 +250,18 @@ export default function JobCard({ job }: { job: Job }) {
             : "border-white/10"
         }`}
       >
-        <div className="p-3">
-          <div className="flex gap-3">
-            {/* Logo - LEFT SIDE */}
+        <div className="p-2 sm:p-3">
+          <div className="flex gap-2 sm:gap-3">
+            {/* Logo - smaller */}
             <div className="flex-shrink-0 self-start">
               <div 
-                className={`rounded-xl flex items-center justify-center text-lg font-bold ${showLetterOnly ? (job.companyLogoBgColor || "bg-gradient-to-br from-blue-500/20 to-purple-500/20") : "bg-transparent"} border border-white/10`}
-                style={{ width: "80px", height: "80px", minWidth: "80px", minHeight: "80px" }}
+                className={`rounded-xl flex items-center justify-center font-bold ${showLetterOnly ? (job.companyLogoBgColor || "bg-gradient-to-br from-blue-500/20 to-purple-500/20") : "bg-transparent"} border border-white/10`}
+                style={{ width: "40px", height: "40px", minWidth: "40px", minHeight: "40px" }}
               >
                 {logoToShow ? (
                   <img src={logoToShow} alt={job.company} className="w-full h-full object-contain rounded-xl" />
                 ) : (
-                  <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent text-3xl">
+                  <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent text-base sm:text-xl">
                     {job.company?.charAt(0).toUpperCase() || "C"}
                   </span>
                 )}
@@ -270,71 +270,66 @@ export default function JobCard({ job }: { job: Job }) {
 
             {/* All Content - Right side */}
             <div className="flex-1 min-w-0">
-              {/* Title Row - Title on LEFT, Save + Arrow on RIGHT */}
-              <div className="flex items-center justify-between gap-2">
-                {/* Job Title - LEFT SIDE */}
-                <h3 className="text-white font-semibold text-sm md:text-base">{job.title}</h3>
+              {/* Title Row */}
+              <div className="flex items-start justify-between gap-1">
+                <h3 className="text-white font-semibold text-xs sm:text-sm md:text-base break-words flex-1 leading-tight">
+                  {job.title}
+                </h3>
                 
-                {/* Save Button + Arrow - RIGHT SIDE */}
-                <div className="flex items-center gap-6 flex-shrink-0">
-                  {/* Save Button */}
+                {/* Save + Arrow */}
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                   <button
                     onClick={toggleSave}
                     disabled={loading}
-                    className="w-7 h-7 rounded-md bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-50 mr-2"
+                    className="w-5 h-5 rounded-md bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-50"
                     aria-label="Save job"
                   >
                     {isSaved ? (
-                      <svg className="w-5 h-5 text-yellow-400" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 text-yellow-400" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                       </svg>
                     ) : (
-                      <svg className="w-5 h-5 text-white hover:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 text-white hover:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                       </svg>
                     )}
                   </button>
-                  
-                  {/* Arrow Icon */}
-                  <svg className="w-5 h-5 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
               </div>
 
               {/* Company Name */}
-              <p className="text-gray-400 text-xs mt-0.5">{job.company}</p>
+              <p className="text-gray-400 text-[10px] sm:text-xs mt-0.5">{job.company}</p>
 
-              {/* Details - Location, Job Type, Experience, Salary (side by side) */}
-              <div className="flex flex-wrap items-center gap-x-7 gap-y-2 mt-2 text-xs">
-                <span className="flex items-center gap-1 text-gray-400">
-                  <LocationIcon /> {job.location}
+              {/* ALL 4 DETAILS - FORCED SIDE BY SIDE using grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-2 gap-y-0.5 mt-1.5 text-[10px] sm:text-xs">
+                <span className="flex items-center gap-0.5 text-gray-400">
+                  <LocationIcon /> <span className="truncate">{job.location}</span>
                 </span>
-                <span className="flex items-center gap-1 text-gray-400">
+                <span className="flex items-center gap-0.5 text-gray-400">
                   <BriefcaseIcon /> {job.type}
                 </span>
-                <span className={`flex items-center gap-1 ${levelColor}`}>
-                  <GraduationIcon /> {job.experience_level || "Not specified"}
+                <span className={`flex items-center gap-0.5 ${levelColor}`}>
+                  <GraduationIcon /> <span className="truncate">{job.experience_level || "Not specified"}</span>
                 </span>
-                {/* Salary - turns green when card is hovered */}
-                <span className="flex items-center gap-1 text-gray-400 group-hover:text-green-400 transition-colors duration-200">
+                <span className="flex items-center gap-0.5 text-gray-400 group-hover:text-green-400 transition-colors duration-200">
                   <DollarIcon /> {formatSalary(job.salary_min, job.salary_max)}
                 </span>
               </div>
 
-              {/* Bottom Row - Posted time, Views, and Category */}
-              <div className="flex flex-wrap items-center justify-between gap-2 mt-2 pt-2 border-t border-white/10">
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="flex items-center gap-0.5 text-gray-500 text-xs">
+              {/* Bottom Row */}
+              <div className="flex flex-wrap items-center justify-between gap-1 mt-1.5 pt-1 border-t border-white/10">
+                <div className="flex items-center gap-1 sm:gap-2 text-[9px] sm:text-[10px]">
+                  <span className="flex items-center gap-0.5 text-gray-500">
                     <ClockIcon /> {timeAgo(job.postedAt)}
                   </span>
-                  <span className="flex items-center gap-0.5 text-gray-500 text-xs">
+                  <span className="flex items-center gap-0.5 text-gray-500">
                     <EyeIcon /> {job.applicants_count || 0}
                   </span>
                 </div>
-                
-                {/* Category Badge */}
-                <span className={`text-xs px-2.5 py-0.5 rounded-full border ${categoryColor}`}>
+                <span className={`text-[8px] sm:text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-full border ${categoryColor} whitespace-nowrap`}>
                   {job.category || "Uncategorized"}
                 </span>
               </div>

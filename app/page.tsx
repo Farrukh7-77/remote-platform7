@@ -222,7 +222,7 @@ export default function HomePage() {
   style={{ backgroundColor: '#091028' }}
 >
       {/* HERO SECTION with Background Image */}
-      <section className="relative overflow-hidden pt-5 pb-5 px-4 bg-cover bg-no-repeat" style={{ backgroundImage: "url('/hero-bg.png')", backgroundPosition: "center 48%" }}>
+      <section className="relative overflow-hidden pt-5 pb-5 px-4 bg-cover bg-no-repeat md:bg-center bg-top" style={{ backgroundImage: "url('/hero-bg.png')", backgroundPosition: "center 48%" }}>
         {/* Light overlay */}
         <div className="absolute inset-0 bg-black/0 pointer-events-none"></div>
         
