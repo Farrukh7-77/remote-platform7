@@ -47,7 +47,7 @@ export default function PasswordStrength({ password }: { password: string }) {
         <li className={/[A-Z]/.test(password) ? "text-green-500 line-through" : ""}>✓ At least one uppercase letter</li>
         <li className={/[a-z]/.test(password) ? "text-green-500 line-through" : ""}>✓ At least one lowercase letter</li>
         <li className={/[0-9]/.test(password) ? "text-green-500 line-through" : ""}>✓ At least one number</li>
-        <li className=/[@$!%*?&]/.test(password) ? "text-green-500 line-through" : ""}>✓ At least one special character (@$!%*?&)</li>
+        <li className={/[@$!%*?&]/.test(password) ? "text-green-500 line-through" : ""}>✓ At least one special character (@$!%*?&)</li>
       </ul>
     </div>
   );
