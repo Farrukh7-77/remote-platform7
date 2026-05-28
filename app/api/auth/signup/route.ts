@@ -16,12 +16,13 @@ export async function POST(req: NextRequest) {
     console.log("🔵 Step 2: Validating input...");
     const validation = signUpSchema.safeParse(body);
     if (!validation.success) {
-      console.log("❌ Validation failed:", validation.error.errors[0].message);
-      return NextResponse.json(
-        { error: validation.error.errors[0].message },
-        { status: 400 }
-      );
-    }
+  const firstError = validation.error.issues?.[0]?.message || "Validation failed";
+  console.log("❌ Validation failed:", firstError);
+  return NextResponse.json(
+    { error: firstError },
+    { status: 400 }
+  );
+}
     
     const { email, password, name, role, companyName } = body;
     
