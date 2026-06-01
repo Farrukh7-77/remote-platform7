@@ -1,4 +1,3 @@
-// app/api/auth/signup/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
 import bcrypt from "bcrypt";
@@ -12,19 +11,19 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     console.log("📧 Email:", body.email);
     
-    // Validasiya
+    // Validasiya (YENİ: voen ilə)
     console.log("🔵 Step 2: Validating input...");
     const validation = signUpSchema.safeParse(body);
     if (!validation.success) {
-  const firstError = validation.error.issues?.[0]?.message || "Validation failed";
-  console.log("❌ Validation failed:", firstError);
-  return NextResponse.json(
-    { error: firstError },
-    { status: 400 }
-  );
-}
+      const firstError = validation.error.issues?.[0]?.message || "Validation failed";
+      console.log("❌ Validation failed:", firstError);
+      return NextResponse.json(
+        { error: firstError },
+        { status: 400 }
+      );
+    }
     
-    const { email, password, name, role, companyName } = body;
+    const { email, password, name, role, companyName, voen } = body; // YENİ: voen əlavə edildi
     
     // Email artıq verification_tokens cədvəlində gözləyir? 
     console.log("🔵 Step 3: Checking existing tokens...");
@@ -65,13 +64,18 @@ export async function POST(req: NextRequest) {
     tokenExpiry.setHours(tokenExpiry.getHours() + 24);
     console.log("✅ Token created:", verificationToken.substring(0, 10) + "...");
     
-    // İstifadəçi məlumatlarını JSON olaraq saxla
+    // YENİ: verification_status - Employer üçün 'pending', digərləri üçün 'approved'
+    const verificationStatus = role === "employer" ? "pending" : "approved";
+    
+    // İstifadəçi məlumatlarını JSON olaraq saxla (YENİ: voen əlavə edildi)
     const userData = JSON.stringify({
       email,
       password: hashedPassword,
       name,
       role,
-      companyName: companyName || null
+      companyName: companyName || null,
+      voen: voen || null,
+      verificationStatus
     });
     
     // Tokeni verification_tokens cədvəlinə yaz

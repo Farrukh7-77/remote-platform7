@@ -1,4 +1,3 @@
-// app/api/auth/signin/route.ts
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import jwt from "jsonwebtoken";
@@ -10,9 +9,9 @@ export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
 
-    // Əvvəlcə istifadəçini email ilə tap (şifrəni də götür)
+    // İstifadəçini email ilə tap (verification_status da götür)
     const result = await pool.query(
-      `SELECT id, email, name, role, company_name, avatar, company_logo, password, is_verified 
+      `SELECT id, email, name, role, company_name, avatar, company_logo, password, is_verified, verification_status 
        FROM users 
        WHERE email = $1`,
       [email]
@@ -27,6 +26,21 @@ export async function POST(request: Request) {
     // Email təsdiqlənib?
     if (!user.is_verified) {
       return NextResponse.json({ error: "Please verify your email address first" }, { status: 401 });
+    }
+
+    // YENİ: Employer üçün admin təsdiqi yoxlanılır
+    if (user.role === "employer") {
+      if (user.verification_status === "pending") {
+        return NextResponse.json({ 
+          error: "Your account is pending admin approval. Please wait for verification." 
+        }, { status: 403 });
+      }
+      
+      if (user.verification_status === "rejected") {
+        return NextResponse.json({ 
+          error: "Your account verification was rejected. Please contact support." 
+        }, { status: 403 });
+      }
     }
 
     // Şifrəni bcrypt ilə yoxla

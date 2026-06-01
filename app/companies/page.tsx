@@ -17,6 +17,26 @@ type Company = {
   linkedin?: string;
 };
 
+// SVG Icon
+const SearchIcon = () => (
+  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </svg>
+);
+
+const LocationIcon = () => (
+  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+  </svg>
+);
+
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,73 +63,80 @@ export default function CompaniesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#050816] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-gray-500 animate-pulse">Loading companies...</div>
+          <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-gray-400 animate-pulse">Loading companies...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 transition-opacity duration-700 ${pageLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`min-h-screen bg-[#050816] transition-opacity duration-700 ${pageLoaded ? 'opacity-100' : 'opacity-0'}`}>
       
-      {/* Simple Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 py-8">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold text-white mb-2 animate-fade-in-up">
-            Top Remote Companies
+      {/* Hero Section */}
+      <section className="relative overflow-hidden pt-8 pb-12 px-4">
+        <div className="hero-gradient absolute inset-0 pointer-events-none"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+        
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3">
+            <span className="text-white">Top</span>{' '}
+            <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Remote</span>{' '}
+            <span className="text-white">Companies</span>
           </h1>
-          <p className="text-white/80 animate-fade-in-up" style={{ animationDelay: "50ms" }}>
+          <p className="text-gray-300 text-sm md:text-base mb-6">
             Discover companies hiring remote talent worldwide
           </p>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Search Section */}
-        <div className="max-w-md mx-auto mb-8 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+          
+          {/* Search Bar */}
+          <div className="max-w-md mx-auto">
+            <div className="relative group">
+              <div className="relative flex items-center bg-[#0f172a]/80 backdrop-blur-sm border border-white/15 rounded-lg overflow-hidden focus-within:border-blue-500/40 transition-all duration-300">
+                <div className="pl-3">
+                  <SearchIcon />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search companies by name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1 px-3 py-2.5 bg-transparent focus:outline-none text-white placeholder-gray-500 text-sm"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             </div>
-            <input
-              type="text"
-              placeholder="Search companies by name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-700 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-              >
-                ✕
-              </button>
-            )}
           </div>
         </div>
+      </section>
 
+      {/* Companies Grid */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {filteredCompanies.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border border-gray-700 shadow-sm animate-fade-in-up">
+          <div className="text-center py-16 glass-card">
             <div className="text-6xl mb-4">🔍</div>
-            <p className="text-gray-500">No companies found for "{searchTerm}"</p>
+            <p className="text-gray-400">No companies found for "{searchTerm}"</p>
             <button 
               onClick={() => setSearchTerm("")} 
-              className="mt-4 text-blue-600 hover:text-blue-700 text-sm transition-colors cursor-pointer"
+              className="mt-4 text-blue-400 hover:text-blue-300 text-sm transition-colors cursor-pointer"
             >
               Clear search
             </button>
           </div>
         ) : (
           <>
-            <div className="flex justify-end items-center mb-4 animate-fade-in-up" style={{ animationDelay: "150ms" }}>
-              <p className="text-sm text-gray-500">
-                Found <span className="font-semibold text-gray-700">{filteredCompanies.length}</span> companies
+            <div className="flex justify-end items-center mb-4">
+              <p className="text-sm text-gray-400">
+                Found <span className="font-semibold text-white">{filteredCompanies.length}</span> companies
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -117,42 +144,39 @@ export default function CompaniesPage() {
                 <Link
                   key={company.id}
                   href={`/company/${company.id}`}
-                  className="group bg-white rounded-xl border border-gray-700 p-6 hover:shadow-xl hover:border-gray-900 transition-all duration-300 transform hover:-translate-y-1 animate-card"
+                  className="group bg-[#0f172a] rounded-xl border border-white/10 p-6 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:-translate-y-1 transition-all duration-300 animate-card cursor-pointer"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-700 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-105 group-hover:shadow-md">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-105">
                       {company.logo ? (
-                        <img src={company.logo} alt={company.name} className="w-full h-full object-contain" />
+                        <img src={company.logo} alt={company.name} className="w-full h-full object-contain rounded-xl" />
                       ) : (
-                        <span className="text-2xl transition-transform duration-300 group-hover:scale-110">🏢</span>
+                        <span className="text-2xl bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                          {company.name.charAt(0).toUpperCase()}
+                        </span>
                       )}
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                      <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors duration-200">
                         {company.name}
                       </h3>
-                      <p className="text-sm text-gray-500">{company.industry || "Technology"}</p>
+                      <p className="text-sm text-gray-400">{company.industry || "Technology"}</p>
                     </div>
                   </div>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2 group-hover:text-gray-700 transition-colors duration-200">
+                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">
                     {company.description || "A company hiring remote talent worldwide."}
                   </p>
-                  <div className="flex flex-wrap gap-3 text-sm text-gray-500">
+                  <div className="flex flex-wrap gap-3 text-sm">
                     {company.location && (
-                      <span className="inline-flex items-center gap-1 transition-all duration-200 hover:text-blue-600">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
+                      <span className="inline-flex items-center gap-1 text-gray-500 transition-all duration-200 group-hover:text-blue-400">
+                        <LocationIcon />
                         {company.location}
                       </span>
                     )}
                     {company.size && (
-                      <span className="inline-flex items-center gap-1 transition-all duration-200 hover:text-blue-600">
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
+                      <span className="inline-flex items-center gap-1 text-gray-500 transition-all duration-200 group-hover:text-blue-400">
+                        <UsersIcon />
                         {company.size}
                       </span>
                     )}
@@ -164,7 +188,6 @@ export default function CompaniesPage() {
         )}
       </div>
 
-      {/* Global Animation Styles */}
       <style jsx global>{`
         @keyframes fadeInUp {
           from {
@@ -184,6 +207,17 @@ export default function CompaniesPage() {
         .animate-card {
           opacity: 0;
           animation: fadeInUp 0.4s ease-out forwards;
+        }
+        
+        .glass-card {
+          background-color: rgba(15, 23, 42, 0.8);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 1rem;
+        }
+        
+        .hero-gradient {
+          background: radial-gradient(ellipse at 50% 50%, rgba(59,130,246,0.15), transparent 70%);
         }
       `}</style>
     </div>

@@ -1,4 +1,3 @@
-// app/register/page.tsx
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -15,8 +14,10 @@ function RegisterForm() {
   const [role, setRole] = useState<UserRole>(roleParam === "employer" ? "employer" : "job_seeker");
   const [name, setName] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [voen, setVoen] = useState(""); // YENİ: VÖEN state-i
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // YENİ: şifrə göstər/gizlət
   const [passwordError, setPasswordError] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,6 +32,7 @@ function RegisterForm() {
   const [focusedFields, setFocusedFields] = useState({
     name: false,
     companyName: false,
+    voen: false, // YENİ
     email: false,
     password: false,
   });
@@ -144,13 +146,22 @@ function RegisterForm() {
     
     setLoading(true);
 
-    const result = await signUp(email, password, name, role, role === "employer" ? companyName : undefined);
+    // YENİ: signUp funksiyasına voen də göndər
+    const result = await signUp(
+      email, 
+      password, 
+      name, 
+      role, 
+      role === "employer" ? companyName : undefined,
+      role === "employer" ? voen : undefined  // YENİ: VÖEN göndər
+    );
     
     if (result.success) {
       setSuccessMessage(result.message || "Registration successful!");
       setShowSuccess(true);
       setName("");
       setCompanyName("");
+      setVoen(""); // YENİ: VÖEN-i təmizlə
       setPassword("");
       setPasswordError("");
     } else {
@@ -202,8 +213,8 @@ function RegisterForm() {
                 We've sent a verification link to <strong className="text-white">{email}</strong>. 
                 Please check your email and click the link to activate your account.
               </p>
-              <button onClick={() => router.push("/")}>
-                  Back to Home →
+              <button onClick={() => router.push("/")} className="mt-4 text-blue-300 hover:text-blue-200">
+                Back to Home →
               </button>
             </div>
           ) : (
@@ -214,7 +225,10 @@ function RegisterForm() {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setRole("job_seeker")}
+                    onClick={() => {
+                      setRole("job_seeker");
+                      setVoen(""); // Rol dəyişdikdə VÖEN-i təmizlə
+                    }}
                     className={`py-3 px-4 rounded-xl border transition-all duration-200 cursor-pointer ${
                       role === "job_seeker"
                         ? "bg-gradient-to-r from-blue-500 to-blue-600 border-blue-400 text-white shadow-lg transform scale-[1.02]"
@@ -225,7 +239,9 @@ function RegisterForm() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setRole("employer")}
+                    onClick={() => {
+                      setRole("employer");
+                    }}
                     className={`py-3 px-4 rounded-xl border transition-all duration-200 cursor-pointer ${
                       role === "employer"
                         ? "bg-gradient-to-r from-purple-500 to-purple-600 border-purple-400 text-white shadow-lg transform scale-[1.02]"
@@ -279,6 +295,29 @@ function RegisterForm() {
                 </div>
               )}
 
+              {/* YENİ: VÖEN Field (Employer only) */}
+              {role === "employer" && (
+                <div className="relative">
+                  <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
+                    focusedFields.voen || voen
+                      ? '-top-2 text-xs text-blue-300 bg-slate-800/80 px-1 rounded'
+                      : 'top-3 text-white/50'
+                  }`}>
+                    VAT Number (VÖEN) *
+                  </label>
+                  <input
+                    type="text"
+                    value={voen}
+                    onChange={(e) => setVoen(e.target.value)}
+                    onFocus={() => handleFocus("voen")}
+                    onBlur={() => handleBlur("voen")}
+                    className="w-full px-3 py-3 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white placeholder-white/30"
+                    placeholder="e.g., 1234567890"
+                    required
+                  />
+                </div>
+              )}
+
               {/* Email Field */}
               <div className="relative">
                 <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
@@ -299,7 +338,7 @@ function RegisterForm() {
                 />
               </div>
 
-              {/* Password Field with Strength Indicator */}
+              {/* Password Field with Eye Icon */}
               <div className="relative">
                 <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
                   focusedFields.password || password
@@ -308,15 +347,34 @@ function RegisterForm() {
                 }`}>
                   Password *
                 </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={handlePasswordChange}
-                  onFocus={() => handleFocus("password")}
-                  onBlur={() => handleBlur("password")}
-                  className="w-full px-3 py-3 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white placeholder-white/30"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={handlePasswordChange}
+                    onFocus={() => handleFocus("password")}
+                    onBlur={() => handleBlur("password")}
+                    className="w-full px-3 py-3 pr-12 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white placeholder-white/30"
+                    required
+                  />
+                  {/* YENİ: Göz ikonu */}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                  >
+                    {showPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
                 
                 {/* Password Strength Indicator */}
                 {password && (
@@ -422,10 +480,6 @@ function RegisterForm() {
           0%, 100% { transform: translateX(0); }
           25% { transform: translateX(-5px); }
           75% { transform: translateX(5px); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.4; }
         }
         .animate-in {
           animation-duration: 0.3s;

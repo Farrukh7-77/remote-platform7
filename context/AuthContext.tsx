@@ -1,4 +1,3 @@
-// context/AuthContext.tsx
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
@@ -19,12 +18,21 @@ export type User = {
   company_size?: string;
   company_industry?: string;
   company_linkedin?: string;
+  voen?: string; // YENİ: VÖEN
+  verification_status?: string; // YENİ: pending, approved, rejected
 };
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string, name: string, role: UserRole, companyName?: string) => Promise<{ success: boolean; error?: string; message?: string }>;
+  signUp: (
+    email: string, 
+    password: string, 
+    name: string, 
+    role: UserRole, 
+    companyName?: string,
+    voen?: string  // YENİ: VÖEN parametri
+  ) => Promise<{ success: boolean; error?: string; message?: string }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => void;
   updateUser: (updates: Partial<User>) => Promise<void>;
@@ -63,13 +71,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const openAuthModal = () => setShowAuthModal(true);
   const closeAuthModal = () => setShowAuthModal(false);
 
-  const signUp = async (email: string, password: string, name: string, role: UserRole, companyName?: string) => {
+  // YENİ: signUp funksiyası - voen parametri əlavə edildi
+  const signUp = async (
+    email: string, 
+    password: string, 
+    name: string, 
+    role: UserRole, 
+    companyName?: string,
+    voen?: string
+  ) => {
     setLoading(true);
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name, role, companyName }),
+        body: JSON.stringify({ email, password, name, role, companyName, voen }),
       });
       const data = await response.json();
       
@@ -138,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // SESSION TIMEOUT - DÜZGÜN VERSİYA
+  // SESSION TIMEOUT
   useEffect(() => {
     if (!user) return;
     

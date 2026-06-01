@@ -2,14 +2,33 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 
+// app/api/jobs/route.ts - POST metodu
+
 export async function POST(request: Request) {
   try {
-    const { title, company, companyLogo, companyLogoBgColor, location, type, category, experience_level, salaryMin, salaryMax, description, requirements, postedBy, applyType, applyUrl, is_featured } = await request.json();
+    const { 
+      title, company, companyLogo, companyLogoBgColor, location, type, 
+      category, experience_level, salaryMin, salaryMax, description, 
+      requirements, postedBy, applyType, applyUrl, is_featured 
+    } = await request.json();
 
+    // YENİ: İş elanı əvvəlcə təsdiq gözləyir (pending)
     const result = await pool.query(
-      `INSERT INTO jobs (title, company, company_logo, company_logo_bg_color, location, type, category, experience_level, salary_min, salary_max, description, requirements, posted_by, apply_type, apply_url, is_featured)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`,
-      [title, company, companyLogo, companyLogoBgColor, location, type, category, experience_level, salaryMin, salaryMax, description, requirements, postedBy, applyType, applyUrl, is_featured || false]
+      `INSERT INTO jobs (
+        title, company, company_logo, company_logo_bg_color, location, type, 
+        category, experience_level, salary_min, salary_max, description, 
+        requirements, posted_by, apply_type, apply_url, is_featured,
+        is_verified, status, created_at
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, NOW())
+       RETURNING *`,
+      [
+        title, company, companyLogo, companyLogoBgColor, location, type, 
+        category, experience_level, salaryMin, salaryMax, description, 
+        requirements, postedBy, applyType, applyUrl, is_featured || false,
+        false,        // is_verified = false
+        'pending'     // status = 'pending'
+      ]
     );
 
     return NextResponse.json({ success: true, job: result.rows[0] });
@@ -19,18 +38,21 @@ export async function POST(request: Request) {
   }
 }
 
+// app/api/jobs/route.ts - GET metodu (FRONTEND ÜÇÜN - saytda görünən)
+
 export async function GET() {
   try {
+    // YENİ: Yalnız təsdiq olunmuş (approved) və is_verified = true olan işləri göstər
     const result = await pool.query(
       `SELECT 
         j.*,
         c.logo as company_logo_from_companies
        FROM jobs j
        LEFT JOIN companies c ON j.posted_by = c.email
+       WHERE j.is_verified = true AND j.status = 'approved'
        ORDER BY j.posted_at DESC`
     );
     
-    // API-dən gələn məlumatlarda company_logo_from_companies varsa, onu istifadə edin
     const jobs = result.rows.map((job: any) => ({
       ...job,
       company_logo: job.company_logo_from_companies || job.company_logo
