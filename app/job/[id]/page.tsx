@@ -356,7 +356,7 @@ export default function JobDetailPage() {
         </div>
       </div>
 
-      {/* Apply Modal */}
+      {/* Apply Modal - FIXED: text-gray-900 added to textarea and file input */}
       {showApplyModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl max-w-md w-full mx-4 p-6">
@@ -374,7 +374,7 @@ export default function JobDetailPage() {
                   rows={5} 
                   value={coverLetter} 
                   onChange={(e) => setCoverLetter(e.target.value)} 
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-text text-gray-900"
                   placeholder="Tell the employer why you're a good fit..."
                 />
               </div>
@@ -387,14 +387,14 @@ export default function JobDetailPage() {
                     onChange={(e) => { setUseDifferentCv(e.target.checked); if (!e.target.checked) setDifferentCvFile(null); }} 
                     className="w-4 h-4 cursor-pointer" 
                   />
-                  <span className="cursor-pointer">Use a different CV for this application</span>
+                  <span className="cursor-pointer text-gray-700">Use a different CV for this application</span>
                 </label>
                 {useDifferentCv && (
                   <input 
                     type="file" 
                     accept=".pdf,.doc,.docx" 
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) { setDifferentCvFile(f); setDifferentCvName(f.name); } }} 
-                    className="mt-2 w-full cursor-pointer" 
+                    className="mt-2 w-full cursor-pointer text-gray-700"
                   />
                 )}
               </div>

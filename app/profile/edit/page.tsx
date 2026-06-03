@@ -20,6 +20,8 @@ export default function EditProfilePage() {
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [cvFileName, setCvFileName] = useState("");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [tempAvatarFile, setTempAvatarFile] = useState<File | null>(null); // YENİ: müvəqqəti avatar faylı
+  const [tempAvatarPreview, setTempAvatarPreview] = useState<string | null>(null); // YENİ: müvəqqəti preview
   const [saving, setSaving] = useState(false);
 
   // Employer fields
@@ -58,26 +60,43 @@ export default function EditProfilePage() {
       const avatar = (user as any).company_logo || user.avatar;
       if (avatar) {
         setAvatarPreview(avatar);
+        setTempAvatarPreview(avatar);
       }
     }
   }, [user]);
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+  // YENİ: Avatar seçildikdə - yalnız MÜVƏQQƏTİ saxla, databaza YOX!
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const reader = new FileReader();
-  reader.onloadend = async () => {
-    const base64String = reader.result as string;
-    
-    // Həm avatar, həm də company_logo yenilə
-    await updateUser({ 
-      avatar: base64String,
-      company_logo: base64String 
-    });
+    setTempAvatarFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setTempAvatarPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
-  reader.readAsDataURL(file);
-};
+
+  // YENİ: Müvəqqəti avatarı databazaya yaz
+  const saveAvatar = async () => {
+    if (tempAvatarFile) {
+      const reader = new FileReader();
+      return new Promise<string>((resolve) => {
+        reader.onloadend = async () => {
+          const base64String = reader.result as string;
+          await updateUser({ 
+            avatar: base64String,
+            company_logo: base64String 
+          });
+          setAvatarPreview(base64String);
+          resolve(base64String);
+        };
+        reader.readAsDataURL(tempAvatarFile as File);
+      });
+    }
+    return null;
+  };
 
   const handleCvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,6 +109,9 @@ export default function EditProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+
+    // YENİ: Əvvəlcə avatarı yadda saxla
+    await saveAvatar();
 
     if (user) {
       localStorage.setItem(`profile_location_${user.email}`, location);
@@ -154,32 +176,35 @@ export default function EditProfilePage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Company Logo</label>
                 <div className="flex items-center gap-4">
                   <div className="w-20 h-20 rounded-xl bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">
-                    {avatarPreview ? (
-                      <img src={avatarPreview} alt="Logo" className="w-full h-full object-contain" />
+                    {tempAvatarPreview ? (
+                      <img src={tempAvatarPreview} alt="Logo" className="w-full h-full object-contain" />
                     ) : (
                       <span className="text-3xl">🏢</span>
                     )}
                   </div>
                   <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition">
                     Upload Logo
-                    <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                    <input type="file" accept="image/*" onChange={handleAvatarSelect} className="hidden" />
                   </label>
                 </div>
+                {tempAvatarFile && (
+                  <p className="text-xs text-blue-600 mt-1">New logo will be saved when you click "Save Changes"</p>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
-                <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
+                <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" required />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
-                  <input type="text" value={companyIndustry} onChange={(e) => setCompanyIndustry(e.target.value)} placeholder="e.g., Technology, Healthcare" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                  <input type="text" value={companyIndustry} onChange={(e) => setCompanyIndustry(e.target.value)} placeholder="e.g., Technology, Healthcare" className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Company Size</label>
-                  <select value={companySize} onChange={(e) => setCompanySize(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                  <select value={companySize} onChange={(e) => setCompanySize(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900">
                     <option value="">Select size</option>
                     <option value="1-10">1-10 employees</option>
                     <option value="11-50">11-50 employees</option>
@@ -192,28 +217,28 @@ export default function EditProfilePage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                <input type="text" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} placeholder="e.g., New York, Remote" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                <input type="text" value={companyLocation} onChange={(e) => setCompanyLocation(e.target.value)} placeholder="e.g., New York, Remote" className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
-                  <input type="url" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} placeholder="https://..." className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                  <input type="url" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} placeholder="https://..." className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
-                  <input type="url" value={companyLinkedin} onChange={(e) => setCompanyLinkedin(e.target.value)} placeholder="https://linkedin.com/company/..." className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                  <input type="url" value={companyLinkedin} onChange={(e) => setCompanyLinkedin(e.target.value)} placeholder="https://linkedin.com/company/..." className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">About the Company</label>
-                <textarea rows={5} value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} placeholder="Tell candidates about your company..." className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                <textarea rows={5} value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} placeholder="Tell candidates about your company..." className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Contact Person Name</label>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" required />
               </div>
 
               <div className="flex gap-3 pt-4">
@@ -245,37 +270,40 @@ export default function EditProfilePage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture</label>
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">
-                  {avatarPreview ? (
-                    <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                  {tempAvatarPreview ? (
+                    <img src={tempAvatarPreview} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-3xl">👤</span>
                   )}
                 </div>
                 <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition">
                   Upload Photo
-                  <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                  <input type="file" accept="image/*" onChange={handleAvatarSelect} className="hidden" />
                 </label>
               </div>
+              {tempAvatarFile && (
+                <p className="text-xs text-blue-600 mt-1">New photo will be saved when you click "Save Changes"</p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" required />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-              <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g., New York, Remote" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g., New York, Remote" className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-              <textarea rows={4} value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell employers about yourself..." className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              <textarea rows={4} value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell employers about yourself..." className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Job Seeking Status</label>
-              <select value={jobStatus} onChange={(e) => setJobStatus(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+              <select value={jobStatus} onChange={(e) => setJobStatus(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900">
                 <option value="actively_looking">Actively looking</option>
                 <option value="open_to_offers">Open to offers</option>
                 <option value="not_looking">Not looking</option>
@@ -285,22 +313,22 @@ export default function EditProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
-                <input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="https://linkedin.com/in/..." className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                <input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} placeholder="https://linkedin.com/in/..." className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
-                <input type="url" value={github} onChange={(e) => setGithub(e.target.value)} placeholder="https://github.com/..." className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+                <input type="url" value={github} onChange={(e) => setGithub(e.target.value)} placeholder="https://github.com/..." className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Portfolio</label>
-              <input type="url" value={portfolio} onChange={(e) => setPortfolio(e.target.value)} placeholder="https://yourportfolio.com" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              <input type="url" value={portfolio} onChange={(e) => setPortfolio(e.target.value)} placeholder="https://yourportfolio.com" className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Resume/CV</label>
-              <input type="file" accept=".pdf,.doc,.docx" onChange={handleCvUpload} className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              <input type="file" accept=".pdf,.doc,.docx" onChange={handleCvUpload} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
               {cvFileName && <p className="text-xs text-green-600 mt-1">Selected: {cvFileName}</p>}
             </div>
 

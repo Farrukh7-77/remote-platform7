@@ -131,20 +131,20 @@ export default function PostJobPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
-              <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
+              <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" required />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" required>
                   <option value="">Select category</option>
                   {CATEGORIES.map(cat => <option key={cat}>{cat}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Experience Level *</label>
-                <select value={formData.experienceLevel} onChange={e => setFormData({...formData, experienceLevel: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                <select value={formData.experienceLevel} onChange={e => setFormData({...formData, experienceLevel: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" required>
                   <option value="">Select experience</option>
                   {EXPERIENCE_LEVELS.map(exp => <option key={exp}>{exp}</option>)}
                 </select>
@@ -153,33 +153,33 @@ export default function PostJobPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
-              <input type="text" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="e.g., Global / Remote, Europe" className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
+              <input type="text" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="e.g., Global / Remote, Europe" className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" required />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
-                <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900">
                   {JOB_TYPES.map(t => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Salary Range (monthly)</label>
                 <div className="flex gap-2">
-                  <input type="number" value={formData.salaryMin} onChange={e => setFormData({...formData, salaryMin: e.target.value})} placeholder="Min" className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg" />
-                  <input type="number" value={formData.salaryMax} onChange={e => setFormData({...formData, salaryMax: e.target.value})} placeholder="Max" className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg" />
+                  <input type="number" value={formData.salaryMin} onChange={e => setFormData({...formData, salaryMin: e.target.value})} placeholder="Min" className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
+                  <input type="number" value={formData.salaryMax} onChange={e => setFormData({...formData, salaryMax: e.target.value})} placeholder="Max" className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
                 </div>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Job Description *</label>
-              <textarea rows={5} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
+              <textarea rows={5} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" required />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Requirements (comma separated)</label>
-              <input type="text" value={formData.requirements} onChange={e => setFormData({...formData, requirements: e.target.value})} placeholder="e.g., React, TypeScript, 3+ years" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              <input type="text" value={formData.requirements} onChange={e => setFormData({...formData, requirements: e.target.value})} placeholder="e.g., React, TypeScript, 3+ years" className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
             </div>
 
             {/* Featured Job Checkbox */}
@@ -210,7 +210,7 @@ export default function PostJobPage() {
               {formData.applyType === "external" && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Application URL *</label>
-                  <input type="url" value={formData.applyUrl} onChange={e => setFormData({...formData, applyUrl: e.target.value})} placeholder="https://company.com/careers/apply" className="w-full px-4 py-2 border border-gray-300 rounded-lg" required />
+                  <input type="url" value={formData.applyUrl} onChange={e => setFormData({...formData, applyUrl: e.target.value})} placeholder="https://company.com/careers/apply" className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" required />
                 </div>
               )}
             </div>
