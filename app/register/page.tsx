@@ -11,7 +11,7 @@ function RegisterForm() {
   const searchParams = useSearchParams();
   const roleParam = searchParams.get("role");
   
-  const [role, setRole] = useState<UserRole>(roleParam === "employer" ? "employer" : "job_seeker");
+  const [role, setRole] = useState<UserRole>(roleParam === "employer" ? "employer" : "jobseeker");
   const [name, setName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [voen, setVoen] = useState(""); // YENİ: VÖEN state-i
@@ -226,7 +226,7 @@ function RegisterForm() {
                   <button
                     type="button"
                     onClick={() => {
-                      setRole("job_seeker");
+                      setRole("jobseeker");
                       setVoen(""); // Rol dəyişdikdə VÖEN-i təmizlə
                     }}
                     className={`py-3 px-4 rounded-xl border transition-all duration-200 cursor-pointer ${

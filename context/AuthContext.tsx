@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 
-export type UserRole = "job_seeker" | "employer";
+export type UserRole = "jobseeker" | "employer";
 
 export type User = {
   id: number;
