@@ -230,7 +230,7 @@ function RegisterForm() {
                       setVoen(""); // Rol dəyişdikdə VÖEN-i təmizlə
                     }}
                     className={`py-3 px-4 rounded-xl border transition-all duration-200 cursor-pointer ${
-                      role === "job_seeker"
+                      role === "jobseeker"
                         ? "bg-gradient-to-r from-blue-500 to-blue-600 border-blue-400 text-white shadow-lg transform scale-[1.02]"
                         : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10 hover:border-white/40"
                     }`}
