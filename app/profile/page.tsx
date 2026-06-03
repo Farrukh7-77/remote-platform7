@@ -26,7 +26,7 @@ export default function ProfilePage() {
   }, [user, loading, router]);
 
   useEffect(() => {
-    if (user && user.role === "job_seeker") {
+    if (user && user.role === "jobseeker") {
       setLocation(localStorage.getItem(`profile_location_${user.email}`) || "");
       setBio(localStorage.getItem(`profile_bio_${user.email}`) || "");
       setLinkedin(localStorage.getItem(`profile_linkedin_${user.email}`) || "");
