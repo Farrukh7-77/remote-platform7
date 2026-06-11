@@ -1,17 +1,17 @@
-// components/Navbar.tsx - Sliding indicator with blue icons on hover
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import AuthModal from "./AuthModal";
 import JobAlertModal from "./JobAlertModal";
 import UserMenu from "./UserMenu";
 
-// SVG Icons - with group-hover blue color
+// SVG Icons
 const HomeIcon = () => (
-  <svg className="w-4 h-4 transition-colors duration-200 group-hover:text-[#4D9EFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-4 h-4 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
   </svg>
 );
@@ -37,11 +37,11 @@ const ContactIcon = () => (
 export default function Navbar() {
   const pathname = usePathname();
   const { user, signOut, showAuthModal, closeAuthModal, openAuthModal } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isJobAlertModalOpen, setIsJobAlertModalOpen] = useState(false);
   const [isMobileUserMenuOpen, setIsMobileUserMenuOpen] = useState(false);
   
-  // Sliding indicator state
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
   const [currentHovered, setCurrentHovered] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -64,7 +64,6 @@ export default function Navbar() {
 
   const isEmployer = user?.role === "employer";
 
-  // Update indicator position for a given href
   const updateIndicator = (href: string) => {
     const link = linkRefs.current.get(href);
     const container = containerRef.current;
@@ -78,18 +77,13 @@ export default function Navbar() {
     }
   };
 
-  // Mouse enter handler - xətti hover olunan linkə apar
   const handleMouseEnter = (href: string) => {
     setCurrentHovered(href);
     updateIndicator(href);
   };
 
-  // Mouse leave handler - heç nə etmirik, xətt son hover olunan yerdə qalır
-  const handleMouseLeave = () => {
-    // Xətt olduğu yerdə qalır - geri qayıtmır
-  };
+  const handleMouseLeave = () => {};
 
-  // Səhifə dəyişdikdə xətti aktiv linkə apar
   useEffect(() => {
     const activeLink = links.find(link => pathname === link.href);
     if (activeLink) {
@@ -98,7 +92,6 @@ export default function Navbar() {
     }
   }, [pathname]);
 
-  // Komponent ilk yükləndikdə aktiv linkə görə indicator qoy
   useEffect(() => {
     const activeLink = links.find(link => pathname === link.href);
     if (activeLink) {
@@ -108,7 +101,6 @@ export default function Navbar() {
     }
   }, []);
 
-  // Set ref for links
   const setLinkRef = (href: string, el: HTMLAnchorElement | null) => {
     if (el) {
       linkRefs.current.set(href, el);
@@ -118,13 +110,15 @@ export default function Navbar() {
   };
 
   const isActive = (href: string) => pathname === href;
-
-  // Hansı link üçün xətt göstəriləcək? (hover olunan varsa onun üçün, yoxsa aktiv link üçün)
   const activeIndicatorHref = currentHovered || links.find(l => pathname === l.href)?.href || null;
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-[#0D1117] border-b border-gray-800">
+      <nav className={`sticky top-0 z-50 transition-colors duration-200 ${
+        theme === "light" 
+          ? "bg-white border-b border-gray-200" 
+          : "bg-[#0D1117] border-b border-gray-800"
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -134,11 +128,11 @@ export default function Navbar() {
               </div>
               <span className="text-xl font-bold">
                 <span className="text-[#4D9EFF]">Remote</span>
-                <span className="text-white">Jobs</span>
+                <span className={theme === "light" ? "text-gray-900" : "text-white"}>Jobs</span>
               </span>
             </Link>
 
-            {/* Desktop Menu with Sliding Indicator */}
+            {/* Desktop Menu */}
             <div className="hidden md:flex items-center justify-end flex-1 mr-8">
               <div ref={containerRef} className="relative flex items-center space-x-6">
                 {links.map((link) => {
@@ -153,19 +147,20 @@ export default function Navbar() {
                       onMouseEnter={() => handleMouseEnter(link.href)}
                       onMouseLeave={handleMouseLeave}
                       className={`group relative flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
-                        active || isHovered
-                          ? "text-white bg-[#1E3A5F]/40"
-                          : "text-[#C9D1D9] hover:bg-[#1E3A5F]/20"
-                      }`}
+  active || isHovered
+    ? "text-white"
+    : theme === "light"
+      ? "text-white/70 hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+      : "text-[#C9D1D9] hover:text-blue-500"
+}`}
                     >
                       <Icon />
-                      <span className="text-sm font-medium transition-colors duration-200 group-hover:text-white">
+                      <span className="text-sm font-medium transition-colors duration-200">
                         {link.label}
                       </span>
                     </Link>
                   );
                 })}
-                {/* Sliding Indicator */}
                 {activeIndicatorHref && (
                   <span
                     className="absolute bottom-0 h-0.5 bg-[#4D9EFF] rounded-full transition-all duration-300 ease-out"
@@ -188,9 +183,34 @@ export default function Navbar() {
                 <span>Post a Job</span>
               </Link>
 
+              {/* THEME TOGGLE BUTTON */}
+              <button
+                onClick={toggleTheme}
+                className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                  theme === "light"
+                    ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    : "bg-[#1E3A5F]/20 text-[#C9D1D9] hover:bg-[#1E3A5F]/40"
+                }`}
+                aria-label="Toggle theme"
+              >
+                {theme === "light" ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                )}
+              </button>
+
               <button
                 onClick={() => setIsJobAlertModalOpen(true)}
-                className="relative p-2 text-[#C9D1D9] hover:text-white hover:bg-[#1E3A5F]/20 rounded-lg transition-all duration-200 cursor-pointer"
+                className={`relative p-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                  theme === "light"
+                    ? "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                    : "text-[#C9D1D9] hover:text-white hover:bg-[#1E3A5F]/20"
+                }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -201,7 +221,11 @@ export default function Navbar() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={openAuthModal}
-                    className="px-3 py-2 text-[#C9D1D9] hover:text-white hover:bg-[#1E3A5F]/20 rounded-lg transition-all duration-200 text-sm font-medium cursor-pointer"
+                    className={`px-3 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${
+                      theme === "light"
+                        ? "text-gray-700 hover:text-blue-500"
+                        : "text-[#C9D1D9] hover:text-blue-500"
+                    }`}
                   >
                     Sign In
                   </button>
@@ -221,15 +245,40 @@ export default function Navbar() {
             <div className="md:hidden flex items-center gap-3">
               <button
                 onClick={() => setIsJobAlertModalOpen(true)}
-                className="relative text-[#C9D1D9]"
+                className={`relative ${
+                  theme === "light" ? "text-gray-700" : "text-[#C9D1D9]"
+                }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
               </button>
+              
+              {/* THEME TOGGLE MOBILE */}
+              <button
+                onClick={toggleTheme}
+                className={`p-2 rounded-lg ${
+                  theme === "light"
+                    ? "bg-gray-100 text-gray-700"
+                    : "bg-[#1E3A5F]/20 text-[#C9D1D9]"
+                }`}
+              >
+                {theme === "light" ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                )}
+              </button>
+              
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-[#C9D1D9] cursor-pointer p-2"
+                className={`p-2 cursor-pointer ${
+                  theme === "light" ? "text-gray-700" : "text-[#C9D1D9]"
+                }`}
                 aria-label="Menu"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,7 +294,11 @@ export default function Navbar() {
               isMobileMenuOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
             }`}
           >
-            <div className="py-4 border-t border-gray-800 space-y-2 bg-[#0D1117]">
+            <div className={`py-4 border-t space-y-2 ${
+              theme === "light"
+                ? "bg-white border-gray-200"
+                : "bg-[#0D1117] border-gray-800"
+            }`}>
               {links.map((link) => {
                 const Icon = link.icon;
                 const active = isActive(link.href);
@@ -255,8 +308,12 @@ export default function Navbar() {
                     href={link.href}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
                       active
-                        ? "text-white bg-[#1E3A5F]/40"
-                        : "text-[#C9D1D9] hover:bg-[#1E3A5F]/20"
+                        ? theme === "light"
+                          ? "text-white bg-blue-500/20"
+                          : "text-white bg-[#1E3A5F]/40"
+                        : theme === "light"
+                          ? "text-gray-700 hover:bg-gray-100"
+                          : "text-[#C9D1D9] hover:bg-[#1E3A5F]/20"
                     }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -280,7 +337,11 @@ export default function Navbar() {
                       openAuthModal();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="block w-full text-left px-3 py-2 text-[#C9D1D9] hover:bg-[#1E3A5F]/20 rounded-lg"
+                    className={`block w-full text-left px-3 py-2 rounded-lg ${
+                      theme === "light"
+                        ? "text-gray-700 hover:bg-gray-100"
+                        : "text-[#C9D1D9] hover:bg-[#1E3A5F]/20"
+                    }`}
                   >
                     Sign In
                   </button>
@@ -296,13 +357,19 @@ export default function Navbar() {
                 <>
                   <button
                     onClick={() => setIsMobileUserMenuOpen(!isMobileUserMenuOpen)}
-                    className="w-full flex justify-between items-center px-3 py-2 text-[#C9D1D9] hover:bg-[#1E3A5F]/20 rounded-lg"
+                    className={`w-full flex justify-between items-center px-3 py-2 rounded-lg ${
+                      theme === "light"
+                        ? "text-gray-700 hover:bg-gray-100"
+                        : "text-[#C9D1D9] hover:bg-[#1E3A5F]/20"
+                    }`}
                   >
                     <span className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-xs">
                         {user.name?.charAt(0).toUpperCase()}
                       </div>
-                      {user.name}
+                      <span className={theme === "light" ? "text-gray-800" : "text-white"}>
+                        {user.name}
+                      </span>
                     </span>
                     <svg className={`w-4 h-4 transition-transform ${isMobileUserMenuOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -311,19 +378,73 @@ export default function Navbar() {
                   
                   {isMobileUserMenuOpen && (
                     <div className="pl-6 space-y-2">
-                      <Link href="/profile" className="block py-2 text-[#C9D1D9] hover:text-white">👤 My Profile</Link>
+                      <Link 
+                        href="/profile" 
+                        className={`block py-2 rounded-lg transition-all duration-200 ${
+                          theme === "light"
+                            ? "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                            : "text-[#C9D1D9] hover:text-white hover:bg-[#1E3A5F]/20"
+                        }`}
+                      >
+                        👤 My Profile
+                      </Link>
                       {isEmployer ? (
                         <>
-                          <Link href="/employer/dashboard" className="block py-2 text-[#C9D1D9] hover:text-white">📊 Dashboard</Link>
-                          <Link href="/employer/analytics" className="block py-2 text-[#C9D1D9] hover:text-white">📈 Analytics</Link>
+                          <Link 
+                            href="/employer/dashboard" 
+                            className={`block py-2 rounded-lg transition-all duration-200 ${
+                              theme === "light"
+                                ? "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                                : "text-[#C9D1D9] hover:text-white hover:bg-[#1E3A5F]/20"
+                            }`}
+                          >
+                            📊 Dashboard
+                          </Link>
+                          <Link 
+                            href="/employer/analytics" 
+                            className={`block py-2 rounded-lg transition-all duration-200 ${
+                              theme === "light"
+                                ? "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                                : "text-[#C9D1D9] hover:text-white hover:bg-[#1E3A5F]/20"
+                            }`}
+                          >
+                            📈 Analytics
+                          </Link>
                         </>
                       ) : (
                         <>
-                          <Link href="/saved-jobs" className="block py-2 text-[#C9D1D9] hover:text-white">📌 Saved Jobs</Link>
-                          <Link href="/applications" className="block py-2 text-[#C9D1D9] hover:text-white">📋 My Applications</Link>
+                          <Link 
+                            href="/saved-jobs" 
+                            className={`block py-2 rounded-lg transition-all duration-200 ${
+                              theme === "light"
+                                ? "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                                : "text-[#C9D1D9] hover:text-white hover:bg-[#1E3A5F]/20"
+                            }`}
+                          >
+                            📌 Saved Jobs
+                          </Link>
+                          <Link 
+                            href="/applications" 
+                            className={`block py-2 rounded-lg transition-all duration-200 ${
+                              theme === "light"
+                                ? "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                                : "text-[#C9D1D9] hover:text-white hover:bg-[#1E3A5F]/20"
+                            }`}
+                          >
+                            📋 My Applications
+                          </Link>
                         </>
                       )}
-                      <button onClick={() => { signOut(); setIsMobileMenuOpen(false); }} className="block w-full text-left py-2 text-red-400">🚪 Sign Out</button>
+                      <button 
+                        onClick={() => { signOut(); setIsMobileMenuOpen(false); }} 
+                        className={`block w-full text-left py-2 rounded-lg transition-all duration-200 ${
+                          theme === "light"
+                            ? "text-red-600 hover:text-red-700 hover:bg-red-50"
+                            : "text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        }`}
+                      >
+                        🚪 Sign Out
+                      </button>
                     </div>
                   )}
                 </>

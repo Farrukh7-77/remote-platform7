@@ -5,10 +5,14 @@ export async function POST(request: Request) {
   try {
     const { email, updates } = await request.json();
 
+    // İcazə verilən bütün sütunlar (həm job seeker, həm employer)
     const allowedFields = [
       "name", "avatar", "company_logo",
       "company_name", "company_industry", "company_location",
-      "company_size", "company_website", "company_linkedin", "company_description"
+      "company_size", "company_website", "company_linkedin", "company_description",
+      // YENİ: Job seeker üçün profile sütunları
+      "profile_location", "profile_bio", "profile_linkedin", 
+      "profile_github", "profile_portfolio", "profile_job_status"
     ];
     
     const updateFields: string[] = [];
@@ -44,7 +48,6 @@ export async function POST(request: Request) {
       const companyValues: any[] = [];
       let companyIndex = 1;
 
-      // company_logo (users-dakı avatar və ya company_logo)
       const logoValue = updates.company_logo || updates.avatar;
       if (logoValue !== undefined) {
         companyUpdates.push(`logo = $${companyIndex}`);

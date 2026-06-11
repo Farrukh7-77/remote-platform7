@@ -25,14 +25,15 @@ export default function ProfilePage() {
     if (!loading && !user) router.push("/");
   }, [user, loading, router]);
 
-  useEffect(() => {
-    if (user && user.role === "jobseeker") {
-      setLocation(localStorage.getItem(`profile_location_${user.email}`) || "");
-      setBio(localStorage.getItem(`profile_bio_${user.email}`) || "");
-      setLinkedin(localStorage.getItem(`profile_linkedin_${user.email}`) || "");
-      setGithub(localStorage.getItem(`profile_github_${user.email}`) || "");
-      setPortfolio(localStorage.getItem(`profile_portfolio_${user.email}`) || "");
-      setJobStatus(localStorage.getItem(`profile_jobstatus_${user.email}`) || "actively_looking");
+  // YENİ (user-dən oxuyur):
+useEffect(() => {
+  if (user && user.role === "jobseeker") {
+    setLocation(user.profile_location || "");
+    setBio(user.profile_bio || "");
+    setLinkedin(user.profile_linkedin || "");
+    setGithub(user.profile_github || "");
+    setPortfolio(user.profile_portfolio || "");
+    setJobStatus(user.profile_job_status || "actively_looking");
       
       const savedCv = localStorage.getItem(`cv_${user.email}`);
       if (savedCv) {

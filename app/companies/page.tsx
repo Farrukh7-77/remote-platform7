@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTheme } from "@/context/ThemeContext";
 
 type Company = {
   id: number;
@@ -38,6 +39,7 @@ const UsersIcon = () => (
 );
 
 export default function CompaniesPage() {
+  const { theme } = useTheme();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -63,17 +65,17 @@ export default function CompaniesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050816] flex items-center justify-center">
+      <div className={`min-h-screen ${theme === "light" ? "bg-gray-50" : "bg-[#050816]"} flex items-center justify-center`}>
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-gray-400 animate-pulse">Loading companies...</div>
+          <div className={`${theme === "light" ? "text-gray-500" : "text-gray-400"} animate-pulse`}>Loading companies...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-[#050816] transition-opacity duration-700 ${pageLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`min-h-screen transition-opacity duration-700 ${pageLoaded ? 'opacity-100' : 'opacity-0'} ${theme === "light" ? "bg-gray-50" : "bg-[#050816]"}`}>
       
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-8 pb-12 px-4">
@@ -83,18 +85,22 @@ export default function CompaniesPage() {
         
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3">
-            <span className="text-white">Top</span>{' '}
+            <span className={theme === "light" ? "text-gray-900" : "text-white"}>Top</span>{' '}
             <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Remote</span>{' '}
-            <span className="text-white">Companies</span>
+            <span className={theme === "light" ? "text-gray-900" : "text-white"}>Companies</span>
           </h1>
-          <p className="text-gray-300 text-sm md:text-base mb-6">
+          <p className={`text-sm md:text-base mb-6 ${theme === "light" ? "text-gray-600" : "text-gray-300"}`}>
             Discover companies hiring remote talent worldwide
           </p>
           
           {/* Search Bar */}
           <div className="max-w-md mx-auto">
             <div className="relative group">
-              <div className="relative flex items-center bg-[#0f172a]/80 backdrop-blur-sm border border-white/15 rounded-lg overflow-hidden focus-within:border-blue-500/40 transition-all duration-300">
+              <div className={`relative flex items-center rounded-lg overflow-hidden focus-within:border-blue-500/40 transition-all duration-300 ${
+                theme === "light" 
+                  ? "bg-white border border-gray-300 shadow-sm" 
+                  : "bg-[#0f172a]/80 backdrop-blur-sm border border-white/15"
+              }`}>
                 <div className="pl-3">
                   <SearchIcon />
                 </div>
@@ -103,12 +109,16 @@ export default function CompaniesPage() {
                   placeholder="Search companies by name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1 px-3 py-2.5 bg-transparent focus:outline-none text-white placeholder-gray-500 text-sm"
+                  className={`flex-1 px-3 py-2.5 bg-transparent focus:outline-none text-sm ${
+                    theme === "light" ? "text-gray-900 placeholder-gray-400" : "text-white placeholder-gray-500"
+                  }`}
                 />
                 {searchTerm && (
                   <button
                     onClick={() => setSearchTerm("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
+                      theme === "light" ? "text-gray-400 hover:text-gray-600" : "text-gray-400 hover:text-white"
+                    }`}
                   >
                     ✕
                   </button>
@@ -122,12 +132,18 @@ export default function CompaniesPage() {
       {/* Companies Grid */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {filteredCompanies.length === 0 ? (
-          <div className="text-center py-16 glass-card">
+          <div className={`text-center py-16 rounded-xl ${
+            theme === "light" 
+              ? "bg-white border border-gray-200 shadow-sm" 
+              : "glass-card"
+          }`}>
             <div className="text-6xl mb-4">🔍</div>
-            <p className="text-gray-400">No companies found for "{searchTerm}"</p>
+            <p className={theme === "light" ? "text-gray-500" : "text-gray-400"}>
+              No companies found for "{searchTerm}"
+            </p>
             <button 
               onClick={() => setSearchTerm("")} 
-              className="mt-4 text-blue-400 hover:text-blue-300 text-sm transition-colors cursor-pointer"
+              className="mt-4 text-blue-500 hover:text-blue-600 text-sm transition-colors cursor-pointer"
             >
               Clear search
             </button>
@@ -135,20 +151,30 @@ export default function CompaniesPage() {
         ) : (
           <>
             <div className="flex justify-end items-center mb-4">
-              <p className="text-sm text-gray-400">
-                Found <span className="font-semibold text-white">{filteredCompanies.length}</span> companies
+              <p className={`text-sm ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
+                Found <span className={`font-semibold ${theme === "light" ? "text-gray-900" : "text-white"}`}>
+                  {filteredCompanies.length}
+                </span> companies
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 -mt-6">
               {filteredCompanies.map((company, index) => (
                 <Link
                   key={company.id}
                   href={`/company/${company.id}`}
-                  className="group bg-[#0f172a] rounded-xl border border-white/10 p-6 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:-translate-y-1 transition-all duration-300 animate-card cursor-pointer"
+                  className={`group rounded-xl p-6 transition-all duration-300 animate-card cursor-pointer ${
+                    theme === "light"
+                      ? "bg-white border border-gray-400 shadow-sm hover:shadow-md hover:border-gray-500 hover:-translate-y-1"
+                      : "bg-[#0f172a] border border-white/10 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:-translate-y-1"
+                  }`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-105">
+                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-105 ${
+                      theme === "light"
+                        ? "bg-gray-100 border border-gray-200"
+                        : "bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10"
+                    }`}>
                       {company.logo ? (
                         <img src={company.logo} alt={company.name} className="w-full h-full object-contain rounded-xl" />
                       ) : (
@@ -158,24 +184,38 @@ export default function CompaniesPage() {
                       )}
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors duration-200">
+                      <h3 className={`text-lg font-semibold transition-colors duration-200 ${
+                        theme === "light" 
+                          ? "text-gray-900 group-hover:text-blue-600" 
+                          : "text-white group-hover:text-blue-400"
+                      }`}>
                         {company.name}
                       </h3>
-                      <p className="text-sm text-gray-400">{company.industry || "Technology"}</p>
+                      <p className={`text-sm ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
+                        {company.industry || "Technology"}
+                      </p>
                     </div>
                   </div>
-                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                  <p className={`text-sm mb-4 line-clamp-2 ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
                     {company.description || "A company hiring remote talent worldwide."}
                   </p>
                   <div className="flex flex-wrap gap-3 text-sm">
                     {company.location && (
-                      <span className="inline-flex items-center gap-1 text-gray-500 transition-all duration-200 group-hover:text-blue-400">
+                      <span className={`inline-flex items-center gap-1 transition-all duration-200 ${
+                        theme === "light" 
+                          ? "text-gray-500 group-hover:text-blue-600" 
+                          : "text-gray-500 group-hover:text-blue-400"
+                      }`}>
                         <LocationIcon />
                         {company.location}
                       </span>
                     )}
                     {company.size && (
-                      <span className="inline-flex items-center gap-1 text-gray-500 transition-all duration-200 group-hover:text-blue-400">
+                      <span className={`inline-flex items-center gap-1 transition-all duration-200 ${
+                        theme === "light" 
+                          ? "text-gray-500 group-hover:text-blue-600" 
+                          : "text-gray-500 group-hover:text-blue-400"
+                      }`}>
                         <UsersIcon />
                         {company.size}
                       </span>

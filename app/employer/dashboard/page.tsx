@@ -217,24 +217,37 @@ export default function EmployerDashboard() {
                         Posted: {new Date(job.posted_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
+                      {/* EDIT Button - YENİ */}
+                      <Link
+                        href={`/job/${job.id}/edit`}
+                        className="px-3 py-1.5 text-xs bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition cursor-pointer flex items-center gap-1"
+                      >
+                        ✏️ Edit
+                      </Link>
+                      
+                      {/* PROMOTE Button */}
                       <button
                         onClick={() => handlePromote(job.id)}
                         disabled={job.is_featured}
                         className={`px-3 py-1.5 text-xs rounded-lg transition cursor-pointer ${
                           job.is_featured
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "bg-yellow-500 text-white hover:bg-yellow-600"
+                            : "bg-purple-500 text-white hover:bg-purple-600"
                         }`}
                       >
                         {job.is_featured ? "⭐ Featured" : "🚀 Promote"}
                       </button>
+                      
+                      {/* VIEW Button */}
                       <Link
                         href={`/job/${job.id}`}
                         className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition cursor-pointer"
                       >
                         View
                       </Link>
+                      
+                      {/* DELETE Button */}
                       <button
                         onClick={() => deleteJob(job.id)}
                         className="px-3 py-1.5 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition cursor-pointer"

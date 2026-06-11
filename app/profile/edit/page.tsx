@@ -1,4 +1,3 @@
-// app/profile/edit/page.tsx
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
@@ -7,7 +6,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function EditProfilePage() {
-  const { user, loading, updateUser } = useAuth();
+  const { user, loading, updateUser, signOut } = useAuth();
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -19,9 +18,10 @@ export default function EditProfilePage() {
   const [jobStatus, setJobStatus] = useState("actively_looking");
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [cvFileName, setCvFileName] = useState("");
+  const [cvUploading, setCvUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [tempAvatarFile, setTempAvatarFile] = useState<File | null>(null); // YENİ: müvəqqəti avatar faylı
-  const [tempAvatarPreview, setTempAvatarPreview] = useState<string | null>(null); // YENİ: müvəqqəti preview
+  const [tempAvatarFile, setTempAvatarFile] = useState<File | null>(null);
+  const [tempAvatarPreview, setTempAvatarPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   // Employer fields
@@ -42,12 +42,12 @@ export default function EditProfilePage() {
   useEffect(() => {
     if (user) {
       setName(user.name || "");
-      setLocation(localStorage.getItem(`profile_location_${user.email}`) || "");
-      setBio(localStorage.getItem(`profile_bio_${user.email}`) || "");
-      setLinkedin(localStorage.getItem(`profile_linkedin_${user.email}`) || "");
-      setGithub(localStorage.getItem(`profile_github_${user.email}`) || "");
-      setPortfolio(localStorage.getItem(`profile_portfolio_${user.email}`) || "");
-      setJobStatus(localStorage.getItem(`profile_jobstatus_${user.email}`) || "actively_looking");
+      setLocation((user as any).profile_location || "");
+      setBio((user as any).profile_bio || "");
+      setLinkedin((user as any).profile_linkedin || "");
+      setGithub((user as any).profile_github || "");
+      setPortfolio((user as any).profile_portfolio || "");
+      setJobStatus((user as any).profile_job_status || "actively_looking");
       
       setCompanyName(user.company_name || "");
       setCompanyIndustry((user as any).company_industry || "");
@@ -65,7 +65,6 @@ export default function EditProfilePage() {
     }
   }, [user]);
 
-  // YENİ: Avatar seçildikdə - yalnız MÜVƏQQƏTİ saxla, databaza YOX!
   const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -78,7 +77,6 @@ export default function EditProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  // YENİ: Müvəqqəti avatarı databazaya yaz
   const saveAvatar = async () => {
     if (tempAvatarFile) {
       const reader = new FileReader();
@@ -101,8 +99,49 @@ export default function EditProfilePage() {
   const handleCvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Yalnız PDF və DOC fayllarına icazə ver
+      const allowedTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+      if (!allowedTypes.includes(file.type)) {
+        alert("Please upload PDF or DOC/DOCX files only.");
+        return;
+      }
+      // Fayl ölçüsü limiti: 5MB
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size must be less than 5MB.");
+        return;
+      }
       setCvFile(file);
       setCvFileName(file.name);
+    }
+  };
+
+  const uploadCV = async (): Promise<string | null> => {
+    if (!cvFile || !user) return null;
+    
+    setCvUploading(true);
+    const formData = new FormData();
+    formData.append("cv", cvFile);
+    formData.append("email", user.email);
+    
+    try {
+      const response = await fetch("/api/upload-cv", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (response.ok) {
+        return data.url;
+      } else {
+        console.error("CV upload failed:", data.error);
+        alert("Failed to upload CV: " + data.error);
+        return null;
+      }
+    } catch (error) {
+      console.error("CV upload error:", error);
+      alert("Failed to upload CV. Please try again.");
+      return null;
+    } finally {
+      setCvUploading(false);
     }
   };
 
@@ -110,18 +149,16 @@ export default function EditProfilePage() {
     e.preventDefault();
     setSaving(true);
 
-    // YENİ: Əvvəlcə avatarı yadda saxla
+    // Avatarı yadda saxla (əgər dəyişibsə)
     await saveAvatar();
 
-    if (user) {
-      localStorage.setItem(`profile_location_${user.email}`, location);
-      localStorage.setItem(`profile_bio_${user.email}`, bio);
-      localStorage.setItem(`profile_linkedin_${user.email}`, linkedin);
-      localStorage.setItem(`profile_github_${user.email}`, github);
-      localStorage.setItem(`profile_portfolio_${user.email}`, portfolio);
-      localStorage.setItem(`profile_jobstatus_${user.email}`, jobStatus);
+    // CV faylını serverə yüklə
+    let cvUrl = null;
+    if (cvFile) {
+      cvUrl = await uploadCV();
     }
 
+    // Bütün məlumatları database-də yenilə
     if (user?.role === "employer") {
       await updateUser({
         name,
@@ -134,21 +171,21 @@ export default function EditProfilePage() {
         company_description: companyDescription,
       });
     } else {
-      await updateUser({ name });
-    }
-
-    if (cvFile && user) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        const cvData = {
-          name: cvFileName,
-          data: base64String,
-          uploadedAt: new Date().toISOString(),
-        };
-        localStorage.setItem(`cv_${user.email}`, JSON.stringify(cvData));
+      const updates: any = {
+        name,
+        profile_location: location,
+        profile_bio: bio,
+        profile_linkedin: linkedin,
+        profile_github: github,
+        profile_portfolio: portfolio,
+        profile_job_status: jobStatus,
       };
-      reader.readAsDataURL(cvFile);
+      
+      if (cvUrl) {
+        updates.cv_url = cvUrl;
+      }
+      
+      await updateUser(updates);
     }
 
     setSaving(false);
@@ -161,6 +198,7 @@ export default function EditProfilePage() {
 
   if (!user) return null;
 
+  // EMPLOYER FORM
   if (user.role === "employer") {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
@@ -256,6 +294,7 @@ export default function EditProfilePage() {
     );
   }
 
+  // JOB SEEKER FORM
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-3xl mx-auto px-4">
@@ -327,13 +366,14 @@ export default function EditProfilePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Resume/CV</label>
-              <input type="file" accept=".pdf,.doc,.docx" onChange={handleCvUpload} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Resume/CV (PDF or DOC/DOCX, max 5MB)</label>
+              <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={handleCvUpload} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900" />
               {cvFileName && <p className="text-xs text-green-600 mt-1">Selected: {cvFileName}</p>}
+              {cvUploading && <p className="text-xs text-blue-600 mt-1">Uploading...</p>}
             </div>
 
             <div className="flex gap-3 pt-4">
-              <button type="submit" disabled={saving} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 cursor-pointer">
+              <button type="submit" disabled={saving || cvUploading} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 cursor-pointer">
                 {saving ? "Saving..." : "Save Changes"}
               </button>
               <Link href="/profile" className="flex-1 text-center bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg transition">

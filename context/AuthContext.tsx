@@ -18,8 +18,17 @@ export type User = {
   company_size?: string;
   company_industry?: string;
   company_linkedin?: string;
-  voen?: string; // YENİ: VÖEN
-  verification_status?: string; // YENİ: pending, approved, rejected
+  voen?: string;
+  verification_status?: string;
+  is_verified?: boolean;
+  token_version?: number;
+  // JOB SEEKER PROFİL SAHƏLƏRİ
+  profile_location?: string;
+  profile_bio?: string;
+  profile_linkedin?: string;
+  profile_github?: string;
+  profile_portfolio?: string;
+  profile_job_status?: string;
 };
 
 type AuthContextType = {
@@ -31,7 +40,7 @@ type AuthContextType = {
     name: string, 
     role: UserRole, 
     companyName?: string,
-    voen?: string  // YENİ: VÖEN parametri
+    voen?: string
   ) => Promise<{ success: boolean; error?: string; message?: string }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => void;
@@ -71,7 +80,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const openAuthModal = () => setShowAuthModal(true);
   const closeAuthModal = () => setShowAuthModal(false);
 
-  // YENİ: signUp funksiyası - voen parametri əlavə edildi
   const signUp = async (
     email: string, 
     password: string, 
@@ -102,36 +110,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/auth/signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        setLoading(false);
-        return { success: false, error: data.error };
-      }
-      setUser(data.user);
-      localStorage.setItem("auth_user", JSON.stringify(data.user));
-      if (data.token) {
-        localStorage.setItem("auth_token", data.token);
-      }
+  setLoading(true);
+  try {
+    const response = await fetch("/api/auth/signin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await response.json();
+    
+    if (!response.ok) {
       setLoading(false);
-      return { success: true };
-    } catch (error) {
-      setLoading(false);
-      return { success: false, error: "Login failed" };
+      return { success: false, error: data.error };
     }
-  };
+    
+    // Uğurlu login
+    setUser(data.user);
+    localStorage.setItem("auth_user", JSON.stringify(data.user));
+    if (data.token) {
+      localStorage.setItem("auth_token", data.token);
+    }
+    setLoading(false);
+    
+    // Modal-ı bağla (əgər açıqdırsa)
+    closeAuthModal();
+    
+    // Səhifəni yenilə (rol dəyişibsə, məlumatlar yenilənsin)
+    window.location.href = "/";
+    
+    return { success: true };
+  } catch (error) {
+    setLoading(false);
+    return { success: false, error: "Login failed" };
+  }
+};
 
   const signOut = useCallback(() => {
     setUser(null);
     localStorage.removeItem("auth_user");
     localStorage.removeItem("auth_token");
-  }, []);
+    // CV məlumatlarını da təmizlə
+    if (user?.email) {
+      localStorage.removeItem(`cv_${user.email}`);
+    }
+  }, [user?.email]);
 
   const updateUser = async (updates: Partial<User>) => {
     if (!user) return;
@@ -147,6 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.ok && data.user) {
         const updatedUser = { ...user, ...data.user };
         setUser(updatedUser);
+        // User məlumatlarını localStorage-da yenilə
         localStorage.setItem("auth_user", JSON.stringify(updatedUser));
       }
     } catch (error) {

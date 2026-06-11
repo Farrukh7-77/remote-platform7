@@ -1,9 +1,7 @@
-// app/api/jobs/route.ts
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 
-// app/api/jobs/route.ts - POST metodu
-
+// POST metodu (iş elanı yaratmaq)
 export async function POST(request: Request) {
   try {
     const { 
@@ -12,7 +10,6 @@ export async function POST(request: Request) {
       requirements, postedBy, applyType, applyUrl, is_featured 
     } = await request.json();
 
-    // YENİ: İş elanı əvvəlcə təsdiq gözləyir (pending)
     const result = await pool.query(
       `INSERT INTO jobs (
         title, company, company_logo, company_logo_bg_color, location, type, 
@@ -38,24 +35,42 @@ export async function POST(request: Request) {
   }
 }
 
-// app/api/jobs/route.ts - GET metodu (FRONTEND ÜÇÜN - saytda görünən)
-
-export async function GET() {
+// GET metodu (iş elanlarını qaytarır - filtrasiya ilə)
+// GET metodu (iş elanlarını qaytarır - filtrasiya ilə)
+export async function GET(request: Request) {
   try {
-    // YENİ: Yalnız təsdiq olunmuş (approved) və is_verified = true olan işləri göstər
-    const result = await pool.query(
-      `SELECT 
-        j.*,
+    const { searchParams } = new URL(request.url);
+    const companyId = searchParams.get("companyId");
+    
+    let query = `
+      SELECT 
+        j.id, j.title, j.company, j.company_logo, j.company_logo_bg_color, 
+        j.location, j.type, j.category, j.experience_level, 
+        j.salary_min, j.salary_max, j.description, j.requirements,
+        j.posted_at, j.is_featured, j.posted_by, j.apply_type, j.apply_url,
+        j.views, j.is_verified, j.status,
         c.logo as company_logo_from_companies
-       FROM jobs j
-       LEFT JOIN companies c ON j.posted_by = c.email
-       WHERE j.is_verified = true AND j.status = 'approved'
-       ORDER BY j.posted_at DESC`
-    );
+      FROM jobs j
+      LEFT JOIN companies c ON j.posted_by = c.email
+      WHERE j.is_verified = true AND j.status = 'approved'
+    `;
+    
+    const params: any[] = [];
+    
+    if (companyId) {
+      query += ` AND j.posted_by = (SELECT email FROM companies WHERE id = $1)`;
+      params.push(companyId);
+    }
+    
+    query += ` ORDER BY j.posted_at DESC`;
+    
+    const result = await pool.query(query, params);
     
     const jobs = result.rows.map((job: any) => ({
       ...job,
-      company_logo: job.company_logo_from_companies || job.company_logo
+      company_logo: job.company_logo_from_companies || job.company_logo,
+      views_count: job.views || 0,
+      applicants_count: job.applicants_count || 0
     }));
     
     return NextResponse.json({ jobs });

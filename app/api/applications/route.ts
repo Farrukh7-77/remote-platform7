@@ -1,12 +1,13 @@
 // app/api/applications/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { Pool } from "pg";
+import { verifyTokenWithVersion } from "@/lib/auth";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// İstifadəçini token-dan tap
+// İstifadəçini token-dan tap (tokenVersion yoxlanışı ilə)
 async function getUserIdFromToken(req: NextRequest): Promise<number | null> {
   const authHeader = req.headers.get("authorization");
   const token = authHeader?.split(" ")[1];
@@ -14,9 +15,9 @@ async function getUserIdFromToken(req: NextRequest): Promise<number | null> {
   if (!token) return null;
   
   try {
-    const base64Payload = token.split('.')[1];
-    const payload = JSON.parse(Buffer.from(base64Payload, 'base64').toString());
-    return payload.userId || payload.id;
+    const decoded = await verifyTokenWithVersion(token);
+    if (!decoded) return null;
+    return decoded.userId;
   } catch {
     return null;
   }
@@ -26,7 +27,7 @@ async function getUserIdFromToken(req: NextRequest): Promise<number | null> {
 export async function GET(req: NextRequest) {
   const userId = await getUserIdFromToken(req);
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized. Please sign in again." }, { status: 401 });
   }
 
   try {
@@ -50,7 +51,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const userId = await getUserIdFromToken(req);
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized. Please sign in again." }, { status: 401 });
   }
 
   try {

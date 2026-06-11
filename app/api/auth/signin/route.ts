@@ -9,9 +9,17 @@ export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
 
-    // İstifadəçini email ilə tap (verification_status da götür)
+    // BÜTÜN sahələri SELECT et
     const result = await pool.query(
-      `SELECT id, email, name, role, company_name, avatar, company_logo, password, is_verified, verification_status 
+      `SELECT 
+        id, email, name, role, 
+        avatar, company_logo,
+        company_name, company_website, company_description, 
+        company_location, company_size, company_industry, company_linkedin,
+        voen, verification_status,
+        profile_location, profile_bio, profile_linkedin, 
+        profile_github, profile_portfolio, profile_job_status,
+        password, is_verified, is_active, blocked_at, token_version
        FROM users 
        WHERE email = $1`,
       [email]
@@ -23,12 +31,17 @@ export async function POST(request: Request) {
 
     const user = result.rows[0];
 
+    // İstifadəçi bloklanıbsa?
+    if (!user.is_active) {
+      return NextResponse.json({ error: "Your account has been blocked. Please contact support." }, { status: 403 });
+    }
+
     // Email təsdiqlənib?
     if (!user.is_verified) {
       return NextResponse.json({ error: "Please verify your email address first" }, { status: 401 });
     }
 
-    // YENİ: Employer üçün admin təsdiqi yoxlanılır
+    // Employer üçün admin təsdiqi yoxlanılır
     if (user.role === "employer") {
       if (user.verification_status === "pending") {
         return NextResponse.json({ 
@@ -51,11 +64,17 @@ export async function POST(request: Request) {
     }
 
     // Şifrəni cavabdan çıxar
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _, token_version, ...userWithoutPassword } = user;
 
-    // JWT token yarat
+    // JWT token yarat - token_version da daxil et
     const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name, role: user.role },
+      { 
+        userId: user.id, 
+        email: user.email, 
+        name: user.name, 
+        role: user.role,
+        tokenVersion: user.token_version || 0
+      },
       JWT_SECRET,
       { expiresIn: "7d" }
     );

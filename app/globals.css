@@ -1,10 +1,10 @@
-/* app/globals.css */
 @import "tailwindcss";
 
 @theme {
   --font-inter: 'Inter', sans-serif;
 }
 
+/* ===== BASE STYLES ===== */
 @layer base {
   body {
     color: white;
@@ -12,13 +12,6 @@
 }
 
 @layer components {
-  .glass-card {
-    background-color: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 1rem;
-  }
-  
   .glass-card-hover {
     transition: all 0.3s ease;
   }
@@ -84,20 +77,17 @@
 /* ============================================ */
 @media (max-width: 767px) {
   .hero-section {
-    /* Background image moved UP for mobile */
     background-position: center 15% !important;
     padding-top: 0.5rem !important;
     padding-bottom: 0.75rem !important;
   }
   
   .hero-title {
-    /* Much smaller text on mobile */
-    font-size: 1rem !important; /* text-base - ÇOX KİÇİK */
+    font-size: 1rem !important;
     line-height: 1.3 !important;
   }
   
   .hero-icon {
-    /* İkonu mobil üçün böyütdük (məsələn, 2.5rem = 40px və ya 3rem = 48px edə bilərsiniz) */
     width: 2rem !important; 
     height: 2rem !important;
     position: static !important;
@@ -105,12 +95,11 @@
     margin: 0 0 0 0.25rem !important;
     vertical-align: middle !important;
   }
-  
 
   .hero-search-container {
     margin-top: 0.75rem !important;
-    max-width: 240px !important; /* ÇOX DAR */
-    width: 240px !important; /* MƏCBURİ EN */
+    max-width: 240px !important;
+    width: 240px !important;
     padding: 0 !important;
   }
 }
@@ -119,7 +108,6 @@
 /* JOB CARD - MOBILE & DESKTOP STYLES */
 /* ============================================ */
 
-/* Mobile styles (max-width: 767px) */
 @media (max-width: 767px) {
   .jobs-page-container {
     padding-left: 0.75rem !important;
@@ -185,13 +173,13 @@
   }
   
   .job-card-title {
-    font-size: 0.85rem !important;
+    font-size: 0.9rem !important;
     line-height: 1.3 !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
   }
   
   .job-card-company {
-    font-size: 0.7rem !important;
+    font-size: 0.75rem !important;
     margin-top: 0.125rem !important;
   }
   
@@ -200,7 +188,7 @@
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
     gap: 0.5rem !important;
-    margin-top: 0.5rem !important;
+    margin-top: 0.8rem !important;
     padding-bottom: 0.25rem !important;
     -webkit-overflow-scrolling: touch !important;
   }
@@ -210,7 +198,7 @@
   }
   
   .job-card-detail-text {
-    font-size: 0.65rem !important;
+    font-size: 0.7rem !important;
     gap: 0.125rem !important;
     white-space: nowrap !important;
     flex-shrink: 0 !important;
@@ -239,7 +227,7 @@
   }
   
   .job-card-category {
-    font-size: 0.55rem !important;
+    font-size: 0.6rem !important;
     padding-left: 0.375rem !important;
     padding-right: 0.375rem !important;
     padding-top: 0.125rem !important;
@@ -247,7 +235,6 @@
   }
 }
 
-/* Desktop styles (min-width: 768px) */
 @media (min-width: 768px) {
   .job-card-logo {
     width: 80px !important;
@@ -276,12 +263,13 @@
   }
   
   .job-card-title {
-    font-size: 0.875rem !important;
+    font-size: 1.125rem !important;
     line-height: 1.3 !important;
+    font-weight: 700 !important;
   }
   
   .job-card-company {
-    font-size: 0.75rem !important;
+    font-size: 0.9rem !important;
     margin-top: -0.5rem !important;
     margin-bottom: 0 !important;
   }
@@ -290,11 +278,11 @@
     display: flex !important;
     flex-wrap: wrap !important;
     gap: 1rem !important;
-    margin-top: 0.25rem !important;
+    margin-top: 0.6rem !important;
   }
   
   .job-card-detail-text {
-    font-size: 0.75rem !important;
+    font-size: 0.85rem !important;
     gap: 0.25rem !important;
     white-space: normal !important;
     flex-shrink: 0 !important;
@@ -311,7 +299,7 @@
   }
   
   .job-card-time {
-    font-size: 0.7rem !important;
+    font-size: 0.75rem !important;
     gap: 0.5rem !important;
   }
   
@@ -321,7 +309,7 @@
   }
   
   .job-card-category {
-    font-size: 0.7rem !important;
+    font-size: 0.75rem !important;
     padding-left: 0.625rem !important;
     padding-right: 0.625rem !important;
     padding-top: 0.25rem !important;
@@ -329,3 +317,590 @@
   }
 }
 
+/* ============================================ */
+/* LIGHT MODE (DEFAULT) */
+/* ============================================ */
+
+/* Body */
+body {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+.dark body {
+  background-color: #050816 !important;
+  color: #ffffff !important;
+}
+
+/* Hero Section */
+.hero-section {
+  background-color: #ffffff !important;
+}
+.dark .hero-section {
+  background-color: transparent !important;
+}
+
+.hero-title span:not(.bg-gradient-to-r) {
+  color: #111827 !important;
+}
+.dark .hero-title span:not(.bg-gradient-to-r) {
+  color: #ffffff !important;
+}
+
+/* ============================================ */
+/* HERO SEARCH BAR - GÜNDÜZ REJİMİ (QARA BORDER) */
+/* ============================================ */
+
+/* GÜNDÜZ rejimi - search bar qara border */
+.hero-search-container .relative {
+  background-color: #ffffff !important;
+  border: 1px solid #000000 !important;
+  border-radius: 0.5rem !important;
+}
+.dark .hero-search-container .relative {
+  background-color: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+/* GÜNDÜZ rejimi - input yazısı tünd qara */
+.hero-search-container input {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+.dark .hero-search-container input {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+/* GÜNDÜZ rejimi - placeholder yazısı tünd qara */
+.hero-search-container input::placeholder {
+  color: #1f2937 !important;
+}
+.dark .hero-search-container input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* GÜNDÜZ rejimi - search iconu tünd qara */
+.hero-search-container svg {
+  color: #1f2937 !important;
+}
+.dark .hero-search-container svg {
+  color: #ffffff !important;
+}
+
+/* Main content background */
+.w-full.max-w-7xl {
+  background-color: #f3f4f6 !important;
+}
+.dark .w-full.max-w-7xl {
+  background-color: transparent !important;
+}
+
+/* ============================================ */
+/* FILTER CARDS - GLASS CARD (override) */
+/* ============================================ */
+
+/* GÜNDÜZ rejimi - AĞ fon, QARA yazı, MAVİ ikon */
+.glass-card {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: none !important;
+  border-radius: 1rem !important;
+}
+
+/* GECƏ rejimi - Tünd fon */
+.dark .glass-card {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: none !important;
+}
+
+/* Filter card başlıqları (Job Type, Category etc.) - QARA yazı */
+.glass-card button span {
+  color: #111827 !important;
+}
+.dark .glass-card button span {
+  color: #d1d5db !important;
+}
+
+/* Filter card ikonları - MAVİ */
+.glass-card button svg {
+  color: #3b82f6 !important;
+}
+.dark .glass-card button svg {
+  color: #60a5fa !important;
+}
+
+/* Checkbox etiketləri - QARA */
+.glass-card label {
+  color: #111827 !important;
+}
+.dark .glass-card label {
+  color: #9ca3af !important;
+}
+
+/* Reset all button */
+.glass-card button.text-red-500 {
+  color: #ef4444 !important;
+}
+
+/* Salary range values */
+.glass-card .text-gray-400 {
+  color: #111827 !important;
+}
+.dark .glass-card .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+/* Salary range slider */
+.glass-card input[type="range"] {
+  accent-color: #3b82f6 !important;
+}
+
+/* ============================================ */
+/* JOB CARDS - LIGHT MODE (açıq qara border #9ca3af) */
+/* ============================================ */
+
+.group.bg-\[\#0f172a\] {
+  background-color: #ffffff !important;
+  border: 1px solid #9ca3af !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+.dark .group.bg-\[\#0f172a\] {
+  background-color: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Featured iş kartları üçün border */
+.group.border-yellow-500\/50 {
+  border-color: #eab308 !important;
+}
+.dark .group.border-yellow-500\/50 {
+  border-color: rgba(234, 179, 8, 0.5) !important;
+}
+
+/* Hover zamanı border rəngi */
+.group:hover {
+  border-color: #3b82f6 !important;
+}
+.dark .group:hover {
+  border-color: rgba(59, 130, 246, 0.5) !important;
+}
+
+.job-card-title {
+  color: #111827 !important;
+}
+.dark .job-card-title {
+  color: #ffffff !important;
+}
+
+.job-card-company {
+  color: #6b7280 !important;
+}
+.dark .job-card-company {
+  color: #9ca3af !important;
+}
+
+/* Bütün job card detail textlər - GÜNDÜZ rejimində tünd qara (#1f2937) */
+.job-card-detail-text {
+  color: #1f2937 !important;
+}
+
+/* Bütün job card detail iconlar - GÜNDÜZ rejimində tünd qara (#1f2937) */
+.job-card-detail-icon {
+  color: #1f2937 !important;
+}
+
+/* GECƏ rejimi - açıq boz (əvvəlki kimi) */
+.dark .job-card-detail-text {
+  color: #9ca3af !important;
+}
+
+.dark .job-card-detail-icon {
+  color: #6b7280 !important;
+}
+
+/* Salary hissəsi ayrıca idarə olunur - hover zamanı yaşıl */
+.job-card-detail-text.salary-text {
+  color: #1f2937 !important;
+}
+.dark .job-card-detail-text.salary-text {
+  color: #9ca3af !important;
+}
+
+.group:hover .job-card-detail-text.salary-text {
+  color: #22c55e !important;
+}
+.dark .group:hover .job-card-detail-text.salary-text {
+  color: #22c55e !important;
+}
+
+/* Salary icon hover zamanı yaşıl */
+.group:hover .salary-icon svg {
+  color: #22c55e !important;
+}
+
+.job-card-time-icon {
+  color: #9ca3af !important;
+}
+.dark .job-card-time-icon {
+  color: #6b7280 !important;
+}
+
+.job-card-time {
+  color: #6b7280 !important;
+}
+.dark .job-card-time {
+  color: #6b7280 !important;
+}
+
+.job-card-category {
+  background-color: #f3f4f6 !important;
+  color: #4b5563 !important;
+  border-color: #e5e7eb !important;
+}
+.dark .job-card-category {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  color: #60a5fa !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+.job-card-save-button {
+  background-color: #f3f4f6 !important;
+}
+.dark .job-card-save-button {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.job-card-save-icon {
+  color: #6b7280 !important;
+}
+.dark .job-card-save-icon {
+  color: #9ca3af !important;
+}
+
+.job-card-arrow-icon {
+  color: #9ca3af !important;
+}
+.dark .job-card-arrow-icon {
+  color: #4b5563 !important;
+}
+
+/* ============================================ */
+/* NAVBAR - HƏM GÜNDÜZ, HƏM GECƏ EYNİ (TÜND) */
+/* ============================================ */
+
+/* Navbar background - HƏMİŞƏ TÜND (#0D1117) */
+nav.sticky {
+  background-color: #0D1117 !important;
+  border-bottom-color: #1e293b !important;
+}
+
+/* NAVBAR LINKLER - NORMAL VƏZİYYƏTDƏ AÇIQ BOZ */
+nav a.group span.text-sm {
+  color: #C9D1D9 !important;
+}
+
+/* NAVBAR LINKLER - HOVER ZAMANI: ARXA FON YOX, YAZI MAVİ, İKON AĞ */
+nav a.group:hover {
+  background-color: transparent !important;
+}
+
+nav a.group:hover span.text-sm {
+  color: #3b82f6 !important;
+  background-color: transparent !important;
+}
+
+nav a.group:hover svg {
+  color: #ffffff !important;
+}
+
+/* Post a Job button - HƏMİŞƏ AĞ */
+nav a.bg-gradient-to-r.from-blue-700 {
+  background: linear-gradient(to right, #2563eb, #3b82f6) !important;
+  color: #ffffff !important;
+}
+.dark nav a.bg-gradient-to-r.from-blue-700 {
+  background: linear-gradient(to right, #1e40af, #2563eb) !important;
+  color: #ffffff !important;
+}
+
+/* Alert/Notification button - AÇIQ BOZ */
+nav button.relative.p-2 {
+  color: #C9D1D9 !important;
+}
+
+/* Theme toggle button */
+nav button.p-2.rounded-lg {
+  background-color: #1e293b !important;
+  color: #C9D1D9 !important;
+}
+
+/* Sign In button - AÇIQ BOZ */
+nav button.px-3.py-2 {
+  color: #C9D1D9 !important;
+}
+
+/* Sign In button hover - MAVİ, arxa fon YOX */
+nav button.px-3.py-2:hover {
+  color: #3b82f6 !important;
+  background-color: transparent !important;
+}
+
+/* Sign Up button - HƏMİŞƏ AĞ */
+nav a.bg-gradient-to-r.from-blue-600 {
+  background: linear-gradient(to right, #2563eb, #3b82f6) !important;
+  color: #ffffff !important;
+}
+.dark nav a.bg-gradient-to-r.from-blue-600 {
+  background: linear-gradient(to right, #1e40af, #2563eb) !important;
+  color: #ffffff !important;
+}
+
+/* Logo text */
+nav .text-gray-900.dark\:text-white {
+  color: #ffffff !important;
+}
+
+/* Mobile menu */
+.bg-white.dark\:bg-\[\#0D1117\] {
+  background-color: #0D1117 !important;
+}
+
+/* ============================================ */
+/* FOOTER - LIGHT MODE */
+/* ============================================ */
+
+footer.bg-\[\#0D1117\] {
+  background-color: #f9fafb !important;
+  border-top-color: #e5e7eb !important;
+}
+.dark footer.bg-\[\#0D1117\] {
+  background-color: #0D1117 !important;
+  border-top-color: #1e293b !important;
+}
+
+footer .text-gray-400 {
+  color: #6b7280 !important;
+}
+.dark footer .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+/* ============================================ */
+/* TABS, SORT, INPUT STYLES */
+/* ============================================ */
+
+/* Tabs */
+.tab-button {
+  background-color: #f3f4f6 !important;
+  color: #4b5563 !important;
+}
+.dark .tab-button {
+  background-color: transparent !important;
+  color: #9ca3af !important;
+}
+
+/* Sort dropdown */
+.sort-dropdown button {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
+}
+.dark .sort-dropdown button {
+  background-color: #0f172a !important;
+  border: 1px solid #1e293b !important;
+  color: #d1d5db !important;
+}
+
+/* Inputs */
+input, textarea, select {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+  border-color: #d1d5db !important;
+}
+.dark input, 
+.dark textarea, 
+.dark select {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #334155 !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #9ca3af !important;
+}
+.dark input::placeholder, 
+.dark textarea::placeholder {
+  color: #6b7280 !important;
+}
+
+/* Borders */
+.border-gray-200 {
+  border-color: #e5e7eb !important;
+}
+.dark .border-gray-200 {
+  border-color: #1e293b !important;
+}
+
+.border-gray-300 {
+  border-color: #d1d5db !important;
+}
+.dark .border-gray-300 {
+  border-color: #334155 !important;
+}
+
+/* Backgrounds */
+.bg-white {
+  background-color: #ffffff !important;
+}
+.dark .bg-white {
+  background-color: #0f172a !important;
+}
+
+.bg-gray-50 {
+  background-color: #f9fafb !important;
+}
+.dark .bg-gray-50 {
+  background-color: #0f172a !important;
+}
+
+.bg-gray-100 {
+  background-color: #f3f4f6 !important;
+}
+.dark .bg-gray-100 {
+  background-color: #1e293b !important;
+}
+
+/* Text colors */
+.text-gray-900 {
+  color: #111827 !important;
+}
+.dark .text-gray-900 {
+  color: #f3f4f6 !important;
+}
+
+.text-gray-700 {
+  color: #374151 !important;
+}
+.dark .text-gray-700 {
+  color: #d1d5db !important;
+}
+
+.text-gray-600 {
+  color: #4b5563 !important;
+}
+.dark .text-gray-600 {
+  color: #9ca3af !important;
+}
+
+.text-gray-500 {
+  color: #6b7280 !important;
+}
+.dark .text-gray-500 {
+  color: #9ca3af !important;
+}
+
+.text-gray-400 {
+  color: #9ca3af !important;
+}
+.dark .text-gray-400 {
+  color: #6b7280 !important;
+}
+
+/* ============================================ */
+/* SLIDING INDICATOR (NAVBAR UNDERLINE) */
+/* ============================================ */
+
+/* GÜNDÜZ rejimi - AĞ xətt */
+.absolute.bottom-0.h-0\.5 {
+  background-color: #ffffff !important;
+}
+
+/* GECƏ rejimi - MAVİ xətt */
+.dark .absolute.bottom-0.h-0\.5 {
+  background-color: #3b82f6 !important;
+}
+
+/* ============================================ */
+/* SALARY HOVER ANIMATION - SLIDE LEFT */
+/* ============================================ */
+
+@keyframes slideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-left {
+  animation: slideLeft 0.2s ease-out forwards;
+}
+
+.salary-short,
+.salary-long {
+  white-space: nowrap;
+}
+
+/* ============================================ */
+/* JOB CARD - HEIGHT INCREASE */
+/* ============================================ */
+
+/* Desktop üçün */
+@media (min-width: 768px) {
+  .group.bg-\[\#0f172a\] {
+    padding: 0.25rem 0 !important;
+  }
+  
+  .job-card-bottom {
+    margin-top: 0.5rem !important;
+    padding-top: 0.5rem !important;
+  }
+}
+
+/* Mobile üçün */
+@media (max-width: 767px) {
+  .group.bg-\[\#0f172a\] {
+    padding: 0.15rem 0 !important;
+  }
+  
+  .job-card-bottom {
+    margin-top: 0.35rem !important;
+    padding-top: 0.35rem !important;
+  }
+}
+
+/* ============================================ */
+/* JOB CARD DESCRIPTION */
+/* ============================================ */
+
+.job-card-description {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #6b7280;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.dark .job-card-description {
+  color: #9ca3af;
+}
+
+/* GÜNDÜZ rejimi üçün */
+.job-card-description {
+  color: #4b5563;
+}
+.dark .job-card-description {
+  color: #9ca3af;
+}
+
+/* ============================================ */

@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
       SELECT 
         id, email, name, role, avatar, 
         is_active, created_at, updated_at, blocked_at,
-        company_name, company_website
+        company_name, company_website, token_version,
+        verification_status, is_verified
       FROM users
       WHERE 1=1
     `;
@@ -91,7 +92,8 @@ export async function PUT(request: NextRequest) {
       const result = await pool.query(
         `UPDATE users 
          SET is_active = NOT is_active,
-             blocked_at = CASE WHEN is_active = true THEN NOW() ELSE NULL END
+             blocked_at = CASE WHEN is_active = true THEN NOW() ELSE NULL END,
+             token_version = COALESCE(token_version, 0) + 1
          WHERE id = $1 
          RETURNING *`,
         [userId]
@@ -104,12 +106,18 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: true, user: result.rows[0] });
       
     } else if (action === "changeRole") {
-      if (!newRole || !["user", "employer", "admin"].includes(newRole)) {
-        return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+      if (!newRole || !["jobseeker", "employer", "admin"].includes(newRole)) {
+        return NextResponse.json({ error: "Invalid role. Must be jobseeker, employer, or admin" }, { status: 400 });
       }
       
+      // Rol dəyişdir, token_version artır (bütün sessionları etibarsız et)
       const result = await pool.query(
-        `UPDATE users SET role = $1 WHERE id = $2 RETURNING *`,
+        `UPDATE users 
+         SET role = $1, 
+             token_version = COALESCE(token_version, 0) + 1,
+             verification_status = CASE WHEN $1 = 'employer' THEN 'pending' ELSE NULL END
+         WHERE id = $2 
+         RETURNING *`,
         [newRole, userId]
       );
       
@@ -117,7 +125,37 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
       
-      return NextResponse.json({ success: true, user: result.rows[0] });
+      // Əgər role employer-dəyişdirilirsə, companies cədvəlində də yoxla və ya yarat
+      if (newRole === "employer") {
+        const userData = result.rows[0];
+        
+        // Companies cədvəlində bu email ilə şirkət varmı yoxla
+        const existingCompany = await pool.query(
+          `SELECT id FROM companies WHERE email = $1`,
+          [userData.email]
+        );
+        
+        if (existingCompany.rows.length === 0) {
+          // Yeni şirkət yarat (default məlumatlarla)
+          await pool.query(
+            `INSERT INTO companies (email, name, is_verified)
+             VALUES ($1, $2, $3)`,
+            [userData.email, userData.company_name || userData.name || "New Company", false]
+          );
+        } else {
+          // Əgər şirkət varsa, is_verified-i false et (admin təsdiqi tələb olunur)
+          await pool.query(
+            `UPDATE companies SET is_verified = false WHERE email = $1`,
+            [userData.email]
+          );
+        }
+      }
+      
+      return NextResponse.json({ 
+        success: true, 
+        user: result.rows[0],
+        message: "Role changed. User must sign in again."
+      });
       
     } else {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });

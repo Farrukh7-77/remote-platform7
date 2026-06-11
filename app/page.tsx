@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import JobCard from "@/components/JobCard";
+import { useTheme } from "@/context/ThemeContext";
 import Link from "next/link";
 
 // SVG Icons
@@ -11,7 +12,6 @@ const FolderIcon = () => <svg className="w-4 h-4" fill="none" stroke="currentCol
 const GlobeIcon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
 const GraduationIcon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422M12 14l6.16-3.422M12 18l9-5-9-5-9 5 9 5zm0 0l6.16-3.422" /></svg>;
 const DollarIcon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-const SearchIcon = () => <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>;
 const ResetIcon = () => <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>;
 
 const CATEGORIES = [
@@ -46,9 +46,15 @@ const SORT_OPTIONS = [
 type FilterTab = "all" | "saved" | "applied";
 
 export default function HomePage() {
+  const { theme } = useTheme();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  
+  const [jobTitleInput, setJobTitleInput] = useState("");
+  const [locationInput, setLocationInput] = useState("");
+  const [searchTitle, setSearchTitle] = useState("");
+  const [searchLocation, setSearchLocation] = useState("");
+  
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [salaryRange, setSalaryRange] = useState<[number, number]>([0, 200000]);
@@ -122,6 +128,21 @@ export default function HomePage() {
       });
   }, []);
 
+  // Filter sidebar sticky-ni ləğv et - JavaScript ilə birbaşa
+  useEffect(() => {
+    const filterContainer = document.querySelector('.filter-sidebar-container');
+    if (filterContainer) {
+      const filterDiv = filterContainer.querySelector('div');
+      if (filterDiv) {
+        filterDiv.style.position = 'static';
+        filterDiv.style.top = 'auto';
+        filterDiv.style.maxHeight = 'none';
+        filterDiv.style.overflowY = 'visible';
+        filterDiv.style.alignSelf = 'auto';
+      }
+    }
+  }, []);
+
   // Click outside to close sort dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -142,13 +163,27 @@ export default function HomePage() {
     setArr(arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val]);
   };
 
+  const handleSearch = () => {
+    setSearchTitle(jobTitleInput);
+    setSearchLocation(locationInput);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
   const resetFilters = () => {
     setSelectedTypes([]);
     setSelectedCategories([]);
     setSalaryRange([0, 200000]);
     setSelectedCountries([]);
     setSelectedExperience([]);
-    setSearchTerm("");
+    setJobTitleInput("");
+    setLocationInput("");
+    setSearchTitle("");
+    setSearchLocation("");
     setSortBy("newest");
     setActiveTab("all");
   };
@@ -159,9 +194,12 @@ export default function HomePage() {
       if (activeTab === "saved" && !savedJobIds.includes(job.id)) return false;
       if (activeTab === "applied" && !appliedJobIds.includes(job.id)) return false;
       
-      const matchSearch = searchTerm === "" ||
-        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.company.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchTitle = searchTitle === "" || 
+        job.title.toLowerCase().includes(searchTitle.toLowerCase()) ||
+        job.company.toLowerCase().includes(searchTitle.toLowerCase());
+      
+      const matchLocation = searchLocation === "" || 
+        job.location.toLowerCase().includes(searchLocation.toLowerCase());
 
       const matchType = selectedTypes.length === 0 || selectedTypes.includes(job.type);
       const matchCategory = selectedCategories.length === 0 || 
@@ -173,27 +211,36 @@ export default function HomePage() {
       const matchesExperience = selectedExperience.length === 0 || 
         (job.experience_level && selectedExperience.includes(job.experience_level));
 
-      return matchSearch && matchType && matchCategory && matchSalary && matchCountry && matchesExperience;
+      return matchTitle && matchLocation && matchType && matchCategory && matchSalary && matchCountry && matchesExperience;
     });
 
   // Sort jobs
-  const sortedJobs = [...filteredJobs].sort((a: any, b: any) => {
-    if (a.is_featured && !b.is_featured) return -1;
-    if (!a.is_featured && b.is_featured) return 1;
-    
-    switch (sortBy) {
-      case "newest":
-        return new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime();
-      case "oldest":
-        return new Date(a.postedAt).getTime() - new Date(b.postedAt).getTime();
-      case "salary_high":
-        return (b.salary_max || 0) - (a.salary_max || 0);
-      case "salary_low":
-        return (a.salary_min || 0) - (b.salary_min || 0);
-      default:
-        return 0;
-    }
-  });
+  // Sort jobs
+const sortedJobs = [...filteredJobs].sort((a: any, b: any) => {
+  if (a.is_featured && !b.is_featured) return -1;
+  if (!a.is_featured && b.is_featured) return 1;
+  
+  // Tarixi al (həm camelCase, həm snake_case yoxla)
+  const getDate = (job: any) => {
+    const dateStr = job.postedAt || job.posted_at;
+    if (!dateStr) return 0;
+    const timestamp = new Date(dateStr).getTime();
+    return isNaN(timestamp) ? 0 : timestamp;
+  };
+  
+  switch (sortBy) {
+    case "newest":
+      return getDate(b) - getDate(a);
+    case "oldest":
+      return getDate(a) - getDate(b);
+    case "salary_high":
+      return (b.salary_max || 0) - (a.salary_max || 0);
+    case "salary_low":
+      return (a.salary_min || 0) - (b.salary_min || 0);
+    default:
+      return 0;
+  }
+});
 
   const activeFilterCount = selectedTypes.length + selectedCategories.length + selectedCountries.length + selectedExperience.length;
 
@@ -217,17 +264,14 @@ export default function HomePage() {
       className={`min-h-screen transition-opacity duration-700 ${pageLoaded ? 'opacity-100' : 'opacity-0'}`}
       style={{ backgroundColor: '#091028' }}
     >
-      {/* HERO SECTION with Background Image - FIXED RESPONSIVE */}
+      {/* HERO SECTION */}
       <section className="hero-section relative overflow-hidden pt-5 pb-5 px-4 bg-cover bg-no-repeat bg-center md:bg-center" style={{ backgroundImage: "url('/hero-bg.png')" }}>
-        {/* Light overlay */}
         <div className="absolute inset-0 bg-black/0 pointer-events-none"></div>
-        
-        {/* Gradient effects */}
         <div className="hero-gradient absolute inset-0 pointer-events-none opacity-20"></div>
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
         <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none"></div>
         
-        <div className="hidden lg:block absolute lg:-left-16 xl:-left-24 top-1/2 -translate-y-1/2 w-96 h-96 pointer-events-none z-0">
+        <div className="hidden lg:block absolute lg:-left-20 xl:-left-1 top-1/2 -translate-y-1/2 w-64 h-64 pointer-events-none z-0">
           <img 
             src="/hero-laptop.png" 
             alt="laptop illustration" 
@@ -235,11 +279,11 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="absolute -left-9 sm:left-0 top-[57%] sm:top-1/2 -translate-y-1/2 pointer-events-none z-0 lg:hidden">
+        <div className="absolute -left-2 sm:left-0 top-[57%] sm:top-1/2 -translate-y-1/2 pointer-events-none z-0 lg:hidden">
           <img 
             src="/hero-laptop.png" 
             alt="laptop" 
-            className="w-32 h-32 sm:w-48 sm:h-48 md:w-80 md:h-80 object-contain drop-shadow-[0_0_30px_rgba(59,130,246,0.3)]"
+            className="w-20 h-20 sm:w-28 sm:h-28 md:w-48 md:h-48 object-contain drop-shadow-[0_0_30px_rgba(59,130,246,0.3)]"
           />
         </div>
         
@@ -258,26 +302,52 @@ export default function HomePage() {
             <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Remote</span>{' '}
             <span className="text-white">Job</span>
             <img 
-              src="/job-icon.png" 
+              src={theme === "dark" ? "/job-icon.png" : "/job-icon-dark.png"} 
               alt="job icon" 
               className="hero-icon w-8 h-8 sm:w-8 sm:h-8 md:w-16 md:h-16 lg:w-20 lg:h-20 object-contain md:relative md:top-[-6px] md:left-[-12px]"
             />
           </h1>
           
-          <div className="hero-search-container max-w-[240px] sm:max-w-[280px] md:max-w-2xl mx-auto mt-2 md:-mt-6 px-2 sm:px-4">
+          <div className="hero-search-container max-w-[280px] sm:max-w-[500px] md:max-w-3xl mx-auto mt-2 md:-mt-6 px-2 sm:px-4">
             <div className="relative group">
               <div className="relative flex items-center bg-[#0f172a]/60 backdrop-blur-sm border border-white/15 rounded-lg overflow-hidden focus-within:border-blue-500/40 transition-all duration-300">
-                <div className="pl-2 sm:pl-3 md:pl-4">
-                  <SearchIcon />
+                <div className="flex-1 flex items-center border-r border-white/20">
+                  <div className="pl-2 sm:pl-3 md:pl-4">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Job title, keyword..."
+                    value={jobTitleInput}
+                    onChange={(e) => setJobTitleInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    className="flex-1 px-2 sm:px-3 py-2 sm:py-2.5 md:py-3 bg-transparent focus:outline-none text-white placeholder-gray-400 text-xs sm:text-sm"
+                  />
                 </div>
-                <input
-                  type="text"
-                  placeholder="Search jobs..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1 px-2 sm:px-3 md:px-3 py-2 sm:py-2.5 md:py-3 bg-transparent focus:outline-none text-white placeholder-gray-400 text-xs sm:text-sm"
-                />
-                <button className="bg-gradient-to-r from-blue-700 to-blue-600 text-white font-semibold py-1.5 sm:py-2 md:py-2 px-2.5 sm:px-4 md:px-5 m-0.5 sm:m-1 rounded-md transition-all duration-200 hover:scale-[1.02] flex items-center gap-1 text-xs sm:text-sm">
+
+                <div className="flex-1 flex items-center">
+                  <div className="pl-2 sm:pl-3">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Location (e.g., New York, Remote)"
+                    value={locationInput}
+                    onChange={(e) => setLocationInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    className="flex-1 px-2 sm:px-3 py-2 sm:py-2.5 md:py-3 bg-transparent focus:outline-none text-white placeholder-gray-400 text-xs sm:text-sm"
+                  />
+                </div>
+
+                <button 
+                  onClick={handleSearch}
+                  className="bg-gradient-to-r from-blue-700 to-blue-600 text-white font-semibold py-1.5 sm:py-2 md:py-2 px-2.5 sm:px-4 md:px-5 m-0.5 sm:m-1 rounded-md transition-all duration-200 hover:scale-[1.02] flex items-center gap-1 text-xs sm:text-sm cursor-pointer"
+                >
                   <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -294,38 +364,46 @@ export default function HomePage() {
         <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           
           {/* FILTER SIDEBAR - Desktop only */}
-          <div className={`${showFilters ? "block animate-slide-down" : "hidden"} md:block md:w-72`}>
-            <div className="glass-card p-4 md:p-5 transition-all duration-300 sticky top-24">
+          {/* FILTER SIDEBAR - Desktop only */}
+<div className={`filter-sidebar-container ${showFilters ? "block animate-slide-down" : "hidden"} md:block md:w-72`}>
+  <div 
+    className={`p-4 md:p-5 transition-all duration-300 rounded-xl border ${
+      theme === "light" 
+        ? "bg-white border-gray-200 shadow-md" 
+        : "glass-card"
+    }`}
+    style={{ position: 'relative' }}
+  >
               <div className="relative flex justify-between items-center mb-4 md:mb-5">
-                <h3 className="font-bold text-white text-base md:text-lg">Filters</h3>
+                <h3 className={`font-bold text-base md:text-lg ${theme === "light" ? "text-gray-900" : "text-white"}`}>Filters</h3>
                 <button onClick={resetFilters} className="flex items-center gap-1 text-sm text-red-500 hover:text-red-400 transition-colors cursor-pointer">
                   <ResetIcon />
                   Reset all
                 </button>
               </div>
               <div className="space-y-2">
-                <FilterCard title="Job Type" icon={<BriefcaseIcon />} open={openSections.jobType} onToggle={() => toggleSection("jobType")} items={JOB_TYPES} selected={selectedTypes} onChange={(v) => toggleArray(selectedTypes, setSelectedTypes, v)} />
-                <FilterCard title="Category" icon={<FolderIcon />} open={openSections.category} onToggle={() => toggleSection("category")} items={CATEGORIES} selected={selectedCategories} onChange={(v) => toggleArray(selectedCategories, setSelectedCategories, v)} />
-                <FilterCard title="Country" icon={<GlobeIcon />} open={openSections.country} onToggle={() => toggleSection("country")} items={COUNTRIES} selected={selectedCountries} onChange={(v) => toggleArray(selectedCountries, setSelectedCountries, v)} />
-                <FilterCard title="Experience" icon={<GraduationIcon />} open={openSections.experience} onToggle={() => toggleSection("experience")} items={EXPERIENCE_LEVELS} selected={selectedExperience} onChange={(v) => toggleArray(selectedExperience, setSelectedExperience, v)} />
-                <FilterCard title="Salary" icon={<DollarIcon />} open={openSections.salary} onToggle={() => toggleSection("salary")} isSalary salaryRange={salaryRange} setSalaryRange={setSalaryRange} />
+                <FilterCard title="Job Type" icon={<BriefcaseIcon />} open={openSections.jobType} onToggle={() => toggleSection("jobType")} items={JOB_TYPES} selected={selectedTypes} onChange={(v) => toggleArray(selectedTypes, setSelectedTypes, v)} theme={theme} />
+                <FilterCard title="Category" icon={<FolderIcon />} open={openSections.category} onToggle={() => toggleSection("category")} items={CATEGORIES} selected={selectedCategories} onChange={(v) => toggleArray(selectedCategories, setSelectedCategories, v)} theme={theme} />
+                <FilterCard title="Country" icon={<GlobeIcon />} open={openSections.country} onToggle={() => toggleSection("country")} items={COUNTRIES} selected={selectedCountries} onChange={(v) => toggleArray(selectedCountries, setSelectedCountries, v)} theme={theme} />
+                <FilterCard title="Experience" icon={<GraduationIcon />} open={openSections.experience} onToggle={() => toggleSection("experience")} items={EXPERIENCE_LEVELS} selected={selectedExperience} onChange={(v) => toggleArray(selectedExperience, setSelectedExperience, v)} theme={theme} />
+                <FilterCard title="Salary" icon={<DollarIcon />} open={openSections.salary} onToggle={() => toggleSection("salary")} isSalary salaryRange={salaryRange} setSalaryRange={setSalaryRange} theme={theme} />
               </div>
             </div>
           </div>
 
           {/* RIGHT SIDE - Jobs */}
           <div className="flex-1 min-w-0">
-            {/* ===== MOBILE & DESKTOP: Tabs + Filter + Sort ALL IN ONE ROW ===== */}
             <div className="flex flex-row items-center justify-between gap-2 mb-4">
               
-              {/* Tabs - solda */}
               <div className="flex flex-wrap gap-1.5 md:gap-2">
                 <button
                   onClick={() => setActiveTab("all")}
                   className={`px-2 sm:px-3 md:px-5 py-1.5 md:py-2 rounded-xl text-xs md:text-sm font-medium whitespace-nowrap transition-all duration-200 cursor-pointer ${
                     activeTab === "all"
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                      : theme === "light" 
+                        ? "text-gray-800 hover:text-gray-900 hover:bg-gray-100" 
+                        : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   All <span className="hidden xs:inline">Jobs</span> <span className="ml-0.5 md:ml-1 text-xs opacity-80">({totalJobs})</span>
@@ -335,7 +413,9 @@ export default function HomePage() {
                   className={`px-2 sm:px-3 md:px-5 py-1.5 md:py-2 rounded-xl text-xs md:text-sm font-medium whitespace-nowrap transition-all duration-200 cursor-pointer ${
                     activeTab === "saved"
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                      : theme === "light" 
+                        ? "text-gray-800 hover:text-gray-900 hover:bg-gray-100" 
+                        : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   Saved <span className="ml-0.5 md:ml-1 text-xs opacity-80">({savedCount})</span>
@@ -345,16 +425,16 @@ export default function HomePage() {
                   className={`px-2 sm:px-3 md:px-5 py-1.5 md:py-2 rounded-xl text-xs md:text-sm font-medium whitespace-nowrap transition-all duration-200 cursor-pointer ${
                     activeTab === "applied"
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                      : theme === "light" 
+                        ? "text-gray-800 hover:text-gray-900 hover:bg-gray-100" 
+                        : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   Applied <span className="ml-0.5 md:ml-1 text-xs opacity-80">({appliedCount})</span>
                 </button>
               </div>
 
-              {/* Sağ tərəfdəki elementlər: Filter (yalnız mobile) + Sort */}
               <div className="flex items-center gap-2 flex-shrink-0">
-                {/* Filter button - YALNIZ MOBİL ÜÇÜN (desktop-da görünmür) */}
                 <button
                   onClick={() => setShowFilters(!showFilters)}
                   className="md:hidden flex items-center gap-1 px-2 py-1.5 glass-card text-xs rounded-full"
@@ -370,7 +450,6 @@ export default function HomePage() {
                   )}
                 </button>
 
-                {/* Sort Dropdown */}
                 <div className="sort-dropdown relative">
                   <button
                     onClick={(e) => { e.stopPropagation(); setSortOpen(!sortOpen); }}
@@ -412,7 +491,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Job Cards */}
             <div className="space-y-3 md:space-y-4">
               {sortedJobs.map((job: any, index: number) => (
                 <div key={job.id} className="animate-card w-full" style={{ animationDelay: `${index * 50}ms` }}>
@@ -469,6 +547,7 @@ function FilterCard({
   isSalary,
   salaryRange,
   setSalaryRange,
+  theme,
 }: {
   title: string;
   icon?: React.ReactNode;
@@ -480,30 +559,43 @@ function FilterCard({
   isSalary?: boolean;
   salaryRange?: [number, number];
   setSalaryRange?: (range: [number, number]) => void;
+  theme: string;
 }) {
   return (
-    <div className="border border-white/15 rounded-xl overflow-hidden shadow-[0_2px_6px_rgba(0,0,0,0.35)] transition-all duration-200 hover:-translate-y-0.5">
+    <div className={`rounded-xl overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${
+      theme === "light" 
+        ? "bg-white border border-gray-200 shadow-md" 
+        : "border border-white/15 shadow-[0_2px_6px_rgba(0,0,0,0.35)]"
+    }`}>
       <button 
         onClick={onToggle} 
-        className="w-full flex justify-between items-center text-gray-300 cursor-pointer px-3 md:px-4 py-3 md:py-4 transition-colors duration-200 hover:text-white bg-[#0a0f1a]"
+        className={`w-full flex justify-between items-center cursor-pointer px-3 md:px-4 py-3 md:py-4 transition-colors duration-200 ${
+          theme === "light" ? "bg-white hover:text-blue-600" : "bg-[#0a0f1a] text-gray-300 hover:text-white"
+        }`}
       >
-        <span className="flex items-center gap-2 md:gap-2.5 text-xs md:text-sm font-medium">
-          {icon && <span className="text-blue-400">{icon}</span>}
+        <span className={`flex items-center gap-2 md:gap-2.5 text-xs md:text-sm font-medium ${
+          theme === "light" ? "text-gray-900" : "text-gray-300"
+        }`}>
+          {icon && <span className="text-blue-500">{icon}</span>}
           {title}
         </span>
         <span className={`text-gray-500 text-xs transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>▼</span>
       </button>
       {open && (
-        <div className="px-3 md:px-4 pb-3 md:pb-4 space-y-1.5 border-t border-white/10 pt-2 md:pt-3 animate-slide-down bg-[#0f172a]">
+        <div className={`px-3 md:px-4 pb-3 md:pb-4 space-y-1.5 border-t pt-2 md:pt-3 animate-slide-down ${
+          theme === "light" ? "bg-white border-gray-200" : "bg-[#0f172a] border-white/10"
+        }`}>
           {!isSalary && items && selected && onChange && items.map((item) => (
-            <label key={item} className="flex items-center gap-2 text-xs md:text-sm text-gray-400 cursor-pointer hover:text-blue-400 transition-colors duration-200 py-0.5">
-              <input type="checkbox" checked={selected.includes(item)} onChange={() => onChange(item)} className="cursor-pointer rounded border-gray-600 bg-transparent text-blue-500 focus:ring-blue-500 transition-all" />
+            <label key={item} className={`flex items-center gap-2 text-xs md:text-sm cursor-pointer py-0.5 ${
+              theme === "light" ? "text-gray-700 hover:text-blue-600" : "text-gray-400 hover:text-blue-400"
+            }`}>
+              <input type="checkbox" checked={selected.includes(item)} onChange={() => onChange(item)} className="cursor-pointer rounded border-gray-300 bg-transparent text-blue-500 focus:ring-blue-500 transition-all" />
               {item}
             </label>
           ))}
           {isSalary && salaryRange && setSalaryRange && (
             <div className="space-y-3 py-1">
-              <div className="flex justify-between text-xs text-gray-400">
+              <div className={`flex justify-between text-xs ${theme === "light" ? "text-gray-700" : "text-gray-400"}`}>
                 <span>${salaryRange[0]}</span>
                 <span>${salaryRange[1]}</span>
               </div>

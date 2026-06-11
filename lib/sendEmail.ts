@@ -1,17 +1,31 @@
-// lib/sendEmail.ts
-import { Resend } from 'resend';
+// lib/sendEmail.ts - Gmail SMTP (real email)
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: Number(process.env.SMTP_PORT) || 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
-// Müvəqqəti göndərici ünvan (domain təsdiq olunana qədər)
-const FROM_EMAIL = 'onboarding@resend.dev';
+// Connection test (opsional)
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('SMTP connection error:', error);
+  } else {
+    console.log('✅ SMTP ready to send emails');
+  }
+});
 
 export async function sendVerificationEmail(email: string, token: string) {
   const verificationUrl = `${process.env.NEXTAUTH_URL}/api/auth/verify-email?token=${token}`;
   
   try {
-    const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
+    const info = await transporter.sendMail({
+      from: `"RemoteJobs" <${process.env.SMTP_USER}>`,
       to: email,
       subject: "Verify your email address - RemoteJobs",
       html: `
@@ -26,13 +40,12 @@ export async function sendVerificationEmail(email: string, token: string) {
               Thank you for signing up! Please verify your email address by clicking the button below:
             </p>
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${verificationUrl}" style="display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #2563eb, #7c3aed); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              <a href="${verificationUrl}" style="display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #2563eb, #7c3aed); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
                 Verify Email
               </a>
             </div>
-            <p style="color: #6b7280; font-size: 14px; text-align: center; margin-bottom: 16px;">
-              Or copy this link: <br/>
-              <span style="color: #2563eb; word-break: break-all;">${verificationUrl}</span>
+            <p style="color: #6b7280; font-size: 12px; text-align: center;">
+              Or copy this link: <span style="color: #2563eb; word-break: break-all;">${verificationUrl}</span>
             </p>
             <div style="border-top: 1px solid #e5e7eb; margin-top: 24px; padding-top: 24px;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
@@ -44,13 +57,9 @@ export async function sendVerificationEmail(email: string, token: string) {
         </div>
       `,
     });
-
-    if (error) {
-      console.error("Resend email error:", error);
-      return false;
-    }
     
-    console.log("Email sent successfully:", data);
+    console.log("✅ Verification email sent to:", email);
+    console.log("📧 Message ID:", info.messageId);
     return true;
   } catch (error) {
     console.error("Email send error:", error);
@@ -62,8 +71,8 @@ export async function sendResetPasswordEmail(email: string, resetToken: string) 
   const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`;
   
   try {
-    const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
+    const info = await transporter.sendMail({
+      from: `"RemoteJobs" <${process.env.SMTP_USER}>`,
       to: email,
       subject: "Reset your password - RemoteJobs",
       html: `
@@ -78,13 +87,12 @@ export async function sendResetPasswordEmail(email: string, resetToken: string) 
               We received a request to reset your password. Click the button below to create a new password:
             </p>
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${resetUrl}" style="display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #dc2626, #7c3aed); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              <a href="${resetUrl}" style="display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #dc2626, #7c3aed); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
                 Reset Password
               </a>
             </div>
-            <p style="color: #6b7280; font-size: 14px; text-align: center; margin-bottom: 16px;">
-              Or copy this link: <br/>
-              <span style="color: #2563eb; word-break: break-all;">${resetUrl}</span>
+            <p style="color: #6b7280; font-size: 12px; text-align: center;">
+              Or copy this link: <span style="color: #2563eb; word-break: break-all;">${resetUrl}</span>
             </p>
             <div style="border-top: 1px solid #e5e7eb; margin-top: 24px; padding-top: 24px;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0;">
@@ -96,16 +104,12 @@ export async function sendResetPasswordEmail(email: string, resetToken: string) 
         </div>
       `,
     });
-
-    if (error) {
-      console.error("Resend email error:", error);
-      return false;
-    }
     
-    console.log("Reset email sent successfully:", data);
+    console.log("✅ Reset password email sent to:", email);
+    console.log("📧 Message ID:", info.messageId);
     return true;
   } catch (error) {
-    console.error("Email send error:", error);
+    console.error("Reset email send error:", error);
     return false;
   }
 }
