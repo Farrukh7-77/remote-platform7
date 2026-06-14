@@ -77,7 +77,7 @@ export default function CompanyPage() {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
         <Link href="/companies" className="text-blue-500 hover:underline text-sm mb-6 inline-block cursor-pointer">
-          ← Bütün şirkətlər
+          ← All Companies
         </Link>
 
         {/* Şirkət profil kartı */}

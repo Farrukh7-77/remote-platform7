@@ -78,56 +78,90 @@ export default function CompaniesPage() {
     <div className={`min-h-screen transition-opacity duration-700 ${pageLoaded ? 'opacity-100' : 'opacity-0'} ${theme === "light" ? "bg-gray-50" : "bg-[#050816]"}`}>
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-8 pb-12 px-4">
-        <div className="hero-gradient absolute inset-0 pointer-events-none"></div>
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-[100px] pointer-events-none"></div>
-        <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none"></div>
-        
-        <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3">
-            <span className={theme === "light" ? "text-gray-900" : "text-white"}>Top</span>{' '}
-            <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Remote</span>{' '}
-            <span className={theme === "light" ? "text-gray-900" : "text-white"}>Companies</span>
-          </h1>
-          <p className={`text-sm md:text-base mb-6 ${theme === "light" ? "text-gray-600" : "text-gray-300"}`}>
-            Discover companies hiring remote talent worldwide
-          </p>
-          
-          {/* Search Bar */}
-          <div className="max-w-md mx-auto">
-            <div className="relative group">
-              <div className={`relative flex items-center rounded-lg overflow-hidden focus-within:border-blue-500/40 transition-all duration-300 ${
-                theme === "light" 
-                  ? "bg-white border border-gray-300 shadow-sm" 
-                  : "bg-[#0f172a]/80 backdrop-blur-sm border border-white/15"
-              }`}>
-                <div className="pl-3">
-                  <SearchIcon />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search companies by name..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`flex-1 px-3 py-2.5 bg-transparent focus:outline-none text-sm ${
-                    theme === "light" ? "text-gray-900 placeholder-gray-400" : "text-white placeholder-gray-500"
-                  }`}
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
-                      theme === "light" ? "text-gray-400 hover:text-gray-600" : "text-gray-400 hover:text-white"
-                    }`}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
+<section 
+  className="relative overflow-hidden pt-5 pb-6 px-4"
+  style={{ 
+    background: theme === "light" 
+      ? "linear-gradient(135deg, #eef2ff 0%, #f0f9ff 50%, #f8fafc 100%)" 
+      : "transparent"
+  }}
+>
+  {/* Dark mode decorations */}
+  {theme !== "light" && (
+    <>
+      <div className="hero-gradient absolute inset-0 pointer-events-none"></div>
+      <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+    </>
+  )}
+  
+  {/* Light mode subtle decoration */}
+  {theme === "light" && (
+    <>
+      <div className="absolute top-10 right-10 w-64 h-64 bg-blue-200/30 rounded-full blur-[80px] pointer-events-none"></div>
+      <div className="absolute bottom-10 left-10 w-48 h-48 bg-indigo-200/30 rounded-full blur-[60px] pointer-events-none"></div>
+    </>
+  )}
+  
+  {/* Building Illustration - Left side (absolute positioned) */}
+  <div className="hidden md:block absolute left-4 lg:left-12 top-1/2 -translate-y-1/2 w-56 lg:w-80 pointer-events-none z-0">
+    <img 
+      src="/building.png" 
+      alt="" 
+      className="w-full h-auto object-contain drop-shadow-[0_10px_30px_rgba(59,130,246,0.2)] opacity-90"
+      onError={(e) => { 
+        const target = e.target as HTMLImageElement;
+        target.style.display = 'none';
+      }}
+    />
+  </div>
+  
+  {/* Content - Centered (unchanged position) */}
+  <div className="max-w-7xl mx-auto text-center relative z-10">
+    <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">
+      <span className={theme === "light" ? "text-gray-900" : "text-white"}>Top</span>{' '}
+      <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Remote</span>{' '}
+      <span className={theme === "light" ? "text-gray-900" : "text-white"}>Companies</span>
+    </h1>
+    <p className={`text-sm md:text-base mb-5 ${theme === "light" ? "text-gray-600" : "text-gray-300"}`}>
+      Discover companies hiring remote talent worldwide
+    </p>
+    
+    {/* Search Bar */}
+    <div className="max-w-md mx-auto">
+      <div className="relative group">
+        <div className={`relative flex items-center rounded-lg overflow-hidden focus-within:border-blue-500/40 transition-all duration-300 ${
+          theme === "light" 
+            ? "bg-white border border-gray-300 shadow-sm" 
+            : "bg-[#0f172a]/80 backdrop-blur-sm border border-white/15"
+        }`}>
+          <div className="pl-3">
+            <SearchIcon />
           </div>
+          <input
+            type="text"
+            placeholder="Search companies by name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={`flex-1 px-3 py-2.5 bg-transparent focus:outline-none text-sm ${
+              theme === "light" ? "text-gray-900 placeholder-gray-400" : "text-white placeholder-gray-500"
+            }`}
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
+                theme === "light" ? "text-gray-400 hover:text-gray-600" : "text-gray-400 hover:text-white"
+              }`}
+            >
+              ✕
+            </button>
+          )}
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* Companies Grid */}
       <div className="max-w-7xl mx-auto px-4 py-8">

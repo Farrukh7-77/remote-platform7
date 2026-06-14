@@ -9,6 +9,11 @@ interface PendingEmployer {
   name: string;
   company_name: string;
   voen: string;
+  industry: string | null;
+  company_size: string | null;
+  location: string | null;
+  website: string | null;
+  linkedin: string | null;
   verification_status: string;
   created_at: string;
   email_verified_at: string;
@@ -22,6 +27,8 @@ export default function PendingEmployersPage() {
   const [selectedEmployer, setSelectedEmployer] = useState<PendingEmployer | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [detailsEmployer, setDetailsEmployer] = useState<PendingEmployer | null>(null);
 
   const fetchEmployers = async () => {
     setLoading(true);
@@ -120,6 +127,11 @@ export default function PendingEmployersPage() {
     }
   };
 
+  const openDetailsModal = (emp: PendingEmployer) => {
+    setDetailsEmployer(emp);
+    setShowDetailsModal(true);
+  };
+
   const formatDate = (date: string) => {
     if (!date) return "N/A";
     return new Date(date).toLocaleDateString("en-US", {
@@ -159,28 +171,55 @@ export default function PendingEmployersPage() {
             <thead className="border-b border-white/10">
               <tr className="text-left text-white/60 text-sm">
                 <th className="pb-3 pl-3">Company</th>
+                <th className="pb-3">Industry</th>
+                <th className="pb-3">Size</th>
+                <th className="pb-3">Location</th>
                 <th className="pb-3">Contact Person</th>
                 <th className="pb-3">Email</th>
                 <th className="pb-3">VAT Number</th>
                 <th className="pb-3">Registered</th>
                 <th className="pb-3 pr-3">Actions</th>
-               </tr>
+              </tr>
             </thead>
             <tbody>
               {employers.map((emp) => (
                 <tr key={emp.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                   <td className="py-4 pl-3">
-                    <p className="text-white font-medium">{emp.company_name || "N/A"}</p>
-                   </td>
+                    <button
+                      onClick={() => openDetailsModal(emp)}
+                      className="text-white font-medium hover:text-blue-400 hover:underline transition-colors cursor-pointer text-left"
+                    >
+                      {emp.company_name || "N/A"}
+                    </button>
+                    {emp.website && (
+                      <a 
+                        href={emp.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-blue-400 hover:text-blue-300 text-xs block mt-1"
+                      >
+                        Website ↗
+                      </a>
+                    )}
+                  </td>
+                  <td className="py-4">
+                    <span className="text-white/60 text-sm">{emp.industry || "-"}</span>
+                  </td>
+                  <td className="py-4">
+                    <span className="text-white/60 text-sm">{emp.company_size || "-"}</span>
+                  </td>
+                  <td className="py-4">
+                    <span className="text-white/60 text-sm">{emp.location || "-"}</span>
+                  </td>
                   <td className="py-4">
                     <span className="text-white text-sm">{emp.name}</span>
-                   </td>
+                  </td>
                   <td className="py-4">
                     <span className="text-white/60 text-sm">{emp.email}</span>
-                   </td>
+                  </td>
                   <td className="py-4">
                     <span className="text-white/60 text-sm font-mono">{emp.voen || "N/A"}</span>
-                   </td>
+                  </td>
                   <td className="py-4">
                     <div>
                       <p className="text-white/60 text-xs">{formatDate(emp.created_at)}</p>
@@ -188,7 +227,7 @@ export default function PendingEmployersPage() {
                         <p className="text-green-400/60 text-xs">Email: {formatDate(emp.email_verified_at)}</p>
                       )}
                     </div>
-                   </td>
+                  </td>
                   <td className="py-4 pr-3">
                     <div className="flex gap-2">
                       <button
@@ -210,11 +249,181 @@ export default function PendingEmployersPage() {
                         Reject
                       </button>
                     </div>
-                   </td>
-                 </tr>
+                  </td>
+                </tr>
               ))}
             </tbody>
-           </table>
+          </table>
+        </div>
+      )}
+
+      {/* Details Modal */}
+      {showDetailsModal && detailsEmployer && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setShowDetailsModal(false)}>
+          <div className="bg-[#0f172a] rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/10" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-[#0f172a] border-b border-white/10 p-6 flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-white">{detailsEmployer.company_name}</h2>
+                <p className="text-white/60 text-sm mt-1">Company Details</p>
+              </div>
+              <button onClick={() => setShowDetailsModal(false)} className="text-white/60 hover:text-white transition-colors">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Company Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  Company Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <p className="text-white/50 text-xs mb-1">Company Name</p>
+                    <p className="text-white font-medium">{detailsEmployer.company_name || "N/A"}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <p className="text-white/50 text-xs mb-1">Industry</p>
+                    <p className="text-white font-medium">{detailsEmployer.industry || "N/A"}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <p className="text-white/50 text-xs mb-1">Company Size</p>
+                    <p className="text-white font-medium">{detailsEmployer.company_size || "N/A"}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <p className="text-white/50 text-xs mb-1">Location</p>
+                    <p className="text-white font-medium">{detailsEmployer.location || "N/A"}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4 md:col-span-2">
+                    <p className="text-white/50 text-xs mb-1">Website</p>
+                    {detailsEmployer.website ? (
+                      <a 
+                        href={detailsEmployer.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 font-medium inline-flex items-center gap-1"
+                      >
+                        {detailsEmployer.website}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </a>
+                    ) : (
+                      <p className="text-white/40">N/A</p>
+                    )}
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4 md:col-span-2">
+                    <p className="text-white/50 text-xs mb-1">LinkedIn</p>
+                    {detailsEmployer.linkedin ? (
+                      <a 
+                        href={detailsEmployer.linkedin} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 font-medium inline-flex items-center gap-1"
+                      >
+                        {detailsEmployer.linkedin}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </a>
+                    ) : (
+                      <p className="text-white/40">N/A</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Contact Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <p className="text-white/50 text-xs mb-1">Contact Person</p>
+                    <p className="text-white font-medium">{detailsEmployer.name}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <p className="text-white/50 text-xs mb-1">Email</p>
+                    <p className="text-white font-medium">{detailsEmployer.email}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4 md:col-span-2">
+                    <p className="text-white/50 text-xs mb-1">VAT Number (VÖEN)</p>
+                    <p className="text-white font-medium font-mono">{detailsEmployer.voen || "N/A"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Registration Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Registration Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <p className="text-white/50 text-xs mb-1">Registered Date</p>
+                    <p className="text-white font-medium">{formatDate(detailsEmployer.created_at)}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <p className="text-white/50 text-xs mb-1">Email Verified</p>
+                    <p className="text-white font-medium">
+                      {detailsEmployer.email_verified_at ? (
+                        <span className="text-green-400">{formatDate(detailsEmployer.email_verified_at)}</span>
+                      ) : (
+                        <span className="text-red-400">Not Verified</span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4 md:col-span-2">
+                    <p className="text-white/50 text-xs mb-1">Status</p>
+                    <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400">
+                      Pending Verification
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="sticky bottom-0 bg-[#0f172a] border-t border-white/10 p-4 flex justify-end gap-3">
+              <button
+                onClick={() => setShowDetailsModal(false)}
+                className="px-4 py-2 rounded-lg bg-white/5 text-white/70 hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  handleApprove(detailsEmployer.id);
+                }}
+                className="px-4 py-2 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors cursor-pointer"
+              >
+                Approve
+              </button>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  setSelectedEmployer(detailsEmployer);
+                  setRejectionReason("");
+                  setShowRejectModal(true);
+                }}
+                className="px-4 py-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors cursor-pointer"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

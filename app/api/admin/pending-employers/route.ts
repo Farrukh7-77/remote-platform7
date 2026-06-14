@@ -18,10 +18,14 @@ export async function GET(request: NextRequest) {
     }
 
     const result = await pool.query(
-      `SELECT id, email, name, role, company_name, voen, verification_status, created_at, email_verified_at
-       FROM users 
-       WHERE role = 'employer' AND verification_status = 'pending' AND is_verified = true
-       ORDER BY created_at ASC`
+      `SELECT 
+        u.id, u.email, u.name, u.role, u.company_name, u.voen, 
+        u.verification_status, u.created_at, u.email_verified_at,
+        c.industry, c.size as company_size, c.location, c.website, c.linkedin
+       FROM users u
+       LEFT JOIN companies c ON u.email = c.email
+       WHERE u.role = 'employer' AND u.verification_status = 'pending' AND u.is_verified = true
+       ORDER BY u.created_at ASC`
     );
 
     return NextResponse.json({ success: true, employers: result.rows });
@@ -65,16 +69,40 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: true, message: "Employer approved" });
       
     } else if (action === "reject") {
-      await pool.query(
-        `UPDATE users 
-         SET verification_status = 'rejected', 
-             verified_by = $1, 
-             verified_at = NOW(),
-             rejection_reason = $2
-         WHERE id = $3`,
-        [decoded.userId, rejectionReason || "No reason provided", userId]
+      // İstifadəçinin email-i tap
+      const userResult = await pool.query(
+        `SELECT email FROM users WHERE id = $1`,
+        [userId]
       );
-      return NextResponse.json({ success: true, message: "Employer rejected" });
+
+      if (userResult.rows.length === 0) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+
+      const userEmail = userResult.rows[0].email;
+
+      // Transaction başla
+      await pool.query('BEGIN');
+
+      try {
+        // Şirkəti sil (əgər varsa)
+        await pool.query(
+          `DELETE FROM companies WHERE email = $1`,
+          [userEmail]
+        );
+
+        // İstifadəçini sil
+        await pool.query(
+          `DELETE FROM users WHERE id = $1`,
+          [userId]
+        );
+
+        await pool.query('COMMIT');
+        return NextResponse.json({ success: true, message: "Employer rejected and removed from database" });
+      } catch (error) {
+        await pool.query('ROLLBACK');
+        throw error;
+      }
       
     } else {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });

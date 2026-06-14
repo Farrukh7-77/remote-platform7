@@ -149,7 +149,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE /api/admin/companies - Şirkəti sil
+// DELETE /api/admin/companies - Şirkəti və əlaqəli istifadəçini sil
 export async function DELETE(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -171,20 +171,76 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Company ID required" }, { status: 400 });
     }
 
-    // Şirkətə aid işləri yoxla
-    const checkJobs = await pool.query(`SELECT COUNT(*) FROM jobs WHERE company = (SELECT name FROM companies WHERE id = $1)`, [companyId]);
-    
-    if (parseInt(checkJobs.rows[0].count) > 0) {
-      return NextResponse.json({ error: "Company has jobs. Delete jobs first." }, { status: 400 });
-    }
+    // Şirkəti tap (email ilə istifadəçini siləcəyik)
+    const companyResult = await pool.query(
+      `SELECT email, name FROM companies WHERE id = $1`,
+      [companyId]
+    );
 
-    const result = await pool.query(`DELETE FROM companies WHERE id = $1 RETURNING *`, [companyId]);
-    
-    if (result.rows.length === 0) {
+    if (companyResult.rows.length === 0) {
       return NextResponse.json({ error: "Company not found" }, { status: 404 });
     }
-    
-    return NextResponse.json({ success: true, message: "Company deleted successfully" });
+
+    const companyEmail = companyResult.rows[0].email;
+    const companyName = companyResult.rows[0].name;
+
+    // Transaction başla
+    await pool.query('BEGIN');
+
+    try {
+      // 1. Bu şirkətə aid iş elanlarını tap
+      const jobsResult = await pool.query(
+        `SELECT id FROM jobs WHERE company = $1`,
+        [companyName]
+      );
+      const jobIds = jobsResult.rows.map((row: any) => row.id);
+
+      // 2. Bu iş elanlarına aid applications sil
+      if (jobIds.length > 0) {
+        await pool.query(
+          `DELETE FROM applications WHERE job_id = ANY($1)`,
+          [jobIds]
+        );
+
+        // 3. Bu iş elanlarına aid saved_jobs sil
+        await pool.query(
+          `DELETE FROM saved_jobs WHERE job_id = ANY($1)`,
+          [jobIds]
+        );
+
+        // 4. İş elanlarını sil
+        await pool.query(
+          `DELETE FROM jobs WHERE company = $1`,
+          [companyName]
+        );
+      }
+
+      // 5. Şirkəti sil
+      await pool.query(
+        `DELETE FROM companies WHERE id = $1`,
+        [companyId]
+      );
+
+      // 6. Əlaqəli istifadəçini sil (email ilə)
+      if (companyEmail) {
+        await pool.query(
+          `DELETE FROM users WHERE email = $1`,
+          [companyEmail]
+        );
+      }
+
+      // Transaction-u təsdiqlə
+      await pool.query('COMMIT');
+
+      return NextResponse.json({ 
+        success: true, 
+        message: "Company, associated jobs, and owner deleted successfully" 
+      });
+    } catch (error) {
+      // Xəta olarsa, geri qaytar
+      await pool.query('ROLLBACK');
+      throw error;
+    }
   } catch (error) {
     console.error("Admin delete company error:", error);
     return NextResponse.json({ error: "Failed to delete company" }, { status: 500 });

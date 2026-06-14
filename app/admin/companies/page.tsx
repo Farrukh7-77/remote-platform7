@@ -245,20 +245,22 @@ export default function AdminCompaniesPage() {
             <tr className="text-left text-white/60 text-sm">
               <th className="pb-3 pl-3">Company</th>
               <th className="pb-3">Industry</th>
+              <th className="pb-3">Size</th>
               <th className="pb-3">Location</th>
+              <th className="pb-3">Website</th>
               <th className="pb-3">Owner</th>
               <th className="pb-3">Status</th>
               <th className="pb-3">Joined</th>
               <th className="pb-3 pr-3">Actions</th>
-             </tr>
+            </tr>
           </thead>
           <tbody>
             {companies.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-white/40">
+                <td colSpan={9} className="text-center py-12 text-white/40">
                   No companies found
                 </td>
-               </tr>
+              </tr>
             ) : (
               companies.map((company) => (
                 <tr key={company.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
@@ -277,25 +279,42 @@ export default function AdminCompaniesPage() {
                         <p className="text-white/40 text-sm">{company.email}</p>
                       </div>
                     </div>
-                   </td>
+                  </td>
                   <td className="py-4">
                     <span className="text-white/60 text-sm">{company.industry || "-"}</span>
-                   </td>
+                  </td>
+                  <td className="py-4">
+                    <span className="text-white/60 text-sm">{company.size || "-"}</span>
+                  </td>
                   <td className="py-4">
                     <span className="text-white/60 text-sm">{company.location || "-"}</span>
-                   </td>
+                  </td>
+                  <td className="py-4">
+                    {company.website ? (
+                      <a 
+                        href={company.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-blue-400 hover:text-blue-300 text-sm"
+                      >
+                        View ↗
+                      </a>
+                    ) : (
+                      <span className="text-white/60 text-sm">-</span>
+                    )}
+                  </td>
                   <td className="py-4">
                     <div>
                       <p className="text-white text-sm">{company.owner_name || "-"}</p>
                       <p className="text-white/40 text-xs">{company.owner_email}</p>
                     </div>
-                   </td>
+                  </td>
                   <td className="py-4">
                     {getVerifiedBadge(company.is_verified)}
-                   </td>
+                  </td>
                   <td className="py-4">
                     <p className="text-white/60 text-sm">{formatDate(company.created_at)}</p>
-                   </td>
+                  </td>
                   <td className="py-4 pr-3">
                     <div className="flex gap-2">
                       <button
@@ -330,7 +349,7 @@ export default function AdminCompaniesPage() {
                         {actionLoading === company.id ? "..." : "Delete"}
                       </button>
                     </div>
-                   </td>
+                  </td>
                 </tr>
               ))
             )}

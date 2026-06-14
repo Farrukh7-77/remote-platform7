@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { signIn as nextAuthSignIn, useSession, signOut as nextAuthSignOut } from "next-auth/react";
 
 export type UserRole = "jobseeker" | "employer";
 
@@ -22,7 +23,6 @@ export type User = {
   verification_status?: string;
   is_verified?: boolean;
   token_version?: number;
-  // JOB SEEKER PROFİL SAHƏLƏRİ
   profile_location?: string;
   profile_bio?: string;
   profile_linkedin?: string;
@@ -40,9 +40,15 @@ type AuthContextType = {
     name: string, 
     role: UserRole, 
     companyName?: string,
-    voen?: string
+    voen?: string,
+    industry?: string,
+    companySize?: string,
+    location?: string,
+    website?: string,
+    linkedin?: string
   ) => Promise<{ success: boolean; error?: string; message?: string }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => void;
   updateUser: (updates: Partial<User>) => Promise<void>;
   openAuthModal: () => void;
@@ -55,27 +61,53 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 dəqiqə
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession(); // ✅ NextAuth session
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // Load user from localStorage on page load/refresh
+  // ✅ NextAuth session dəyişdikdə istifadəçi məlumatlarını yenilə
   useEffect(() => {
-    const storedUser = localStorage.getItem("auth_user");
-    const storedToken = localStorage.getItem("auth_token");
-    
-    if (storedUser && storedToken) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-      } catch (e) {
-        console.error("Failed to parse stored user:", e);
-        localStorage.removeItem("auth_user");
-        localStorage.removeItem("auth_token");
+    const fetchUserFromSession = async () => {
+      if (status === "loading") return;
+      
+      if (session?.user?.email) {
+        try {
+          // Database-dən istifadəçi məlumatlarını al
+          const response = await fetch(`/api/auth/user?email=${encodeURIComponent(session.user.email)}`);
+          const data = await response.json();
+          
+          if (data.user) {
+            setUser(data.user);
+            localStorage.setItem("auth_user", JSON.stringify(data.user));
+          }
+        } catch (error) {
+          console.error("Failed to fetch user from session:", error);
+        }
+      } else if (!session) {
+        // NextAuth session yoxdursa, localStorage-dan yoxla
+        const storedUser = localStorage.getItem("auth_user");
+        const storedToken = localStorage.getItem("auth_token");
+        
+        if (storedUser && storedToken) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+          } catch (e) {
+            console.error("Failed to parse stored user:", e);
+            localStorage.removeItem("auth_user");
+            localStorage.removeItem("auth_token");
+          }
+        } else {
+          setUser(null);
+        }
       }
-    }
-    setLoading(false);
-  }, []);
+      
+      setLoading(false);
+    };
+
+    fetchUserFromSession();
+  }, [session, status]);
 
   const openAuthModal = () => setShowAuthModal(true);
   const closeAuthModal = () => setShowAuthModal(false);
@@ -84,16 +116,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: string, 
     password: string, 
     name: string, 
-    role: UserRole, 
+    role: UserRole,
     companyName?: string,
-    voen?: string
+    voen?: string,
+    industry?: string,
+    companySize?: string,
+    location?: string,
+    website?: string,
+    linkedin?: string
   ) => {
     setLoading(true);
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name, role, companyName, voen }),
+        body: JSON.stringify({ 
+          email, 
+          password, 
+          name, 
+          role, 
+          companyName, 
+          voen,
+          industry,
+          companySize,
+          location,
+          website,
+          linkedin
+        }),
       });
       const data = await response.json();
       
@@ -110,46 +159,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-  setLoading(true);
-  try {
-    const response = await fetch("/api/auth/signin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await response.json();
-    
-    if (!response.ok) {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      
+      if (!response.ok) {
+        setLoading(false);
+        return { success: false, error: data.error };
+      }
+      
+      setUser(data.user);
+      localStorage.setItem("auth_user", JSON.stringify(data.user));
+      if (data.token) {
+        localStorage.setItem("auth_token", data.token);
+      }
       setLoading(false);
-      return { success: false, error: data.error };
+      
+      closeAuthModal();
+      
+      window.location.href = "/";
+      
+      return { success: true };
+    } catch (error) {
+      setLoading(false);
+      return { success: false, error: "Login failed" };
     }
-    
-    // Uğurlu login
-    setUser(data.user);
-    localStorage.setItem("auth_user", JSON.stringify(data.user));
-    if (data.token) {
-      localStorage.setItem("auth_token", data.token);
-    }
-    setLoading(false);
-    
-    // Modal-ı bağla (əgər açıqdırsa)
-    closeAuthModal();
-    
-    // Səhifəni yenilə (rol dəyişibsə, məlumatlar yenilənsin)
-    window.location.href = "/";
-    
-    return { success: true };
-  } catch (error) {
-    setLoading(false);
-    return { success: false, error: "Login failed" };
-  }
-};
+  };
 
-  const signOut = useCallback(() => {
+  const signInWithGoogle = async () => {
+    try {
+      await nextAuthSignIn("google", { callbackUrl: "/" });
+    } catch (error) {
+      console.error("Google sign in error:", error);
+    }
+  };
+
+  const signOut = useCallback(async () => {
     setUser(null);
     localStorage.removeItem("auth_user");
     localStorage.removeItem("auth_token");
-    // CV məlumatlarını da təmizlə
+    
+    // NextAuth session-ı da sil
+    await nextAuthSignOut({ redirect: true, callbackUrl: "/" });
+    
     if (user?.email) {
       localStorage.removeItem(`cv_${user.email}`);
     }
@@ -169,7 +226,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.ok && data.user) {
         const updatedUser = { ...user, ...data.user };
         setUser(updatedUser);
-        // User məlumatlarını localStorage-da yenilə
         localStorage.setItem("auth_user", JSON.stringify(updatedUser));
       }
     } catch (error) {
@@ -177,7 +233,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // SESSION TIMEOUT
   useEffect(() => {
     if (!user) return;
     
@@ -213,7 +268,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ 
-      user, loading, signUp, signIn, signOut, updateUser,
+      user, loading, signUp, signIn, signInWithGoogle, signOut, updateUser,
       openAuthModal, closeAuthModal, showAuthModal
     }}>
       {children}

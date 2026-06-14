@@ -3,16 +3,19 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function AboutPage() {
+  const { theme } = useTheme();
   const [pageLoaded, setPageLoaded] = useState(false);
+  const isLightMode = theme === "light";
 
   useEffect(() => {
     setTimeout(() => setPageLoaded(true), 100);
   }, []);
 
   return (
-    <div className={`min-h-screen bg-[#050816] transition-opacity duration-700 ${pageLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`min-h-screen transition-opacity duration-700 ${pageLoaded ? 'opacity-100' : 'opacity-0'} ${isLightMode ? "bg-gray-50" : "bg-[#050816]"}`}>
       
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-8 pb-12 px-4">
@@ -22,10 +25,10 @@ export default function AboutPage() {
         
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3">
-            <span className="text-white">About</span>{' '}
+            <span className={isLightMode ? "text-gray-900" : "text-white"}>About</span>{' '}
             <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">RemoteJobs</span>
           </h1>
-          <p className="text-gray-300 text-sm md:text-base max-w-2xl mx-auto">
+          <p className={`text-sm md:text-base max-w-2xl mx-auto ${isLightMode ? "text-gray-600" : "text-gray-300"}`}>
             Connecting talent with opportunities worldwide
           </p>
         </div>
@@ -34,9 +37,9 @@ export default function AboutPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
 
         {/* Mission Section */}
-        <div className="glass-card p-6 md:p-8 mb-8 animate-card" style={{ animationDelay: "100ms" }}>
-          <h2 className="text-2xl font-semibold text-white mb-4">Our Mission</h2>
-          <p className="text-gray-300 leading-relaxed">
+        <div className={`rounded-2xl p-6 md:p-8 mb-8 animate-card transition-all duration-300 ${isLightMode ? "bg-white border border-gray-200 shadow-md" : "glass-card"}`} style={{ animationDelay: "100ms" }}>
+          <h2 className={`text-2xl font-semibold mb-4 ${isLightMode ? "text-gray-900" : "text-white"}`}>Our Mission</h2>
+          <p className={`leading-relaxed ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
             At RemoteJobs, we believe that great talent knows no borders. 
             Our mission is to connect skilled professionals with forward-thinking 
             companies that embrace remote work. We're building a world where 
@@ -46,42 +49,42 @@ export default function AboutPage() {
 
         {/* Stats Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="glass-card p-4 md:p-6 text-center transition-all duration-300 hover:-translate-y-1 animate-card" style={{ animationDelay: "150ms" }}>
+          <div className={`rounded-2xl p-4 md:p-6 text-center transition-all duration-300 hover:-translate-y-1 animate-card ${isLightMode ? "bg-white border border-gray-200 shadow-md" : "glass-card"}`} style={{ animationDelay: "150ms" }}>
             <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">2,400+</div>
-            <div className="text-xs md:text-sm text-gray-400 mt-1">Jobs Posted</div>
+            <div className={`text-xs md:text-sm mt-1 ${isLightMode ? "text-gray-500" : "text-gray-400"}`}>Jobs Posted</div>
           </div>
-          <div className="glass-card p-4 md:p-6 text-center transition-all duration-300 hover:-translate-y-1 animate-card" style={{ animationDelay: "200ms" }}>
+          <div className={`rounded-2xl p-4 md:p-6 text-center transition-all duration-300 hover:-translate-y-1 animate-card ${isLightMode ? "bg-white border border-gray-200 shadow-md" : "glass-card"}`} style={{ animationDelay: "200ms" }}>
             <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">180+</div>
-            <div className="text-xs md:text-sm text-gray-400 mt-1">Countries</div>
+            <div className={`text-xs md:text-sm mt-1 ${isLightMode ? "text-gray-500" : "text-gray-400"}`}>Countries</div>
           </div>
-          <div className="glass-card p-4 md:p-6 text-center transition-all duration-300 hover:-translate-y-1 animate-card" style={{ animationDelay: "250ms" }}>
+          <div className={`rounded-2xl p-4 md:p-6 text-center transition-all duration-300 hover:-translate-y-1 animate-card ${isLightMode ? "bg-white border border-gray-200 shadow-md" : "glass-card"}`} style={{ animationDelay: "250ms" }}>
             <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">850+</div>
-            <div className="text-xs md:text-sm text-gray-400 mt-1">Companies</div>
+            <div className={`text-xs md:text-sm mt-1 ${isLightMode ? "text-gray-500" : "text-gray-400"}`}>Companies</div>
           </div>
-          <div className="glass-card p-4 md:p-6 text-center transition-all duration-300 hover:-translate-y-1 animate-card" style={{ animationDelay: "300ms" }}>
+          <div className={`rounded-2xl p-4 md:p-6 text-center transition-all duration-300 hover:-translate-y-1 animate-card ${isLightMode ? "bg-white border border-gray-200 shadow-md" : "glass-card"}`} style={{ animationDelay: "300ms" }}>
             <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">10K+</div>
-            <div className="text-xs md:text-sm text-gray-400 mt-1">Job Seekers</div>
+            <div className={`text-xs md:text-sm mt-1 ${isLightMode ? "text-gray-500" : "text-gray-400"}`}>Job Seekers</div>
           </div>
         </div>
 
         {/* Values Section */}
-        <div className="glass-card p-6 md:p-8 mb-8 animate-card" style={{ animationDelay: "350ms" }}>
-          <h2 className="text-2xl font-semibold text-white mb-6">Our Values</h2>
+        <div className={`rounded-2xl p-6 md:p-8 mb-8 animate-card transition-all duration-300 ${isLightMode ? "bg-white border border-gray-200 shadow-md" : "glass-card"}`} style={{ animationDelay: "350ms" }}>
+          <h2 className={`text-2xl font-semibold mb-6 ${isLightMode ? "text-gray-900" : "text-white"}`}>Our Values</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="text-4xl mb-2">🌍</div>
-              <h3 className="text-lg font-medium text-white mb-2">Global Access</h3>
-              <p className="text-sm text-gray-400">Jobs from anywhere, for anyone</p>
+              <h3 className={`text-lg font-medium mb-2 ${isLightMode ? "text-gray-800" : "text-white"}`}>Global Access</h3>
+              <p className={`text-sm ${isLightMode ? "text-gray-500" : "text-gray-400"}`}>Jobs from anywhere, for anyone</p>
             </div>
             <div className="text-center">
               <div className="text-4xl mb-2">🤝</div>
-              <h3 className="text-lg font-medium text-white mb-2">Trust & Transparency</h3>
-              <p className="text-sm text-gray-400">Verified companies, honest listings</p>
+              <h3 className={`text-lg font-medium mb-2 ${isLightMode ? "text-gray-800" : "text-white"}`}>Trust & Transparency</h3>
+              <p className={`text-sm ${isLightMode ? "text-gray-500" : "text-gray-400"}`}>Verified companies, honest listings</p>
             </div>
             <div className="text-center">
               <div className="text-4xl mb-2">⚡</div>
-              <h3 className="text-lg font-medium text-white mb-2">Easy to Use</h3>
-              <p className="text-sm text-gray-400">Simple application process</p>
+              <h3 className={`text-lg font-medium mb-2 ${isLightMode ? "text-gray-800" : "text-white"}`}>Easy to Use</h3>
+              <p className={`text-sm ${isLightMode ? "text-gray-500" : "text-gray-400"}`}>Simple application process</p>
             </div>
           </div>
         </div>

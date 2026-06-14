@@ -210,26 +210,35 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Pending Alerts */}
-      {(stats?.pendingJobs || 0) > 0 || (stats?.pendingEmployers || 0) > 0 || (stats?.pendingCompanies || 0) > 0 ? (
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
-          <div className="flex items-center gap-3 flex-wrap justify-between">
-            <div className="flex items-center gap-3">
-              <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-yellow-400 text-sm">Pending Approvals:</span>
-            </div>
-            <div className="flex gap-4 text-sm">
-              {stats?.pendingJobs ? <span className="text-white">{stats.pendingJobs} Jobs</span> : null}
-              {stats?.pendingEmployers ? <span className="text-white">{stats.pendingEmployers} Employers</span> : null}
-              {stats?.pendingCompanies ? <span className="text-white">{stats.pendingCompanies} Companies</span> : null}
-            </div>
-            <Link href="/admin/jobs" className="text-yellow-400 text-sm hover:underline">
-              Review Now →
-            </Link>
-          </div>
-        </div>
-      ) : null}
+{(stats?.pendingJobs || 0) > 0 || (stats?.pendingEmployers || 0) > 0 || (stats?.pendingCompanies || 0) > 0 ? (
+  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
+    <div className="flex items-center gap-3 flex-wrap justify-between">
+      <div className="flex items-center gap-3">
+        <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span className="text-yellow-400 text-sm">Pending Approvals:</span>
+      </div>
+      <div className="flex gap-4 text-sm flex-wrap">
+        {stats?.pendingJobs ? (
+          <Link href="/admin/jobs" className="text-white hover:text-blue-400 transition-colors">
+            {stats.pendingJobs} Jobs
+          </Link>
+        ) : null}
+        {stats?.pendingEmployers ? (
+          <Link href="/admin/pending-employers" className="text-white hover:text-blue-400 transition-colors">
+            {stats.pendingEmployers} Employers
+          </Link>
+        ) : null}
+        {stats?.pendingCompanies ? (
+          <Link href="/admin/companies" className="text-white hover:text-blue-400 transition-colors">
+            {stats.pendingCompanies} Companies
+          </Link>
+        ) : null}
+      </div>
+    </div>
+  </div>
+) : null}
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

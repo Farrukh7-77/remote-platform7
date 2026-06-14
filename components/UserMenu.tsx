@@ -1,4 +1,4 @@
-// components/UserMenu.tsx - NAVBAR NAME ALSO FIXED
+// components/UserMenu.tsx - WITH SETTINGS ADDED
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
@@ -48,7 +48,6 @@ export default function UserMenu() {
             user.name?.charAt(0).toUpperCase() || "U"
           )}
         </div>
-        {/* NAVBARDAKİ AD - gündüz rejimində qara, gecə rejimində ağ */}
         <span className="text-sm font-medium" style={{ color: isLightMode ? "#000000" : "#ffffff" }}>
           {user.name?.split(" ")[0]}
         </span>
@@ -59,7 +58,6 @@ export default function UserMenu() {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
-          {/* DROPDOWN İÇİNDƏKİ FULL NAME - gündüz rejimində qara, gecə rejimində ağ */}
           <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
             <p className="text-sm font-medium" style={{ color: isLightMode ? "#000000" : "#ffffff" }}>
               {user.name}
@@ -90,6 +88,31 @@ export default function UserMenu() {
               onClick={() => setIsOpen(false)}
             >
               👤 My Profile
+            </Link>
+            
+            {/* SETTINGS LINK */}
+            <Link
+              href="/profile/settings"
+              style={{ 
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 16px",
+                fontSize: "14px",
+                color: isLightMode ? "#000000" : "#ffffff",
+                backgroundColor: "transparent"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#000000";
+                e.currentTarget.style.color = "#ffffff";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+                e.currentTarget.style.color = isLightMode ? "#000000" : "#ffffff";
+              }}
+              onClick={() => setIsOpen(false)}
+            >
+              ⚙️ Settings
             </Link>
             
             {isEmployer ? (

@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AuthModal from "@/components/AuthModal";
 
 function RegisterForm() {
-  const { user, signUp, signOut } = useAuth();
+  const { user, signUp, signOut, signInWithGoogle } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const roleParam = searchParams.get("role");
@@ -14,25 +14,33 @@ function RegisterForm() {
   const [role, setRole] = useState<UserRole>(roleParam === "employer" ? "employer" : "jobseeker");
   const [name, setName] = useState("");
   const [companyName, setCompanyName] = useState("");
-  const [voen, setVoen] = useState(""); // YENİ: VÖEN state-i
+  const [voen, setVoen] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [companySize, setCompanySize] = useState("");
+  const [location, setLocation] = useState("");
+  const [website, setWebsite] = useState("");
+  const [linkedin, setLinkedin] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // YENİ: şifrə göstər/gizlət
+  const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
   const [initialUser, setInitialUser] = useState(user);
   
-  // Email təsdiqləmə mesajı üçün
   const [successMessage, setSuccessMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Focus states for float labels
   const [focusedFields, setFocusedFields] = useState({
     name: false,
     companyName: false,
-    voen: false, // YENİ
+    voen: false,
+    industry: false,
+    companySize: false,
+    location: false,
+    website: false,
+    linkedin: false,
     email: false,
     password: false,
   });
@@ -55,7 +63,6 @@ function RegisterForm() {
     setFocusedFields({ ...focusedFields, [field]: false });
   };
 
-  // Parol validasiyası - SADƏLƏŞDİRİLMİŞ (yalnız 3 tələb)
   const validatePassword = (value: string): string => {
     if (value.length < 12) {
       return "Password must be at least 12 characters";
@@ -75,7 +82,6 @@ function RegisterForm() {
     setPasswordError(validatePassword(value));
   };
 
-  // Parol güc göstəricisi (sadələşdirilmiş)
   const getPasswordStrength = () => {
     let score = 0;
     if (password.length >= 12) score++;
@@ -137,7 +143,6 @@ function RegisterForm() {
     setSuccessMessage("");
     setShowSuccess(false);
     
-    // Client-side password validation
     const passwordValidationError = validatePassword(password);
     if (passwordValidationError) {
       setError(passwordValidationError);
@@ -146,14 +151,18 @@ function RegisterForm() {
     
     setLoading(true);
 
-    // YENİ: signUp funksiyasına voen də göndər
     const result = await signUp(
       email, 
       password, 
       name, 
       role, 
       role === "employer" ? companyName : undefined,
-      role === "employer" ? voen : undefined  // YENİ: VÖEN göndər
+      role === "employer" ? voen : undefined,
+      role === "employer" ? industry : undefined,
+      role === "employer" ? companySize : undefined,
+      role === "employer" ? location : undefined,
+      role === "employer" ? website : undefined,
+      role === "employer" ? linkedin : undefined
     );
     
     if (result.success) {
@@ -161,7 +170,12 @@ function RegisterForm() {
       setShowSuccess(true);
       setName("");
       setCompanyName("");
-      setVoen(""); // YENİ: VÖEN-i təmizlə
+      setVoen("");
+      setIndustry("");
+      setCompanySize("");
+      setLocation("");
+      setWebsite("");
+      setLinkedin("");
       setPassword("");
       setPasswordError("");
     } else {
@@ -219,6 +233,41 @@ function RegisterForm() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* ✅ Google Sign Up Button - YALNIZ Job Seeker üçün */}
+              {role === "jobseeker" && (
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={signInWithGoogle}
+                    className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-gray-700 rounded-xl border border-gray-300 hover:bg-gray-50 transition-all duration-200 cursor-pointer font-medium"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Sign up with Google
+                  </button>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px bg-white/20"></div>
+                    <span className="text-white/50 text-sm">or</span>
+                    <div className="flex-1 h-px bg-white/20"></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Employer üçün Google qeydiyyatı yoxdur - məlumat mesajı */}
+              {role === "employer" && (
+                <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-xl text-purple-200 text-sm flex items-center gap-2">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Employer accounts require manual verification. Please register with email.</span>
+                </div>
+              )}
+
               {/* Role Selection */}
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-2">I am a</label>
@@ -227,7 +276,12 @@ function RegisterForm() {
                     type="button"
                     onClick={() => {
                       setRole("jobseeker");
-                      setVoen(""); // Rol dəyişdikdə VÖEN-i təmizlə
+                      setVoen("");
+                      setIndustry("");
+                      setCompanySize("");
+                      setLocation("");
+                      setWebsite("");
+                      setLinkedin("");
                     }}
                     className={`py-3 px-4 rounded-xl border transition-all duration-200 cursor-pointer ${
                       role === "jobseeker"
@@ -235,7 +289,7 @@ function RegisterForm() {
                         : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10 hover:border-white/40"
                     }`}
                   >
-                    <span className="text-xl mr-2">👤</span> Job Seeker
+                    <span className="text-xl mr-2"></span> Job Seeker
                   </button>
                   <button
                     type="button"
@@ -258,7 +312,7 @@ function RegisterForm() {
                 <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
                   focusedFields.name || name
                     ? '-top-2 text-xs text-blue-300 bg-slate-800/80 px-1 rounded'
-                    : 'top-3 text-white/50'
+                    : 'top-3 text-gray-500'
                 }`}>
                   {role === "employer" ? "Contact Person Name" : "Full Name"} *
                 </label>
@@ -273,48 +327,155 @@ function RegisterForm() {
                 />
               </div>
 
-              {/* Company Name (Employer only) */}
+              {/* Employer Fields - Two Column Grid */}
               {role === "employer" && (
-                <div className="relative">
-                  <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
-                    focusedFields.companyName || companyName
-                      ? '-top-2 text-xs text-blue-300 bg-slate-800/80 px-1 rounded'
-                      : 'top-3 text-white/50'
-                  }`}>
-                    Company Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    onFocus={() => handleFocus("companyName")}
-                    onBlur={() => handleBlur("companyName")}
-                    className="w-full px-3 py-3 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white placeholder-white/30"
-                    required
-                  />
-                </div>
-              )}
+                <div className="space-y-4">
+                  {/* Company Name - Full width */}
+                  <div className="relative">
+                    <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
+                      focusedFields.companyName || companyName
+                        ? '-top-2 text-xs text-blue-300 bg-slate-800/80 px-1 rounded'
+                        : 'top-3 text-gray-500'
+                    }`}>
+                      Company Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      onFocus={() => handleFocus("companyName")}
+                      onBlur={() => handleBlur("companyName")}
+                      className="w-full px-3 py-3 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white placeholder-white/30"
+                      required
+                    />
+                  </div>
 
-              {/* YENİ: VÖEN Field (Employer only) */}
-              {role === "employer" && (
-                <div className="relative">
-                  <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
-                    focusedFields.voen || voen
-                      ? '-top-2 text-xs text-blue-300 bg-slate-800/80 px-1 rounded'
-                      : 'top-3 text-white/50'
-                  }`}>
-                    VAT Number (VÖEN) *
-                  </label>
-                  <input
-                    type="text"
-                    value={voen}
-                    onChange={(e) => setVoen(e.target.value)}
-                    onFocus={() => handleFocus("voen")}
-                    onBlur={() => handleBlur("voen")}
-                    className="w-full px-3 py-3 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white placeholder-white/30"
-                    placeholder="e.g., 1234567890"
-                    required
-                  />
+                  {/* Two Column: VÖEN + Industry */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
+                        focusedFields.voen || voen
+                          ? '-top-2 text-xs text-blue-300 bg-slate-800/80 px-1 rounded'
+                          : 'top-3 text-gray-500'
+                      }`}>
+                        VÖEN *
+                      </label>
+                      <input
+                        type="text"
+                        value={voen}
+                        onChange={(e) => setVoen(e.target.value)}
+                        onFocus={() => handleFocus("voen")}
+                        onBlur={() => handleBlur("voen")}
+                        className="w-full px-3 py-3 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white"
+                        required
+                      />
+                    </div>
+
+                    <div className="relative">
+                      <label className="block text-xs text-blue-300 mb-1.5 px-1">
+                        Industry *
+                      </label>
+                      <select
+                        value={industry}
+                        onChange={(e) => setIndustry(e.target.value)}
+                        className="w-full px-3 py-3 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white appearance-none cursor-pointer"
+                        required
+                      >
+                        <option value="" disabled className="bg-slate-800 text-gray-400">Select...</option>
+                        <option value="Technology" className="bg-slate-800 text-white">Technology</option>
+                        <option value="Finance" className="bg-slate-800 text-white">Finance</option>
+                        <option value="Healthcare" className="bg-slate-800 text-white">Healthcare</option>
+                        <option value="Education" className="bg-slate-800 text-white">Education</option>
+                        <option value="Manufacturing" className="bg-slate-800 text-white">Manufacturing</option>
+                        <option value="Retail" className="bg-slate-800 text-white">Retail</option>
+                        <option value="Consulting" className="bg-slate-800 text-white">Consulting</option>
+                        <option value="Marketing" className="bg-slate-800 text-white">Marketing</option>
+                        <option value="Other" className="bg-slate-800 text-white">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Two Column: Company Size + Location */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <label className="block text-xs text-blue-300 mb-1.5 px-1">
+                        Size *
+                      </label>
+                      <select
+                        value={companySize}
+                        onChange={(e) => setCompanySize(e.target.value)}
+                        className="w-full px-3 py-3 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white appearance-none cursor-pointer"
+                        required
+                      >
+                        <option value="" disabled className="bg-slate-800 text-gray-400">Select...</option>
+                        <option value="1-10" className="bg-slate-800 text-white">1-10</option>
+                        <option value="11-50" className="bg-slate-800 text-white">11-50</option>
+                        <option value="51-200" className="bg-slate-800 text-white">51-200</option>
+                        <option value="201-500" className="bg-slate-800 text-white">201-500</option>
+                        <option value="501-1000" className="bg-slate-800 text-white">501-1000</option>
+                        <option value="1000+" className="bg-slate-800 text-white">1000+</option>
+                      </select>
+                    </div>
+
+                    <div className="relative">
+                      <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
+                        focusedFields.location || location
+                          ? '-top-2 text-xs text-blue-300 bg-slate-800/80 px-1 rounded'
+                          : 'top-3 text-gray-500'
+                      }`}>
+                        Location *
+                      </label>
+                      <input
+                        type="text"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        onFocus={() => handleFocus("location")}
+                        onBlur={() => handleBlur("location")}
+                        className="w-full px-3 py-3 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Two Column: Website + LinkedIn */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
+                        focusedFields.website || website
+                          ? '-top-2 text-xs text-blue-300 bg-slate-800/80 px-1 rounded'
+                          : 'top-3 text-gray-500'
+                      }`}>
+                        Website *
+                      </label>
+                      <input
+                        type="url"
+                        value={website}
+                        onChange={(e) => setWebsite(e.target.value)}
+                        onFocus={() => handleFocus("website")}
+                        onBlur={() => handleBlur("website")}
+                        className="w-full px-3 py-3 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white"
+                        required
+                      />
+                    </div>
+
+                    <div className="relative">
+                      <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
+                        focusedFields.linkedin || linkedin
+                          ? '-top-2 text-xs text-blue-300 bg-slate-800/80 px-1 rounded'
+                          : 'top-3 text-gray-500'
+                      }`}>
+                        LinkedIn
+                      </label>
+                      <input
+                        type="url"
+                        value={linkedin}
+                        onChange={(e) => setLinkedin(e.target.value)}
+                        onFocus={() => handleFocus("linkedin")}
+                        onBlur={() => handleBlur("linkedin")}
+                        className="w-full px-3 py-3 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white"
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -323,7 +484,7 @@ function RegisterForm() {
                 <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
                   focusedFields.email || email
                     ? '-top-2 text-xs text-blue-300 bg-slate-800/80 px-1 rounded'
-                    : 'top-3 text-white/50'
+                    : 'top-3 text-gray-500'
                 }`}>
                   Email *
                 </label>
@@ -340,11 +501,14 @@ function RegisterForm() {
 
               {/* Password Field with Eye Icon */}
               <div className="relative">
-                <label className={`absolute left-3 transition-all duration-200 pointer-events-none ${
-                  focusedFields.password || password
-                    ? '-top-2 text-xs text-blue-300 bg-slate-800/80 px-1 rounded'
-                    : 'top-3 text-white/50'
-                }`}>
+                <label 
+                  className={`absolute left-3 transition-all duration-200 pointer-events-none z-10 ${
+                    focusedFields.password || password
+                      ? '-top-2 text-xs text-blue-300 bg-slate-800/80 px-1 rounded'
+                      : 'top-3 text-gray-600 font-medium'
+                  }`}
+                  style={{ backgroundColor: !(focusedFields.password || password) ? 'transparent' : undefined }}
+                >
                   Password *
                 </label>
                 <div className="relative">
@@ -357,7 +521,6 @@ function RegisterForm() {
                     className="w-full px-3 py-3 pr-12 bg-white/5 border border-white/20 rounded-xl focus:border-blue-400 focus:outline-none transition-all duration-200 text-white placeholder-white/30"
                     required
                   />
-                  {/* YENİ: Göz ikonu */}
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -394,7 +557,7 @@ function RegisterForm() {
                   </div>
                 )}
                 
-                {/* Password requirements list - SADƏLƏŞDİRİLMİŞ (yalnız 3 tələb) */}
+                {/* Password requirements list */}
                 <div className="text-xs text-white/40 mt-2 space-y-1">
                   <p className={password.length >= 12 ? "text-green-400" : ""}>
                     {password.length >= 12 ? "✓" : "•"} At least 12 characters

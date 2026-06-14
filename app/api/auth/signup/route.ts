@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    const { email, password, name, role, companyName, voen } = body; // YENİ: voen əlavə edildi
+    const { email, password, name, role, companyName, voen, industry, companySize, location, website, linkedin } = body;
     
     // Email artıq verification_tokens cədvəlində gözləyir? 
     console.log("🔵 Step 3: Checking existing tokens...");
@@ -69,14 +69,19 @@ export async function POST(req: NextRequest) {
     
     // İstifadəçi məlumatlarını JSON olaraq saxla (YENİ: voen əlavə edildi)
     const userData = JSON.stringify({
-      email,
-      password: hashedPassword,
-      name,
-      role,
-      companyName: companyName || null,
-      voen: voen || null,
-      verificationStatus
-    });
+  email,
+  password: hashedPassword,
+  name,
+  role,
+  companyName: companyName || null,
+  voen: voen || null,
+  industry: industry || null,
+  companySize: companySize || null,
+  location: location || null,
+  website: website || null,
+  linkedin: linkedin || null,
+  verificationStatus
+});
     
     // Tokeni verification_tokens cədvəlinə yaz
     console.log("🔵 Step 7: Saving to database...");

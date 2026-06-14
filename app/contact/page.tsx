@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "@/context/ThemeContext";
 
 // SVG Icons
 const MailIcon = () => (
@@ -43,6 +44,7 @@ const GithubIcon = () => (
 );
 
 export default function ContactPage() {
+  const { theme } = useTheme();
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
@@ -53,6 +55,7 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [pageLoaded, setPageLoaded] = useState(false);
+  const isLightMode = theme === "light";
 
   useEffect(() => {
     setTimeout(() => setPageLoaded(true), 100);
@@ -100,7 +103,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className={`min-h-screen bg-[#050816] transition-opacity duration-700 ${pageLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`min-h-screen transition-opacity duration-700 ${pageLoaded ? 'opacity-100' : 'opacity-0'} ${isLightMode ? "bg-gray-50" : "bg-[#050816]"}`}>
       
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-8 pb-12 px-4">
@@ -113,10 +116,10 @@ export default function ContactPage() {
             <span className="text-3xl">📧</span>
           </div>
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3">
-            <span className="text-white">Contact</span>{' '}
+            <span className={isLightMode ? "text-gray-900" : "text-white"}>Contact</span>{' '}
             <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Us</span>
           </h1>
-          <p className="text-gray-300 text-sm md:text-base max-w-2xl mx-auto">
+          <p className={`text-sm md:text-base max-w-2xl mx-auto ${isLightMode ? "text-gray-600" : "text-gray-300"}`}>
             Have questions? We'd love to hear from you.
           </p>
         </div>
@@ -127,15 +130,15 @@ export default function ContactPage() {
           
           {/* Contact Information Cards */}
           <div className="lg:col-span-1 space-y-4">
-            <div className="glass-card p-5 transition-all duration-300 hover:-translate-y-1" style={{ animationDelay: "100ms" }}>
+            <div className={`rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 animate-card ${isLightMode ? "bg-white border border-gray-200 shadow-md" : "glass-card"}`} style={{ animationDelay: "100ms" }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
                   <MailIcon />
                 </div>
-                <h3 className="font-semibold text-white">Email Us</h3>
+                <h3 className={`font-semibold ${isLightMode ? "text-gray-900" : "text-white"}`}>Email Us</h3>
               </div>
-              <p className="text-gray-400 text-xs mb-2">Our support team will get back to you within 24 hours</p>
-              <a href="mailto:support@remotejobs.com" className="text-blue-400 hover:text-blue-300 text-sm font-medium inline-flex items-center gap-1 transition-colors">
+              <p className={`text-xs mb-2 ${isLightMode ? "text-gray-500" : "text-gray-400"}`}>Our support team will get back to you within 24 hours</p>
+              <a href="mailto:support@remotejobs.com" className="text-blue-500 hover:text-blue-600 text-sm font-medium inline-flex items-center gap-1 transition-colors">
                 support@remotejobs.com
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -143,31 +146,31 @@ export default function ContactPage() {
               </a>
             </div>
 
-            <div className="glass-card p-5 transition-all duration-300 hover:-translate-y-1" style={{ animationDelay: "150ms" }}>
+            <div className={`rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 animate-card ${isLightMode ? "bg-white border border-gray-200 shadow-md" : "glass-card"}`} style={{ animationDelay: "150ms" }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
                   <LocationIcon />
                 </div>
-                <h3 className="font-semibold text-white">Visit Us</h3>
+                <h3 className={`font-semibold ${isLightMode ? "text-gray-900" : "text-white"}`}>Visit Us</h3>
               </div>
-              <p className="text-gray-400 text-xs">Remote Jobs HQ<br />Digital Nomad Street<br />Global Remote City, 12345</p>
+              <p className={`text-xs ${isLightMode ? "text-gray-500" : "text-gray-400"}`}>Remote Jobs HQ<br />Digital Nomad Street<br />Global Remote City, 12345</p>
             </div>
 
-            <div className="glass-card p-5 transition-all duration-300 hover:-translate-y-1" style={{ animationDelay: "200ms" }}>
+            <div className={`rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 animate-card ${isLightMode ? "bg-white border border-gray-200 shadow-md" : "glass-card"}`} style={{ animationDelay: "200ms" }}>
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
                   <PhoneIcon />
                 </div>
-                <h3 className="font-semibold text-white">Follow Us</h3>
+                <h3 className={`font-semibold ${isLightMode ? "text-gray-900" : "text-white"}`}>Follow Us</h3>
               </div>
               <div className="flex gap-3">
-                <a href="#" className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center hover:bg-blue-500/20 hover:text-blue-400 transition-all duration-200 text-gray-400">
+                <a href="#" className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${isLightMode ? "bg-gray-100 text-gray-600 hover:bg-blue-500 hover:text-white" : "bg-white/5 text-gray-400 hover:bg-blue-500/20 hover:text-blue-400"}`}>
                   <TwitterIcon />
                 </a>
-                <a href="#" className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center hover:bg-blue-500/20 hover:text-blue-400 transition-all duration-200 text-gray-400">
+                <a href="#" className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${isLightMode ? "bg-gray-100 text-gray-600 hover:bg-blue-500 hover:text-white" : "bg-white/5 text-gray-400 hover:bg-blue-500/20 hover:text-blue-400"}`}>
                   <LinkedinIcon />
                 </a>
-                <a href="#" className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center hover:bg-blue-500/20 hover:text-blue-400 transition-all duration-200 text-gray-400">
+                <a href="#" className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${isLightMode ? "bg-gray-100 text-gray-600 hover:bg-blue-500 hover:text-white" : "bg-white/5 text-gray-400 hover:bg-blue-500/20 hover:text-blue-400"}`}>
                   <GithubIcon />
                 </a>
               </div>
@@ -176,9 +179,9 @@ export default function ContactPage() {
 
           {/* Contact Form */}
           <div className="lg:col-span-2">
-            <div className="glass-card p-5 md:p-6" style={{ animationDelay: "250ms" }}>
-              <h2 className="text-xl font-bold text-white mb-1">Send us a message</h2>
-              <p className="text-gray-400 text-xs mb-4">Fill out the form below and we'll get back to you shortly.</p>
+            <div className={`rounded-2xl p-5 md:p-6 animate-card ${isLightMode ? "bg-white border border-gray-200 shadow-md" : "glass-card"}`} style={{ animationDelay: "250ms" }}>
+              <h2 className={`text-xl font-bold mb-1 ${isLightMode ? "text-gray-900" : "text-white"}`}>Send us a message</h2>
+              <p className={`text-xs mb-4 ${isLightMode ? "text-gray-500" : "text-gray-400"}`}>Fill out the form below and we'll get back to you shortly.</p>
 
               {submitStatus === "success" && (
                 <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-xs flex items-center gap-2">
@@ -201,53 +204,53 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Full Name *</label>
+                    <label className={`block text-sm font-medium mb-1 ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>Full Name *</label>
                     <input
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className="w-full px-3 py-2 bg-[#0f172a] border border-white/15 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-white text-sm placeholder-gray-500"
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm ${isLightMode ? "bg-white border-gray-300 text-gray-900 placeholder-gray-400" : "bg-[#0f172a] border-white/15 text-white placeholder-gray-500"}`}
                       placeholder="John Doe"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Email Address *</label>
+                    <label className={`block text-sm font-medium mb-1 ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>Email Address *</label>
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full px-3 py-2 bg-[#0f172a] border border-white/15 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-white text-sm placeholder-gray-500"
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm ${isLightMode ? "bg-white border-gray-300 text-gray-900 placeholder-gray-400" : "bg-[#0f172a] border-white/15 text-white placeholder-gray-500"}`}
                       placeholder="john@example.com"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Subject *</label>
+                  <label className={`block text-sm font-medium mb-1 ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>Subject *</label>
                   <input
                     type="text"
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 bg-[#0f172a] border border-white/15 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-white text-sm placeholder-gray-500"
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm ${isLightMode ? "bg-white border-gray-300 text-gray-900 placeholder-gray-400" : "bg-[#0f172a] border-white/15 text-white placeholder-gray-500"}`}
                     placeholder="How can we help?"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Message *</label>
+                  <label className={`block text-sm font-medium mb-1 ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>Message *</label>
                   <textarea
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
                     required
                     rows={5}
-                    className="w-full px-3 py-2 bg-[#0f172a] border border-white/15 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none text-white text-sm placeholder-gray-500"
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none text-sm ${isLightMode ? "bg-white border-gray-300 text-gray-900 placeholder-gray-400" : "bg-[#0f172a] border-white/15 text-white placeholder-gray-500"}`}
                     placeholder="Tell us more about your inquiry..."
                   />
                 </div>
@@ -277,11 +280,11 @@ export default function ContactPage() {
 
       {/* Map Section */}
       <div className="max-w-7xl mx-auto px-4 pb-10">
-        <div className="glass-card rounded-xl overflow-hidden h-48 flex items-center justify-center">
+        <div className={`rounded-xl overflow-hidden h-48 flex items-center justify-center ${isLightMode ? "bg-white border border-gray-200 shadow-md" : "glass-card"}`}>
           <div className="text-center">
             <div className="text-3xl mb-1">🗺️</div>
-            <p className="text-gray-400 text-xs">Map view would appear here</p>
-            <p className="text-gray-500 text-xs mt-1">Remote Jobs HQ - Digital Nomad Street</p>
+            <p className={`text-xs ${isLightMode ? "text-gray-500" : "text-gray-400"}`}>Map view would appear here</p>
+            <p className={`text-xs mt-1 ${isLightMode ? "text-gray-400" : "text-gray-500"}`}>Remote Jobs HQ - Digital Nomad Street</p>
           </div>
         </div>
       </div>
