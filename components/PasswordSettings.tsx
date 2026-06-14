@@ -13,7 +13,7 @@ export default function PasswordSettings() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const isGoogleUser = user?.provider === "google";
+  const isGoogleUser = (user as any)?.provider === "google";
 
   const validatePassword = (password: string): string => {
     if (password.length < 12) return "Password must be at least 12 characters";
